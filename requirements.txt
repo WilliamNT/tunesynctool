@@ -1,0 +1,6 @@
+spotipy
+python-dotenv
+tqdm
+py-sonic
+musicbrainzngs
+thefuzz
