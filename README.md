@@ -10,6 +10,7 @@ In theory this should work with any service based on the Subsonic API specificat
 
 # Warning!
 
+Ignore the `navify/` directory for now. I am rewriting the single file script as a more modular and maintainable package. Use the navify.py file for now, according to the instructions in this file.
 This script is currently experimental. Contributions and testing with your own library are welcome.
 
 ---
