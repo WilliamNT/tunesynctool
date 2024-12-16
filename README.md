@@ -27,3 +27,4 @@ This script is currently experimental. Contributions and testing with your own l
 - Would be cool if deemix or another alternative got integrated at some point
 - Add support for syncronization after the playlist has been mirrored (aka. sync changes from spotify)
     - Dockerize it and use a cron job to auto update from time to 
+- Performance improvements
