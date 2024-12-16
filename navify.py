@@ -13,11 +13,13 @@ from thefuzz import fuzz
 
 load_dotenv()
 
-spotify_client_id = env.get('SPOTIFY_CLIENT_ID')
-spotify_client_secret = env.get('SPOTIFY_CLIENT_SECRET')
-spotify_redirect_uri = env.get('SPOTIFY_REDIRECT_URI')
-subsonic_base_url = env.get('SUBSONIC_BASE_URL')
-subsonic_port = env.get('SUBSONIC_PORT')
+spotify_client_id = env.get('SPOTIFY_CLIENT_ID', None)
+spotify_client_secret = env.get('SPOTIFY_CLIENT_SECRET', None)
+spotify_redirect_uri = env.get('SPOTIFY_REDIRECT_URI', 'http://localhost:8888/callback')
+whitelisted_ids = env.get('WHITELISTED_PLAYLIST_IDS', '').split(',')
+preview_only = env.get('PREVIEW_ONLY', True)
+subsonic_base_url = env.get('SUBSONIC_BASE_URL', 'http://127.0.0.1')
+subsonic_port = env.get('SUBSONIC_PORT', 4533)
 subsonic_username = env.get('SUBSONIC_USERNAME')
 subsonic_password = env.get('SUBSONIC_PASSWORD')
 spotify_scope = "user-library-read,playlist-read-private,playlist-read-collaborative"
@@ -429,10 +431,19 @@ def mirror_spotify_playlist(spotify_playlist: Playlist, preview_only: bool = Fal
 print('Navify - Spotify to Subsonic Playlist Sync Tool')
 print('-----------------------------------------------\n')
 
+if preview_only:
+    print(f'{YELLOW}Running in preview mode. No changes will be made to your Subsonic library.{RESET}\n')
+
+if whitelisted_ids:
+    print(f'{YELLOW}Whitelist mode enabled. Only the following playlists will be mirrored:{RESET}')
+    for i, playlist in enumerate(whitelisted_ids):
+        print(f'\t{i + 1}. {playlist}')
+
+    print('\n')
+
 # 1. Fetching your Spotify playlists
 print('Fetching your Spotify playlists...')
-whitelist_ids = []
-spotify_playlists = get_spotify_playlists(50, whitelist_ids)
+spotify_playlists = get_spotify_playlists(50, whitelisted_ids)
 
 print('Found the following playlists:')
 for i, playlist in enumerate(spotify_playlists):
@@ -446,7 +457,7 @@ print('If you have a large library, this may take a while. Please note that 100%
 for playlist in spotify_playlists:
     mirror_spotify_playlist(
         spotify_playlist=playlist,
-        preview_only=False
+        preview_only=preview_only
     )
 
 print('\nDone! If you faced any issues, or aren\'t satisfied with the results, please open an issue in the GitHub repository.')
