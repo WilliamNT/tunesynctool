@@ -17,7 +17,7 @@ spotify_client_id = env.get('SPOTIFY_CLIENT_ID', None)
 spotify_client_secret = env.get('SPOTIFY_CLIENT_SECRET', None)
 spotify_redirect_uri = env.get('SPOTIFY_REDIRECT_URI', 'http://localhost:8888/callback')
 whitelisted_ids = env.get('WHITELISTED_PLAYLIST_IDS', '').split(',')
-preview_only = env.get('PREVIEW_ONLY', True)
+preview_only = env.get('PREVIEW_ONLY', 'true').lower() == 'true'
 subsonic_base_url = env.get('SUBSONIC_BASE_URL', 'http://127.0.0.1')
 subsonic_port = env.get('SUBSONIC_PORT', 4533)
 subsonic_username = env.get('SUBSONIC_USERNAME')
