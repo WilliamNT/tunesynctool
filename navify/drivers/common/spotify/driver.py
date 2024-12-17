@@ -101,3 +101,26 @@ class SpotifyDriver(ServiceDriver):
             raise PlaylistNotFoundException(f'Spotify (API) said: {e.msg}')
         except Exception as e:
             raise PlaylistNotFoundException(f'Spotify (spotipy) said: {e}')
+        
+    def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
+        if not query or len(query) == 0:
+            return []
+        
+        try:
+            response = self.__spotify.search(
+                q=query,
+                limit=limit,
+                type='track'
+            )
+
+            fetched_tracks = response['tracks']['items']
+            mapped_tracks = [self._mapper.map_track(track) for track in fetched_tracks]
+
+            for track in mapped_tracks:
+                track.service_name = self._service_name
+
+            return mapped_tracks
+        except SpotifyException as e:
+            raise PlaylistNotFoundException(f'Spotify (API) said: {e.msg}')
+        except Exception as e:
+            raise PlaylistNotFoundException(f'Spotify (spotipy) said: {e}')

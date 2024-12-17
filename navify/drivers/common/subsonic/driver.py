@@ -113,3 +113,25 @@ class SubsonicDriver(ServiceDriver):
             raise TrackNotFoundException()
         except Exception as e:
             raise PlaylistNotFoundException(f'Subsonic (libsonic) said: {e}')
+        
+    def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
+        if not query or len(query) == 0:
+            return []
+
+        try:
+            response = self.__subsonic.search2(
+                query=query,
+                artistCount=0,
+                albumCount=0,
+                songCount=limit,
+            )
+
+            fetched_tracks = response['searchResult2'].get('song', [])
+            mapped_tracks = [self._mapper.map_track(track) for track in fetched_tracks]
+
+            for track in mapped_tracks:
+                track.service_name = self._service_name
+
+            return mapped_tracks
+        except Exception as e:
+            raise ServiceDriverException(f'Subsonic (libsonic) said: {e}')

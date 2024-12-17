@@ -70,3 +70,10 @@ class ServiceDriver(ABC):
         Fetch a track by its ID.
         """
         raise NotImplementedError()
+    
+    @abstractmethod
+    def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
+        """
+        Search for tracks by a query.
+        """
+        raise NotImplementedError()
