@@ -24,13 +24,13 @@ class TrackMatcher:
         if track.service_name == self._target.service_name:
             return self._target.get_track(track.service_id)
         
-        # Stategy 1: Using the ISRC + MusicBrainz ID
-        matched_track = self.__search_with_musicbrainz_id(track)
+        # Strategy 1: Using plain old text search
+        matched_track = self.__search_with_text(track)
         if track.matches(matched_track):
             return matched_track
-        
-        # Strategy 2: Using plain old text search
-        matched_track = self.__search_with_text(track)
+
+        # Stategy 2: Using the ISRC + MusicBrainz ID
+        matched_track = self.__search_with_musicbrainz_id(track)
         if track.matches(matched_track):
             return matched_track
         
@@ -50,9 +50,9 @@ class TrackMatcher:
         if track.musicbrainz_id:
             return track.musicbrainz_id
 
-        musicbrainz_id = Musicbrainz.id_from_isrc(track.isrc)
-        if musicbrainz_id:
-            return musicbrainz_id
+        # musicbrainz_id = Musicbrainz.id_from_isrc(track.isrc)
+        # if musicbrainz_id:
+        #     return musicbrainz_id
         
         return Musicbrainz.id_from_track(track)
     

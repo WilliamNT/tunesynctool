@@ -13,7 +13,7 @@ class Musicbrainz:
     @staticmethod
     def id_from_isrc(isrc: str) -> Optional[str]:
         """Fetches the Musicbrainz ID for a track given its ISRC."""
-        
+            
         response = musicbrainzngs.search_recordings(isrc=isrc)
         return Musicbrainz.__get_id(response)
     
@@ -23,6 +23,9 @@ class Musicbrainz:
         Fetches the Musicbrainz ID for a track using its metadata.
         The less metadata, the less accurate the result.
         """
+        
+        if track.musicbrainz_id:
+            return track.musicbrainz_id
         
         response: dict = musicbrainzngs.search_recordings(
             query=clean_str(track.title),
