@@ -2,7 +2,8 @@ from typing import List
 
 from navify.exceptions import PlaylistNotFoundException, ServiceDriverException
 from navify.models import Playlist, Configuration, Track
-from . import ServiceDriver
+from navify.drivers import ServiceDriver
+from .mapper import SpotifyMapper
 
 from spotipy.oauth2 import SpotifyOAuth
 import spotipy
@@ -14,7 +15,8 @@ class SpotifyDriver(ServiceDriver):
     def __init__(self, config: Configuration) -> None:
         super().__init__(
             service_name='spotify',
-            config=config
+            config=config,
+            mapper=SpotifyMapper()
         )
 
         self.__spotify = spotipy.Spotify(auth_manager=self.__get_auth_manager())
@@ -23,19 +25,19 @@ class SpotifyDriver(ServiceDriver):
         """Configures and returns a SpotifyOAuth object."""
 
         return SpotifyOAuth(
-            scope=self.config.spotify_scopes,
-            client_id=self.config.spotify_client_id,
-            client_secret=self.config.spotify_client_secret,
-            redirect_uri=self.config.spotify_redirect_uri
+            scope=self._config.spotify_scopes,
+            client_id=self._config.spotify_client_id,
+            client_secret=self._config.spotify_client_secret,
+            redirect_uri=self._config.spotify_redirect_uri
         )
 
     def get_user_playlists(self, limit: int = 25) -> List['Playlist']:
         response = self.__spotify.current_user_playlists(limit=limit)
         fetched_playlists = response['items']
-        mapped_playlists = [Playlist.from_spotify_json(playlist) for playlist in fetched_playlists]
+        mapped_playlists = [self._mapper.map_playlist(playlist) for playlist in fetched_playlists]
 
         for playlist in mapped_playlists:
-            playlist.service_name = self.service_name
+            playlist.service_name = self._service_name
 
         return mapped_playlists
 
@@ -46,10 +48,10 @@ class SpotifyDriver(ServiceDriver):
                 limit=limit
             )
             fetched_tracks = response['items']
-            mapped_tracks = [Track.from_spotify_json(track['track']) for track in fetched_tracks]
+            mapped_tracks = [self._mapper.map_track(track['track']) for track in fetched_tracks]
 
             for track in mapped_tracks:
-                track.service_name = self.service_name
+                track.service_name = self._service_name
 
             return mapped_tracks
         except SpotifyException as e:
@@ -64,6 +66,6 @@ class SpotifyDriver(ServiceDriver):
                 name=name
             )
 
-            return Playlist.from_spotify_json(response)
+            return self._mapper.map_playlist(response)
         except Exception as e:
             raise ServiceDriverException(f'Subsonic (libsonic) said: {e}')

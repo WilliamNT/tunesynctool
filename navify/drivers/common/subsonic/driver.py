@@ -1,8 +1,9 @@
 from typing import List
 
-from navify.exceptions import PlaylistNotFoundException, ServiceDriverException, TrackNotFoundException
+from navify.exceptions import PlaylistNotFoundException, ServiceDriverException
 from navify.models import Playlist, Configuration, Track
-from . import ServiceDriver
+from navify.drivers import ServiceDriver
+from .mapper import SubsonicMapper
 
 from libsonic.connection import Connection
 from libsonic.errors import DataNotFoundError
@@ -13,7 +14,8 @@ class SubsonicDriver(ServiceDriver):
     def __init__(self, config: Configuration) -> None:
         super().__init__(
             service_name='subsonic',
-            config=config
+            config=config,
+            mapper=SubsonicMapper()
         )
 
         self.__subsonic = self.__get_connection()
@@ -22,10 +24,10 @@ class SubsonicDriver(ServiceDriver):
         """Configures and returns a Connection object."""
 
         return Connection(
-            baseUrl=self.config.subsonic_base_url,
-            port=self.config.subsonic_port,
-            username=self.config.subsonic_username,
-            password=self.config.subsonic_password,
+            baseUrl=self._config.subsonic_base_url,
+            port=self._config.subsonic_port,
+            username=self._config.subsonic_username,
+            password=self._config.subsonic_password,
         )
     
     def get_user_playlists(self, limit: int = 25) -> List['Playlist']:
@@ -35,10 +37,10 @@ class SubsonicDriver(ServiceDriver):
         if isinstance(fetched_playlists, dict):
             fetched_playlists = [fetched_playlists]
 
-        mapped_playlists = [Playlist.from_subsonic_json(playlist) for playlist in fetched_playlists[:limit]]
+        mapped_playlists = [self._mapper.map_playlist(playlist) for playlist in fetched_playlists[:limit]]
 
         for playlist in mapped_playlists:
-            playlist.service_name = self.service_name
+            playlist.service_name = self._service_name
 
         return mapped_playlists
     
@@ -47,11 +49,11 @@ class SubsonicDriver(ServiceDriver):
             response = self.__subsonic.getPlaylist(
                 pid=playlist_id
             )
-            fetched_tracks = response['playlist']['entry']
-            mapped_tracks = [Track.from_subsonic_json(track) for track in fetched_tracks[:limit]]
+            fetched_tracks = response['playlist'].get('entry', [])
+            mapped_tracks = [self._mapper.map_track(track) for track in fetched_tracks[:limit]]
 
             for track in mapped_tracks:
-                track.service_name = self.service_name
+                track.service_name = self._service_name
 
             return mapped_tracks
         except DataNotFoundError as e:
@@ -65,6 +67,6 @@ class SubsonicDriver(ServiceDriver):
                 name=name
             )
 
-            return Playlist.from_subsonic_json(response['playlist'])
+            return self._mapper.map_playlist(response['playlist'])
         except Exception as e:
             raise ServiceDriverException(f'Subsonic (libsonic) said: {e}')

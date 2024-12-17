@@ -1,3 +1,4 @@
 from .service_driver import ServiceDriver
-from .spotify import SpotifyDriver
-from .subsonic import SubsonicDriver
+from .service_mapper import ServiceMapper
+
+from .common import SpotifyDriver, SubsonicDriver
