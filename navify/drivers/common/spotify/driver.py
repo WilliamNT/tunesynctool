@@ -68,4 +68,4 @@ class SpotifyDriver(ServiceDriver):
 
             return self._mapper.map_playlist(response)
         except Exception as e:
-            raise ServiceDriverException(f'Subsonic (libsonic) said: {e}')
+            raise ServiceDriverException(f'Spotify (spotipy) said: {e}')
