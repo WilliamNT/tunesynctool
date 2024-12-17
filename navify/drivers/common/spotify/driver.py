@@ -1,6 +1,6 @@
-from typing import List
+from typing import List, Optional
 
-from navify.exceptions import PlaylistNotFoundException, ServiceDriverException
+from navify.exceptions import PlaylistNotFoundException, ServiceDriverException, UnsupportedFeatureException
 from navify.models import Playlist, Configuration, Track
 from navify.drivers import ServiceDriver
 from .mapper import SpotifyMapper
@@ -55,7 +55,7 @@ class SpotifyDriver(ServiceDriver):
 
             return mapped_tracks
         except SpotifyException as e:
-            raise PlaylistNotFoundException(f'Spotify said: {e.msg}')
+            raise PlaylistNotFoundException(f'Spotify (API) said: {e.msg}')
         except Exception as e:
             raise PlaylistNotFoundException(f'Spotify (spotipy) said: {e}')
         
@@ -69,3 +69,26 @@ class SpotifyDriver(ServiceDriver):
             return self._mapper.map_playlist(response)
         except Exception as e:
             raise ServiceDriverException(f'Spotify (spotipy) said: {e}')
+        
+    def add_tracks_to_playlist(self, playlist_id: str, track_ids: List[str]) -> None:
+        try:
+            self.__spotify.playlist_add_items(
+                playlist_id=playlist_id,
+                items=track_ids
+            )
+        except SpotifyException as e:
+            raise PlaylistNotFoundException(f'Spotify (API) said: {e.msg}')
+        except Exception as e:
+            raise ServiceDriverException(f'Spotify (spotipy) said: {e}')
+        
+    def get_random_track(self) -> Optional['Track']:
+        raise UnsupportedFeatureException('Spotify does not support fetching a random track.')
+    
+    def get_playlist(self, playlist_id: str) -> 'Playlist':
+        try:
+            response = self.__spotify.playlist(playlist_id)
+            return self._mapper.map_playlist(response)
+        except SpotifyException as e:
+            raise PlaylistNotFoundException(f'Spotify (API) said: {e.msg}')
+        except Exception as e:
+            raise PlaylistNotFoundException(f'Spotify (spotipy) said: {e}')

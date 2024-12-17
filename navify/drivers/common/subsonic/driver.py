@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from navify.exceptions import PlaylistNotFoundException, ServiceDriverException
 from navify.models import Playlist, Configuration, Track
@@ -70,3 +70,35 @@ class SubsonicDriver(ServiceDriver):
             return self._mapper.map_playlist(response['playlist'])
         except Exception as e:
             raise ServiceDriverException(f'Subsonic (libsonic) said: {e}')
+        
+    def add_tracks_to_playlist(self, playlist_id: str, track_ids: List[str]) -> None:
+        try:
+            self.__subsonic.updatePlaylist(
+                lid=playlist_id,
+                songIdsToAdd=track_ids
+            )
+        except Exception as e:
+            raise ServiceDriverException(f'Subsonic (libsonic) said: {e}')
+        
+    def get_random_track(self) -> Optional['Track']:
+        response = self.__subsonic.getRandomSongs(
+            size=1
+        )
+        fetched_tracks = response['randomSongs'].get('song', [])
+        mapped_tracks = [self._mapper.map_track(track) for track in fetched_tracks]
+
+        for track in mapped_tracks:
+            track.service_name = self._service_name
+
+        return mapped_tracks[0] if mapped_tracks else None
+    
+    def get_playlist(self, playlist_id: str) -> 'Playlist':
+        try:
+            response = self.__subsonic.getPlaylist(
+                pid=playlist_id
+            )
+            return self._mapper.map_playlist(response['playlist'])
+        except DataNotFoundError as e:
+            raise PlaylistNotFoundException()
+        except Exception as e:
+            raise PlaylistNotFoundException(f'Subsonic (libsonic) said: {e}')
