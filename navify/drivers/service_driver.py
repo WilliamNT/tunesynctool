@@ -63,3 +63,10 @@ class ServiceDriver(ABC):
         Fetch a playlist by its ID.
         """
         raise NotImplementedError()
+    
+    @abstractmethod
+    def get_track(self, track_id: str) -> 'Track':
+        """
+        Fetch a track by its ID.
+        """
+        raise NotImplementedError()
