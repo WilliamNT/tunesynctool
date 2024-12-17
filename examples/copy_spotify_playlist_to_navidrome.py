@@ -49,3 +49,5 @@ navidrome.add_tracks_to_playlist(
 )
 
 # Done! Your Spotify playlist has been copied to Navidrome
+# You can modify this script to work in reverse, so it
+# copies from Navidrome to Spotify if that's what you need.
