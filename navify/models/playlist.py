@@ -7,10 +7,10 @@ from navify.models.track import Track
 class Playlist:
     """Represents a playlist."""
 
-    name: str = field(default=None)
+    name: str = field(default='Untitled Playlist [@navify]')
     """Name of the playlist."""
 
-    author_name: str = field(default=None)
+    author_name: Optional[str] = field(default=None)
     """Name of the author of the playlist."""
 
     description: Optional[str] = field(default=None)
@@ -28,7 +28,7 @@ class Playlist:
     service_name: str = field(default='unknown')
     """Source service for the track."""
 
-    service_data: Optional[dict] = field(default=None)
+    service_data: Optional[dict] = field(default_factory=dict)
     """Raw JSON response data from the source service."""
 
     def __str__(self) -> str:

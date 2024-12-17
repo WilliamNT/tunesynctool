@@ -38,7 +38,7 @@ class Track:
     service_name: str = field(default='unknown')
     """Source service for the track."""
 
-    service_data: Optional[dict] = field(default=None)
+    service_data: Optional[dict] = field(default_factory=dict)
     """Raw JSON response data from the source service."""
 
     def __str__(self) -> str:
