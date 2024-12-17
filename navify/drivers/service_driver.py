@@ -49,6 +49,7 @@ class ServiceDriver(ABC):
     #     """Remove tracks from a playlist."""
     #     raise NotImplementedError()
 
+    @abstractmethod
     def get_random_track(self) -> Optional['Track']:
         """
         Fetch a random track from the service.
@@ -56,6 +57,7 @@ class ServiceDriver(ABC):
         """
         raise NotImplementedError()
     
+    @abstractmethod
     def get_playlist(self, playlist_id: str) -> 'Playlist':
         """
         Fetch a playlist by its ID.
