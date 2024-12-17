@@ -5,6 +5,9 @@ class SubsonicMapper(ServiceMapper):
     """Maps Subsonic API DTOs to internal models."""
 
     def map_playlist(self, data: dict) -> 'Playlist':
+        if isinstance(data, type(None)):
+            raise ValueError('Input data cannot be None')
+
         service_id = data.get('id')
         name = data.get('name')
         description = data.get('comment')
@@ -22,6 +25,9 @@ class SubsonicMapper(ServiceMapper):
         )
     
     def map_track(self, data: dict) -> 'Track':
+        if isinstance(data, type(None)):
+            raise ValueError('Input data cannot be None')
+        
         service_id = data.get('id')
         title = data.get('title')
         album_name = data.get('album')
