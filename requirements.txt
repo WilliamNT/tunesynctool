@@ -5,3 +5,5 @@ py-sonic
 musicbrainzngs
 thefuzz
 pytest
+build
+twine

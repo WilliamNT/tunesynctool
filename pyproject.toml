@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "navify"
+version = "0.0.1"
+authors = [
+    { name="WilliamNT", email="wntbox@gmail.com" }
+]
+description = "A package to build scripts that interact with various music streaming services."
+readme = "README.md"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "spotipy",
+    "py-sonic",
+    "musicbrainzngs",
+    "thefuzz",
+    'importlib-metadata; python_version<"3.10"',
+]
+
+[project.urls]
+Homepage = "https://github.com/WilliamNT/navify"
+Issues = "https://github.com/WilliamNT/navify/issues"
