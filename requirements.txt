@@ -4,3 +4,4 @@ tqdm
 py-sonic
 musicbrainzngs
 thefuzz
+pytest

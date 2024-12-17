@@ -1,0 +1,36 @@
+{
+    "collaborative": false,
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nunc nec ultricies ultricies, nunc chucks.",
+    "external_urls": {
+        "spotify": "https://open.spotify.com/playlist/RUNAROUNDANDDESERTYOU"
+    },
+    "href": "https://api.spotify.com/v1/playlists/RUNAROUNDANDDESERTYOU",
+    "id": "RUNAROUNDANDDESERTYOU",
+    "images": [
+        {
+            "width": null,
+            "height": null,
+            "url": "https://image-cdn-ak.spotifycdn.com/image/never-gonna-give-you-up"
+        }
+    ],
+    "name": "Lorem Ipsum: Dolor Sit Amet",
+    "owner": {
+        "display_name": "Example Joe",
+        "external_urls": {
+            "spotify": "https://open.spotify.com/user/examplejoe"
+        },
+        "href": "https://api.spotify.com/v1/users/examplejoe",
+        "id": "examplejoe",
+        "type": "user",
+        "uri": "spotify:user:examplejoe"
+    },
+    "primary_color": null,
+    "public": true,
+    "snapshot_id": "WERENOSTRANGERSTOLOVE",
+    "tracks": {
+        "href": "https://api.spotify.com/v1/playlists/RUNAROUNDANDDESERTYOU/tracks",
+        "total": 123
+    },
+    "type": "playlist",
+    "uri": "spotify:playlist:RUNAROUNDANDDESERTYOU"
+}
