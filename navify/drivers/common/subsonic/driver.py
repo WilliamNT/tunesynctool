@@ -15,7 +15,8 @@ class SubsonicDriver(ServiceDriver):
         super().__init__(
             service_name='subsonic',
             config=config,
-            mapper=SubsonicMapper()
+            mapper=SubsonicMapper(),
+            supports_musicbrainz_id_querying=True
         )
 
         self.__subsonic = self.__get_connection()
@@ -40,7 +41,7 @@ class SubsonicDriver(ServiceDriver):
         mapped_playlists = [self._mapper.map_playlist(playlist) for playlist in fetched_playlists[:limit]]
 
         for playlist in mapped_playlists:
-            playlist.service_name = self._service_name
+            playlist.service_name = self.service_name
 
         return mapped_playlists
     
@@ -53,7 +54,7 @@ class SubsonicDriver(ServiceDriver):
             mapped_tracks = [self._mapper.map_track(track) for track in fetched_tracks[:limit]]
 
             for track in mapped_tracks:
-                track.service_name = self._service_name
+                track.service_name = self.service_name
 
             return mapped_tracks
         except DataNotFoundError as e:
@@ -88,7 +89,7 @@ class SubsonicDriver(ServiceDriver):
         mapped_tracks = [self._mapper.map_track(track) for track in fetched_tracks]
 
         for track in mapped_tracks:
-            track.service_name = self._service_name
+            track.service_name = self.service_name
 
         return mapped_tracks[0] if mapped_tracks else None
     
@@ -130,7 +131,7 @@ class SubsonicDriver(ServiceDriver):
             mapped_tracks = [self._mapper.map_track(track) for track in fetched_tracks]
 
             for track in mapped_tracks:
-                track.service_name = self._service_name
+                track.service_name = self.service_name
 
             return mapped_tracks
         except Exception as e:

@@ -19,10 +19,11 @@ class ServiceDriver(ABC):
     Do not use directly; subclass this class to implement a custom driver.
     """
 
-    def __init__(self, service_name: str, config: Configuration, mapper: ServiceMapper) -> None:
-        self._service_name = service_name
+    def __init__(self, service_name: str, config: Configuration, mapper: ServiceMapper, supports_musicbrainz_id_querying: bool = False) -> None:
+        self.service_name = service_name
         self._config = config
         self._mapper = mapper
+        self.supports_musicbrainz_id_querying = supports_musicbrainz_id_querying
 
     @abstractmethod
     def get_user_playlists(self, limit: int = 25) -> List['Playlist']:

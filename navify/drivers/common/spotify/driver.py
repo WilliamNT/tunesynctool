@@ -37,7 +37,7 @@ class SpotifyDriver(ServiceDriver):
         mapped_playlists = [self._mapper.map_playlist(playlist) for playlist in fetched_playlists]
 
         for playlist in mapped_playlists:
-            playlist.service_name = self._service_name
+            playlist.service_name = self.service_name
 
         return mapped_playlists
 
@@ -51,7 +51,7 @@ class SpotifyDriver(ServiceDriver):
             mapped_tracks = [self._mapper.map_track(track['track']) for track in fetched_tracks]
 
             for track in mapped_tracks:
-                track.service_name = self._service_name
+                track.service_name = self.service_name
 
             return mapped_tracks
         except SpotifyException as e:
@@ -117,7 +117,7 @@ class SpotifyDriver(ServiceDriver):
             mapped_tracks = [self._mapper.map_track(track) for track in fetched_tracks]
 
             for track in mapped_tracks:
-                track.service_name = self._service_name
+                track.service_name = self.service_name
 
             return mapped_tracks
         except SpotifyException as e:

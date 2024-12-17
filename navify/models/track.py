@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List, Optional, Self
+
+from navify.utilities import clean_str, calculate_str_similarity, calculate_int_closeness
 
 @dataclass
 class Track:
@@ -47,5 +49,30 @@ class Track:
     def __repr__(self) -> str:
         return self.__str__()
     
-    def __eq__(self, other: 'Track') -> bool:
+    def __eq__(self, other: Optional[Self]) -> bool:
+        if not other:
+            return False
+        
         return self.service_id == other.service_id and self.service_name == other.service_name
+    
+    def matches(self, other: Optional[Self], treshold: float = 0.6) -> bool:
+        """
+        Compares two tracks for equality, regardless of their source service.
+        For primitive matching, use the __eq__ method (== operator).
+        """
+
+        if not other:
+            return False
+
+        variables = [
+            calculate_str_similarity(clean_str(self.title), clean_str(other.title)), # title similarity
+            calculate_str_similarity(clean_str(self.primary_artist), clean_str(other.primary_artist)), # primary/album artist similarity
+            calculate_str_similarity(clean_str(self.album_name), clean_str(other.album_name)), # album name similarity
+            calculate_int_closeness(self.duration_seconds, other.duration_seconds), # duration similarity
+            calculate_int_closeness(self.track_number, other.track_number), # track number similarity
+            calculate_int_closeness(self.release_year, other.release_year), # release year similarity
+        ]
+
+        similarity_ratio = sum(variables) / len(variables)
+
+        return similarity_ratio >= treshold
