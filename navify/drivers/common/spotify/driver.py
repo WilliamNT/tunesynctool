@@ -10,7 +10,12 @@ import spotipy
 from spotipy.exceptions import SpotifyException
 
 class SpotifyDriver(ServiceDriver):
-    """Spotify service driver."""
+    """
+    Spotify service driver.
+    
+    Uses spotipy as its backend:
+    https://github.com/spotipy-dev/spotipy
+    """
     
     def __init__(self, config: Configuration) -> None:
         super().__init__(

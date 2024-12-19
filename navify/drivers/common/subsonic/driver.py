@@ -9,7 +9,12 @@ from libsonic.connection import Connection
 from libsonic.errors import DataNotFoundError
 
 class SubsonicDriver(ServiceDriver):
-    """Subsonic service driver."""
+    """
+    Subsonic service driver.
+    
+    Uses libsonic (py-sonic) as its backend:
+    https://github.com/crustymonkey/py-sonic
+    """
     
     def __init__(self, config: Configuration) -> None:
         super().__init__(
