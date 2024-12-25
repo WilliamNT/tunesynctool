@@ -29,6 +29,15 @@ class SubsonicDriver(ServiceDriver):
     def __get_connection(self) -> Connection:
         """Configures and returns a Connection object."""
 
+        if not self._config.subsonic_base_url:
+            raise ValueError('Subsonic base URL is required for this service to work but was not set.')
+        elif not self._config.subsonic_port:
+            raise ValueError('Subsonic port is required for this service to work but was not set.')
+        elif not self._config.subsonic_username:
+            raise ValueError('Subsonic username is required for this service to work but was not set.')
+        elif not self._config.subsonic_password:
+            raise ValueError('Subsonic password is required for this service to work but was not set.')
+
         return Connection(
             baseUrl=self._config.subsonic_base_url,
             port=self._config.subsonic_port,

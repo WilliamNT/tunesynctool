@@ -30,6 +30,9 @@ class DeezerDriver(ServiceDriver):
         )
 
     def __get_client(self, streamrip_config: StreamRipConfig) -> DeezerClient:
+        if not self._config.deezer_arl:
+            raise ValueError('Deezer ARL token is required for this service to work but was not set.')
+        
         return DeezerClient(
             config=streamrip_config
         )

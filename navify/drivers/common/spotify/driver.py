@@ -29,6 +29,15 @@ class SpotifyDriver(ServiceDriver):
     def __get_auth_manager(self) -> SpotifyOAuth:
         """Configures and returns a SpotifyOAuth object."""
 
+        if not self._config.spotify_client_id:
+            raise ValueError('Spotify client ID is required for this service to work but was not set.')
+        elif not self._config.spotify_client_secret:
+            raise ValueError('Spotify client SECRET is required for this service to work but was not set.')
+        elif not self._config.spotify_redirect_uri:
+            raise ValueError('Spotify redirect URI is required for this service to work but was not set.')
+        elif not self._config.spotify_scopes:
+            raise ValueError('Spotify SCOPES are required for this service to work but were not set.')
+
         return SpotifyOAuth(
             scope=self._config.spotify_scopes,
             client_id=self._config.spotify_client_id,
