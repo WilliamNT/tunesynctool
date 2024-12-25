@@ -1,24 +1,23 @@
 # Navify
 
 A Python script to mirror your Spotify playlists to Navidrome!
-
----
-
-# Warning!
-
-This script and package are currently experimental. Contributions and testing with your own library are welcome.
+(support for other services is in progress)
 
 ---
 
 # Usage
 
 ## Proof of Concept script
+
+> [!IMPORTANT]  
+> This was the original script. It is not actively maintained. A proper replacement can be found in the `examples` directory.
+
 0. Create a Spotify app and set http://localhost:8888/callback as a callback url
 1. Create a Python 3.10+ virtual environment and install requirements.txt, then enter the environment
 2. Duplicate `.env.example`, then rename the duplicate to `.env` and set the values in it
 3. run `navify.py` (e.g. `python3 navify.py`)
 
-Alternatively use the `navify` package and build your own app or scripts.
+Alternatively use the `navify` PyPI package and build your own app or scripts.
 
 ## Configuration
 
@@ -37,6 +36,10 @@ How to read the table below: if a value is marked as optional and the default va
 |`WHITELISTED_PLAYLIST_IDS`|Optional|`None`|String consisting of comma seperated Spotify playlist ids, if set only these playlists will be mirrored (otherwise all will be)|
 
 # FAQ
+
+### Is there a way to use Navify from the CLI?
+Not at the moment. I'll look into it in the future because I see how it could be useful.
+It isn't really a priority at the moment, but feel free to make one or contribute to this repository.
 
 ### Does this tool automatically syncronize future changes between services?
 Not at the moment, but this will be supported in the future.
@@ -84,6 +87,7 @@ The navify.py script file served as a proof of concept rather than a finished pr
 ### How can I install the PyPI package?
 1. Run `pip install navify` or add `navify` to your requirements.txt file in a new line.
 2. After that, just import Navify like any other package: `from navify import x, y, z`
+
 # To do
 
 - ~~Simplify/refactor script, because it's a mess currently~~
