@@ -34,6 +34,7 @@ How to read the table below: if a value is marked as optional and the default va
 |`SUBSONIC_PASSWORD`|Required|`None`|Password to authenticate with your Subsonic compatible service|
 |`PREVIEW_ONLY`|Optional|`true`|Wether to run in preview mode or not (allows you to validate matching without modifying your Subsonic library)|
 |`WHITELISTED_PLAYLIST_IDS`|Optional|`None`|String consisting of comma seperated Spotify playlist ids, if set only these playlists will be mirrored (otherwise all will be)|
+|`DEEZER_ARL`|Optional|`None`|ARL token to authenticate with your Deezer account|
 
 # Supported services
 |Name|Write operations|Read operations|
