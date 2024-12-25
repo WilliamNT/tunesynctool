@@ -69,6 +69,11 @@ class Configuration:
     Password for the Subsonic server. Required for Subsonic API access.
     """
 
+    deezer_arl: Optional[str] = field(default=None)
+    """
+    Deezer ARL token. Required for Deezer API access.
+    """
+
     @classmethod
     def from_env(cls) -> 'Configuration':
         """Create a Configuration instance from environment variables."""
