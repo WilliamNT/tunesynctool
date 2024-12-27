@@ -168,3 +168,4 @@ cython_debug/
 #.idea/
 .DS_Store
 demo.py
+navify_ytmusic_session.json
