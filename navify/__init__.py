@@ -4,4 +4,4 @@ from .drivers import SubsonicDriver, SpotifyDriver, DeezerDriver
 
 from .models import Playlist, Track
 
-from .features import TrackMatcher, TrackDownloader, DownloadSource
+from .features import TrackMatcher
