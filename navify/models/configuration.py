@@ -74,6 +74,13 @@ class Configuration:
     Deezer ARL token. Required for Deezer API access.
     """
 
+    youtube_request_headers: Optional[str] = field(default=None)
+    """
+    Raw request headers from any authenticated request sent from your browser of choice to music.youtube.com.
+
+    Learn more and how to obtain: https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html
+    """
+
     @classmethod
     def from_env(cls) -> 'Configuration':
         """Create a Configuration instance from environment variables."""
@@ -90,9 +97,10 @@ class Configuration:
                 subsonic_port=int(os.getenv("SUBSONIC_PORT", cls.subsonic_port)),
                 subsonic_username=os.getenv("SUBSONIC_USERNAME"),
                 subsonic_password=os.getenv("SUBSONIC_PASSWORD"),
-                deezer_arl=os.getenv("DEEZER_ARL")
+                deezer_arl=os.getenv("DEEZER_ARL"),
+                youtube_request_headers=os.getenv("YOUTUBE_REQUEST_HEADERS")
             )
-            
+
             return config
         except KeyError as e:
             raise ValueError(f"Missing required environment variable: {e}")
