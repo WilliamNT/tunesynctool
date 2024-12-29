@@ -35,7 +35,7 @@ How to read the table below: if a value is marked as optional and the default va
 |`PREVIEW_ONLY`|Optional|`true`|Wether to run in preview mode or not (allows you to validate matching without modifying your Subsonic library)|
 |`WHITELISTED_PLAYLIST_IDS`|Optional|`None`|String consisting of comma seperated Spotify playlist ids, if set only these playlists will be mirrored (otherwise all will be)|
 |`DEEZER_ARL`|Optional|`None`|ARL token to authenticate with your Deezer account|
-|`YOUTUBE_REQUEST_HEADERS`|Optional|Raw request headers from an authenticated request sent by your browser to music.youtube.com|
+|`YOUTUBE_REQUEST_HEADERS`|Optional|`None`|Raw request headers from an authenticated request sent by your browser to music.youtube.com|
 
 # Supported services
 |Name|Write operations|Read operations|
