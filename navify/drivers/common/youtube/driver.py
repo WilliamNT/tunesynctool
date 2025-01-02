@@ -47,7 +47,11 @@ class YouTubeDriver(ServiceDriver):
         )
 
     def get_user_playlists(self, limit: int = 25) -> List['Playlist']:
-        pass
+        response: List[dict] = self.__youtube.get_library_playlists(
+            limit=limit
+        )
+        
+        return [self._mapper.map_playlist(playlist) for playlist in response]
 
     def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List['Track']:
         pass

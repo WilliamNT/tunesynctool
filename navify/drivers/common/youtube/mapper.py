@@ -11,10 +11,10 @@ class YouTubeMapper(ServiceMapper):
             raise ValueError('Input data cannot be None')
                 
         return Playlist(
-            name=data.get('title'),
-            description=data.get('description'),
-            service_id=data.get('id'),
-            is_public=data.get('privacy') == 'PUBLIC',
+            name=data.get('title', None),
+            description=data.get('description', None),
+            service_id=data.get('id', data.get('playlistId', None)), # Youtube uses both 'id' and 'playlistId' keys depending on the endpoint
+            is_public=data.get('privacy', None) == 'PUBLIC',
             service_name='youtube',
             service_data=data
         )
