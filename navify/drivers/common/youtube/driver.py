@@ -13,6 +13,8 @@ class YouTubeDriver(ServiceDriver):
     Youtube service driver.
 
     Some functionality may work without providing your credentials, however I don't actively support this use case.
+    Please note that the lack of metadata is not a bug.
+    The YouTube API barely returns any metadata beyond the basics like track title, artist and album names.
     
     Uses ytmusicapi as its backend:
     https://github.com/sigma67/ytmusicapi
@@ -33,13 +35,15 @@ class YouTubeDriver(ServiceDriver):
         if not self._config.youtube_request_headers:
             raise ValueError('Youtube request headers are required for this service to work but were not set.')
         
-        auth_str = ytmusicapi.setup(
-            filepath='ytmusic_navify_browser.json',
+        auth_file_path = 'navify_ytmusic_session.json'
+
+        ytmusicapi.setup(
+            filepath=auth_file_path,
             headers_raw=self._config.youtube_request_headers
         )
 
         return YTMusic(
-            auth=auth_str
+            auth=auth_file_path
         )
 
     def get_user_playlists(self, limit: int = 25) -> List['Playlist']:
@@ -61,7 +65,35 @@ class YouTubeDriver(ServiceDriver):
         pass
 
     def get_track(self, track_id: str) -> 'Track':
-        pass
+        response: dict = self.__youtube.get_song(
+            videoId=track_id,
+            signatureTimestamp=None
+        )
+
+        return self._mapper.map_track(
+            data=response,
+            additional_data={}
+        )
+        
 
     def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
-        pass
+        response: List[dict] = self.__youtube.search(
+            query=query,
+            limit=limit,
+            ignore_spelling=True,
+            filter='songs'
+        )
+
+        response_tracks: List[dict] = []
+        for result in response:
+            track = self.__youtube.get_song(
+                videoId=result.get('videoId'),
+                signatureTimestamp=None
+            )
+
+            response_tracks.append(self._mapper.map_track(
+                data=track,
+                additional_data=result
+            ))
+
+        return response_tracks
