@@ -1,0 +1,43 @@
+{
+    "category": "Songs",
+    "resultType": "song",
+    "title": "Never Never Never",
+    "album": {
+      "name": "Lorem Ipsum Deluxe",
+      "id": "MPREb_12345678901"
+    },
+    "inLibrary": false,
+    "feedbackTokens": {
+      "add": null,
+      "remove": null
+    },
+    "videoId": "dQw4w9WgXcQ",
+    "videoType": "MUSIC_VIDEO_TYPE_ATV",
+    "duration": "3:43",
+    "year": null,
+    "artists": [
+      {
+        "name": "Rick Astley",
+        "id": "UCRiE41VC12345678901"
+      },
+      {
+        "name": "The Lorem Ipsumers",
+        "id": "UCgpBsaDW12345678901"
+      }
+    ],
+    "duration_seconds": 12345,
+    "isExplicit": false,
+    "thumbnails": [
+      {
+        "url": "https://example.com",
+        "width": 60,
+        "height": 60
+      },
+      {
+        "url": "https://example.com",
+        "width": 120,
+        "height": 120
+      }
+    ]
+  }
+  

@@ -1,0 +1,225 @@
+{
+"playabilityStatus": {
+  "status": "OK",
+  "playableInEmbed": true,
+  "audioOnlyPlayability": {
+    "audioOnlyPlayabilityRenderer": {
+      "trackingParams": "RUNAROUNDANDDESERTYOU",
+      "audioOnlyAvailability": "FEATURE_AVAILABILITY_ALLOWED"
+    }
+  },
+  "miniplayer": {
+    "miniplayerRenderer": {
+      "playbackMode": "PLAYBACK_MODE_ALLOW"
+    }
+  },
+  "contextParams": "something"
+},
+      "streamingData":{
+         "expiresInSeconds":"12345",
+         "formats":[
+            {
+               "itag":12,
+               "mimeType":"video/mp4; codecs=\"avc1.42001E, mp4a.40.2\"",
+               "bitrate":12345,
+               "width":123,
+               "height":123,
+               "lastModified":"1664809272597410",
+               "quality":"medium",
+               "xtags":"Cg8KB2hlYXVkaW8SBHRydWU",
+               "fps":12,
+               "qualityLabel":"360p",
+               "projectionType":"RECTANGULAR",
+               "audioQuality":"AUDIO_QUALITY_LOW",
+               "approxDurationMs":"123456",
+               "audioSampleRate":"12345",
+               "audioChannels":1,
+               "signatureCipher":"asdasd"
+            }
+         ],
+         "adaptiveFormats":[
+            {
+               "itag":123,
+               "mimeType":"video/mp4; codecs=\"avc1.640020\"",
+               "bitrate":123456,
+               "width":1234,
+               "height":1234,
+               "initRange":{
+                  "start":"1",
+                  "end":"123"
+               },
+               "indexRange":{
+                  "start":"123",
+                  "end":"123"
+               },
+               "lastModified":"123456789",
+               "contentLength":"123456",
+               "quality":"hd1080",
+               "fps":25,
+               "qualityLabel":"1080p",
+               "projectionType":"RECTANGULAR",
+               "averageBitrate":193681,
+               "approxDurationMs":"1234567",
+               "signatureCipher":"loremipsumdolorsitamet"
+            }
+         ],
+         "serverAbrStreamingUrl":"https://example.com"
+      },
+      "playbackTracking":{
+         "videostatsPlaybackUrl":{
+            "baseUrl":"https://example.com",
+            "headers":[
+               {
+                  "headerType":"USER_AUTH"
+               }
+            ]
+         },
+         "videostatsDelayplayUrl":{
+            "baseUrl":"https://example.com",
+            "headers":[
+               {
+                  "headerType":"USER_AUTH"
+               }
+            ]
+         },
+         "videostatsWatchtimeUrl":{
+            "baseUrl":"https://example.com",
+            "headers":[
+               {
+                  "headerType":"USER_AUTH"
+               }
+            ]
+         },
+         "ptrackingUrl":{
+            "baseUrl":"https://example.com",
+            "headers":[
+               {
+                  "headerType":"USER_AUTH"
+               }
+            ]
+         },
+         "qoeUrl":{
+            "baseUrl":"https://example.com",
+            "headers":[
+               {
+                  "headerType":"USER_AUTH"
+               }
+            ]
+         },
+         "atrUrl":{
+            "baseUrl":"https://example.com",
+            "elapsedMediaTimeSeconds":5,
+            "headers":[
+               {
+                  "headerType":"USER_AUTH"
+               }
+            ]
+         },
+         "videostatsScheduledFlushWalltimeSeconds":[
+            12,
+            34,
+            56
+         ],
+         "videostatsDefaultFlushIntervalSeconds":12
+      },
+      "videoDetails":{
+         "videoId":"LOREMIPSUM",
+         "title":"Never Gonna Give You Up",
+         "lengthSeconds":"222",
+         "channelId":"NEVERGONNALETYOUDOWN",
+         "isOwnerViewing":false,
+         "isCrawlable":true,
+         "thumbnail":{
+            "thumbnails":[
+               {
+                  "url":"https://example.com",
+                  "width":60,
+                  "height":60
+               }
+            ]
+         },
+         "allowRatings":true,
+         "viewCount":"12345678",
+         "author":"Good Boy & John Smith",
+         "isPrivate":false,
+         "isUnpluggedCorpus":false,
+         "musicVideoType":"MUSIC_VIDEO_TYPE_ATV",
+         "isLiveContent":false
+      },
+      "microformat":{
+         "microformatDataRenderer":{
+            "urlCanonical":"https://example.com/watch?v=LOREMIPSUM",
+            "title":"Never Gonna Give You Up - YT Music",
+            "description":"Provided to YT by Lorem Ipsum Music Company Never Gonna Give You Up · Good Boy · John Smith Hotel Cabana ℗ 2013 Good Boy Recordings Limited, under exclusive licenc...",
+            "thumbnail":{
+               "thumbnails":[
+                  {
+                     "url":"https://i.ytimg.com/vi/LOREMIPSUM/maxresdefault.jpg",
+                     "width":1280,
+                     "height":720
+                  }
+               ]
+            },
+            "siteName":"YT Music",
+            "appName":"YT Music",
+            "androidPackage":"com.google.android.apps.YT.music",
+            "iosAppStoreId":"12345678",
+            "iosAppArguments":"https://example.com/watch?v=LOREMIPSUM",
+            "ogType":"video.other",
+            "urlApplinksIos":"vnd.YT.music://example.com/watch?v=LOREMIPSUM&feature=applinks",
+            "urlApplinksAndroid":"vnd.YT.music://example.com/watch?v=LOREMIPSUM&feature=applinks",
+            "urlTwitterIos":"vnd.YT.music://example.com/watch?v=LOREMIPSUM&feature=twitter-deep-link",
+            "urlTwitterAndroid":"vnd.YT.music://example.com/watch?v=LOREMIPSUM&feature=twitter-deep-link",
+            "twitterCardType":"player",
+            "twitterSiteHandle":"@YTMusic",
+            "schemaDotOrgType":"http://schema.org/VideoObject",
+            "noindex":false,
+            "unlisted":false,
+            "paid":false,
+            "familySafe":true,
+            "tags":[
+               "Good Boy",
+               "ノーティボーイ",
+               "ノーティ・ボーイ",
+               "John Smith",
+               "サムスミス",
+               "サム・スミス",
+               "Hotel Cabana",
+               "Never Gonna Give You Up"
+            ],
+            "availableCountries":["AE", "AR", "AS"],
+            "pageOwnerDetails":{
+               "name":"Good Boy - Topic",
+               "externalChannelId":"NEVERGONNALETYOUDOWN",
+               "YTProfileUrl":"http://www.example.com/channel/NEVERGONNALETYOUDOWN"
+            },
+            "videoDetails":{
+               "externalVideoId":"LOREMIPSUM",
+               "durationSeconds":"223",
+               "durationIso8601":"PT3M43S"
+            },
+            "linkAlternates":[
+               {
+                  "hrefUrl":"android-app://com.google.android.YT/http/example.com/watch?v=LOREMIPSUM"
+               },
+               {
+                  "hrefUrl":"ios-app://544007664/http/example.com/watch?v=LOREMIPSUM"
+               },
+               {
+                  "hrefUrl":"https://www.example.com/oembed?format=json&url=https%3A%2F%2Fexample.com%2Fwatch%3Fv%3DLOREMIPSUM",
+                  "title":"Never Gonna Give You Up",
+                  "alternateType":"application/json+oembed"
+               },
+               {
+                  "hrefUrl":"https://www.example.com/oembed?format=xml&url=https%3A%2F%2Fexample.com%2Fwatch%3Fv%3DLOREMIPSUM",
+                  "title":"Never Gonna Give You Up",
+                  "alternateType":"text/xml+oembed"
+               }
+            ],
+            "viewCount":"123456",
+            "publishDate":"2018-12-12T02:13:59-08:00",
+            "category":"Music",
+            "uploadDate":"2018-12-12T02:13:59-08:00"
+         }
+      }
+   }
