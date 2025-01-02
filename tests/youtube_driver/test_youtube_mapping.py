@@ -5,9 +5,9 @@ MOCK_YOUTUBE_TRACK_RESPONSE = None
 with open('tests/mock/youtube_track.json', 'r') as f:
     MOCK_YOUTUBE_TRACK_RESPONSE = json.load(f)
 
-# MOCK_YOUTUBE_PLAYLIST_RESPONSE = None
-# with open('tests/mock/youtube_playlist.json', 'r') as f:
-#     MOCK_YOUTUBE_PLAYLIST_RESPONSE = json.load(f)
+MOCK_YOUTUBE_PLAYLIST_RESPONSE = None
+with open('tests/mock/youtube_playlist.json', 'r') as f:
+    MOCK_YOUTUBE_PLAYLIST_RESPONSE = json.load(f)
 
 MOCK_YOUTUBE_SEARCH_RESPONSE = None
 with open('tests/mock/youtube_search.json', 'r') as f:
@@ -19,10 +19,22 @@ from navify.drivers.common.youtube import YouTubeMapper
 def youtube_mapper():
     return YouTubeMapper()
 
-# class TestPlaylistMapping:
-#     def test_data_cannot_be_none(self, youtube_mapper: YouTubeMapper):
-#         with pytest.raises(ValueError):
-#             youtube_mapper.map_playlist(None)
+class TestPlaylistMapping:
+    def test_data_cannot_be_none(self, youtube_mapper: YouTubeMapper):
+        with pytest.raises(ValueError):
+            youtube_mapper.map_playlist(None)
+
+    def test_map_playlist(self, youtube_mapper: YouTubeMapper):
+        playlist = youtube_mapper.map_playlist(MOCK_YOUTUBE_PLAYLIST_RESPONSE)
+
+        assert playlist.name == MOCK_YOUTUBE_PLAYLIST_RESPONSE['title']
+        assert playlist.description == MOCK_YOUTUBE_PLAYLIST_RESPONSE['description']
+        assert playlist.service_id == MOCK_YOUTUBE_PLAYLIST_RESPONSE['id']
+        assert playlist.service_data == MOCK_YOUTUBE_PLAYLIST_RESPONSE
+        assert playlist.is_public == (MOCK_YOUTUBE_PLAYLIST_RESPONSE['privacy'] == 'PUBLIC')
+        assert playlist.service_name == 'youtube'
+        assert playlist.author_name == None
+        assert playlist.tracks == []
 
 class TestTrackMapping:
     def test_map_track(self, youtube_mapper: YouTubeMapper):

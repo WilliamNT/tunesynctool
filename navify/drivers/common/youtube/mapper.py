@@ -7,7 +7,17 @@ class YouTubeMapper(ServiceMapper):
     """Maps Youtube API DTOs to internal models."""
 
     def map_playlist(self, data: dict) -> 'Playlist':  
-        pass
+        if isinstance(data, type(None)):
+            raise ValueError('Input data cannot be None')
+                
+        return Playlist(
+            name=data.get('title'),
+            description=data.get('description'),
+            service_id=data.get('id'),
+            is_public=data.get('privacy') == 'PUBLIC',
+            service_name='youtube',
+            service_data=data
+        )
 
     def map_track(self, data: dict, additional_data: dict = {}) -> 'Track':
         if isinstance(data, type(None)) or isinstance(additional_data, type(None)):

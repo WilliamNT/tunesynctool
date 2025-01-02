@@ -62,7 +62,17 @@ class YouTubeDriver(ServiceDriver):
         pass
 
     def get_playlist(self, playlist_id: str) -> 'Playlist':
-        pass
+        response = self.__youtube.get_playlist(
+            playlistId=playlist_id,
+            limit=1,
+            related=False,
+            suggestions_limit=0
+        )
+
+        if not response:
+            raise PlaylistNotFoundException()
+        
+        return self._mapper.map_playlist(response)
 
     def get_track(self, track_id: str) -> 'Track':
         response: dict = self.__youtube.get_song(

@@ -1,0 +1,22 @@
+{
+  "owned": false,
+  "id": "NEVER_GONNA_GIVE_YOU_UP",
+  "privacy": "PUBLIC",
+  "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi.",
+  "views": 123,
+  "duration": "12345+ hours",
+  "trackCount": 123,
+  "title": "Lorem Ipsum: The Greatest Hits",
+  "thumbnails": [
+    {
+      "url": "https://example.com",
+      "width": 123,
+      "height": 123
+    }
+  ],
+  "artists": [],
+  "year": "1234",
+  "related": [],
+  "tracks": [],
+  "duration_seconds": 12345
+}
