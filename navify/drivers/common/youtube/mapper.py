@@ -23,7 +23,7 @@ class YouTubeMapper(ServiceMapper):
         if isinstance(data, type(None)) or isinstance(additional_data, type(None)):
             raise ValueError('Input data or additional_data cannot be None')
         
-        album: dict = additional_data.get('album', {})
+        album: dict = additional_data.get('album', {}) or {}
         video_details: dict = data.get('videoDetails', {})
         _raw_artists: List[dict] = additional_data.get('artists', [])
         _artist_names = [artist.get('name', None) for artist in _raw_artists]

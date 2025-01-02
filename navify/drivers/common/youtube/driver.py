@@ -54,16 +54,33 @@ class YouTubeDriver(ServiceDriver):
         return [self._mapper.map_playlist(playlist) for playlist in response]
 
     def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List['Track']:
-        pass
+        response: dict = self.__youtube.get_playlist(
+            playlistId=playlist_id,
+            limit=limit,
+        )
+
+        tracks = response.get('tracks', [])
+        return [self._mapper.map_track(data=track, additional_data=track) for track in tracks]
 
     def create_playlist(self, name: str) -> 'Playlist':
-        pass
+        response = self.__youtube.create_playlist(
+            title=name,
+            description=''
+        )
+
+        return self.get_playlist(
+            playlist_id=response
+        )
 
     def add_tracks_to_playlist(self, playlist_id: str, track_ids: List[str]) -> None:
-        pass
+        self.__youtube.add_playlist_items(
+            playlistId=playlist_id,
+            videoIds=track_ids,
+            duplicates=True
+        )
 
     def get_random_track(self) -> Optional['Track']:
-        pass
+        raise UnsupportedFeatureException()
 
     def get_playlist(self, playlist_id: str) -> 'Playlist':
         response = self.__youtube.get_playlist(
