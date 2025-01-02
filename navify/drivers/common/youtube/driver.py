@@ -106,7 +106,6 @@ class YouTubeDriver(ServiceDriver):
             additional_data={}
         )
         
-
     def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
         response: List[dict] = self.__youtube.search(
             query=query,

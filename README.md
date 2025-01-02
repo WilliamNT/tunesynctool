@@ -43,7 +43,7 @@ How to read the table below: if a value is marked as optional and the default va
 |Spotify|Fully supported|Fully supported|
 |Deezer|None supported|Fully supported|
 |Subsonic (e.g. Navidrome)|Fully supported|Fully supported|
-|YouTube Music|In development|In development|
+|YouTube Music|Fully supported|Fully supported|
 
 **Explanation:** Not all features are supported for each service. This largely depends on the third-party libraries being used to interface with streaming services. The primary goal for every service is to at least support read operations (e.g. able to fetch playlists but unable to create or update them).
 
