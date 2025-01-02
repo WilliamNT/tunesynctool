@@ -47,6 +47,16 @@ How to read the table below: if a value is marked as optional and the default va
 
 **Explanation:** Not all features are supported for each service. This largely depends on the third-party libraries being used to interface with streaming services. The primary goal for every service is to at least support read operations (e.g. able to fetch playlists but unable to create or update them).
 
+### Services I want to support in the future
+- Jellyfin
+- Apple Music
+- Tidal
+- Amazon Music
+- SoundCloud
+
+There is no guarantee that I will actually be able to support these services. Even if a well tested package is available for a service, I like testing my implementations before
+releasing a driver. Also I don't have unlimited money to sign up for all of them. If you have a subscription to one of these and would like to contribute to this project, I'll be very grateful.
+
 # FAQ
 
 ### Is there a way to use Navify from the CLI?
