@@ -2,6 +2,16 @@
 
 A Python packaget to transfer music between your local/commercial streaming services. Supports track matching.
 
+# Supported services
+|Name|Write operations|Read operations|
+|--|--|--|
+|Spotify|Fully supported|Fully supported|
+|Deezer|None supported|Fully supported|
+|Subsonic (e.g. Navidrome)|Fully supported|Fully supported|
+|YouTube Music|Fully supported|Fully supported|
+
+**Explanation:** Not all features are supported for each service. This largely depends on the third-party libraries being used to interface with streaming services. The primary goal for every service is to at least support read operations (e.g. able to fetch playlists but unable to create or update them).
+
 ---
 
 # Usage
@@ -24,16 +34,6 @@ How to read the table below: if a value is marked as optional and the default va
 |`WHITELISTED_PLAYLIST_IDS`|Optional|`None`|String consisting of comma seperated Spotify playlist ids, if set only these playlists will be mirrored (otherwise all will be)|
 |`DEEZER_ARL`|Optional|`None`|ARL token to authenticate with your Deezer account|
 |`YOUTUBE_REQUEST_HEADERS`|Optional|`None`|Raw request headers from an authenticated request sent by your browser to music.youtube.com|
-
-# Supported services
-|Name|Write operations|Read operations|
-|--|--|--|
-|Spotify|Fully supported|Fully supported|
-|Deezer|None supported|Fully supported|
-|Subsonic (e.g. Navidrome)|Fully supported|Fully supported|
-|YouTube Music|Fully supported|Fully supported|
-
-**Explanation:** Not all features are supported for each service. This largely depends on the third-party libraries being used to interface with streaming services. The primary goal for every service is to at least support read operations (e.g. able to fetch playlists but unable to create or update them).
 
 ### Services I want to support in the future
 - Jellyfin
