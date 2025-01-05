@@ -41,26 +41,8 @@ It isn't really a priority at the moment, but feel free to make one or contribut
 ### Does this package offer functionality to download or stream music?
 No, use the official clients for that.
 
-### How accurate is matching?
-Based on my testing, it seems to be pretty accurate. If you face any accuracy issues please open an issue so I can improve it.
-
-### What is required for matching to work?
-The tool works only with properly tagged songs. The following are taken into account when the tool looks for matches:
-- Title
-- Album name
-- Primary (album) artist name
-- Duration in seconds
-- Track number
-- ISRC code
-- MusicBrainz ID
-- Additional artists' names
-- Release year
-
-### How can I automatically tag my songs?
-You can use [MusicBrainz Picard](https://picard.musicbrainz.org/) for that.
-
 ### How does matching work?
-The tool attempts to guess correct ways to search and pull songs from your target service, then performs various matching strategies to check if the song from the streaming service and the results from the searches match. It does this by fuzzy string comparison, metadata normalization and some basic weighting.
+See the wiki.
 
 ### How can I install the PyPI package?
 1. Run `pip install navify` or add `navify` to your requirements.txt file in a new line.
