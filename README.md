@@ -35,8 +35,7 @@ releasing a driver. Also I don't have unlimited money to sign up for all of them
 # FAQ
 
 ### Is there a way to use Navify from the CLI?
-Not at the moment. I'll look into it in the future because I see how it could be useful.
-It isn't really a priority at the moment, but feel free to make one or contribute to this repository.
+Yes, see the wiki.
 
 ### Does this package offer functionality to download or stream music?
 No, use the official clients for that.
