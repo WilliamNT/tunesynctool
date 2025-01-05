@@ -31,7 +31,6 @@ How to read the table below: if a value is marked as optional and the default va
 |`SUBSONIC_PORT`|Optional|`4533`|Port of your Subsonic compatible API|
 |`SUBSONIC_USERNAME`|Required|`None`|Username to authenticate with your Subsonic compatible service|
 |`SUBSONIC_PASSWORD`|Required|`None`|Password to authenticate with your Subsonic compatible service|
-|`WHITELISTED_PLAYLIST_IDS`|Optional|`None`|String consisting of comma seperated Spotify playlist ids, if set only these playlists will be mirrored (otherwise all will be)|
 |`DEEZER_ARL`|Optional|`None`|ARL token to authenticate with your Deezer account|
 |`YOUTUBE_REQUEST_HEADERS`|Optional|`None`|Raw request headers from an authenticated request sent by your browser to music.youtube.com|
 

@@ -34,18 +34,6 @@ class Configuration:
 
     Learn more: https://developer.spotify.com/documentation/web-api/concepts/scopes
     """
-    
-    whitelisted_ids: List[str] = field(default_factory=list)
-    """
-    A list of Spotify playlist IDs, seperated with commas. Only playlists with these IDs will be processed. If not set, all playlists will be processed.
-
-    Learn more: https://developer.spotify.com/documentation/web-api/concepts/spotify-uris-ids
-    """
-
-    preview_only: bool = field(default=True)
-    """
-    Toggles preview mode. If set to True, no changes will be made to the target service, but all features will run like usual. If set to False, changes will be made.
-    """
 
     subsonic_base_url: str = field(default="http://127.0.0.1")
     """
@@ -91,8 +79,6 @@ class Configuration:
                 spotify_client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
                 spotify_redirect_uri=os.getenv("SPOTIFY_REDIRECT_URI", cls.spotify_redirect_uri),
                 spotify_scopes=os.getenv("SPOTIFY_SCOPES", cls.spotify_scopes),
-                whitelisted_ids=os.getenv("WHITELISTED_IDS", "").split(","),
-                preview_only=os.getenv("PREVIEW_ONLY", "true").lower() == "true",
                 subsonic_base_url=os.getenv("SUBSONIC_BASE_URL", cls.subsonic_base_url),
                 subsonic_port=int(os.getenv("SUBSONIC_PORT", cls.subsonic_port)),
                 subsonic_username=os.getenv("SUBSONIC_USERNAME"),
