@@ -22,9 +22,14 @@ dependencies = [
     "thefuzz",
     "streamrip",
     "ytmusicapi",
+    "click",
+    "tqdm",
     'importlib-metadata; python_version<"3.10"',
 ]
 
 [project.urls]
 Homepage = "https://github.com/WilliamNT/navify"
 Issues = "https://github.com/WilliamNT/navify/issues"
+
+[project.scripts]
+navify = "navify.cli.main:cli"
