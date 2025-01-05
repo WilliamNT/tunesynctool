@@ -20,19 +20,7 @@ Firstly, install the latest release vie PyPI (`pip install navify`).
 
 ## Configuration
 
-How to read the table below: if a value is marked as optional and the default value associated with it isn't `None`, the default value will be used as a fallback if the environmental variable isn't provided.
-
-|Variable name|Is it required?|Default value|Description|
-|--|--|--|--|
-|`SPOTIFY_CLIENT_ID`|Required|`None`|Client ID of the Spotify app you created|
-|`SPOTIFY_CLIENT_SECRET`|Required|`None`|Client secret of the Spotify app you created|
-|`SPOTIFY_REDIRECT_URI`|Optional|`http://localhost:8888/callback`|Callback URL of the Spotify app you created (don't forget to add this in your app's settings!)
-|`SUBSONIC_BASE_URL`|Optional|`http://127.0.0.1`|Base URL of your Subsonic compatible API|
-|`SUBSONIC_PORT`|Optional|`4533`|Port of your Subsonic compatible API|
-|`SUBSONIC_USERNAME`|Required|`None`|Username to authenticate with your Subsonic compatible service|
-|`SUBSONIC_PASSWORD`|Required|`None`|Password to authenticate with your Subsonic compatible service|
-|`DEEZER_ARL`|Optional|`None`|ARL token to authenticate with your Deezer account|
-|`YOUTUBE_REQUEST_HEADERS`|Optional|`None`|Raw request headers from an authenticated request sent by your browser to music.youtube.com|
+See the wiki.
 
 ### Services I want to support in the future
 - Jellyfin
