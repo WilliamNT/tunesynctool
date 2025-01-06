@@ -43,9 +43,9 @@ def transfer(
         
         if matched_track:
             matched_tracks.append(matched_track)
-            tqdm.write(style(f"Found match: \"{matched_track}\"", fg='green'))
+            tqdm.write(style(f"Success: Found match: \"{track}\" --> \"{matched_track}\"", fg='green'))
         else:
-            tqdm.write(style(f"No match found for \"{track}\"", fg='yellow'))
+            tqdm.write(style(f"Fail: No result for \"{track}\"", fg='yellow'))
 
     echo(style(f"Found {len(matched_tracks)} matches in total", fg='green'))
 
