@@ -1,5 +1,7 @@
 import click
 
+from typing import Optional
+
 from .commands import transfer
 
 from navify.models.configuration import Configuration
@@ -15,7 +17,18 @@ from navify.models.configuration import Configuration
 @click.option('--deezer-arl', 'deezer_arl', help='Deezer ARL token.')
 @click.option('--youtube-request-headers', 'youtube_request_headers', help='YouTube request headers.')
 @click.pass_context
-def cli(ctx: click.Context, spotify_client_id, spotify_client_secret, spotify_redirect_uri, subsonic_base_url, subsonic_port, subsonic_username, subsonic_password, deezer_arl, youtube_request_headers):
+def cli(
+    ctx: click.Context,
+    spotify_client_id: Optional[str],
+    spotify_client_secret: Optional[str],
+    spotify_redirect_uri: Optional[str],
+    subsonic_base_url: Optional[str],
+    subsonic_port: Optional[str],
+    subsonic_username: Optional[str],
+    subsonic_password: Optional[str],
+    deezer_arl: Optional[str],
+    youtube_request_headers: Optional[str]
+    ):
     """Entry point for the CLI."""
 
     ctx.ensure_object(dict)

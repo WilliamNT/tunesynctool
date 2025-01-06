@@ -4,7 +4,7 @@ from navify.cli.utils.driver import get_driver_by_name, SUPPORTED_PROVIDERS
 from navify.drivers import ServiceDriver
 from navify.features import TrackMatcher
 
-from click import command, option, Choice, echo, argument, pass_obj, Context, UsageError, style
+from click import command, option, Choice, echo, argument, pass_obj, UsageError, style
 from tqdm import tqdm
 
 @command()
@@ -13,7 +13,13 @@ from tqdm import tqdm
 @option('--to', 'to_provider', type=Choice(SUPPORTED_PROVIDERS), required=True, help='The target provider to copy the playlist to.')
 @option('--preview', 'is_preview', is_flag=True, show_default=True, default=False, help='Preview the transfer without actually touching the target service.')
 @argument('playlist_id', type=str, required=True)
-def transfer(ctx: Optional[dict], from_provider: str, to_provider: str, playlist_id: str, is_preview: bool):
+def transfer(
+    ctx: Optional[dict],
+    from_provider: str,
+    to_provider: str,
+    playlist_id: str,
+    is_preview: bool
+    ):
     """Transfers a playlist from one provider to another."""
 
     try:
