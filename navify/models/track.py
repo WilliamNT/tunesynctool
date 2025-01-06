@@ -55,6 +55,9 @@ class Track:
         
         return self.service_id == other.service_id and self.service_name == other.service_name
     
+    def __hash__(self):
+        return hash((self.service_id, self.service_name))
+
     def matches(self, other: Optional[Self], treshold: float = 0.6) -> bool:
         """
         Compares two tracks for equality, regardless of their source service.

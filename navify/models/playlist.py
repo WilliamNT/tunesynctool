@@ -39,3 +39,6 @@ class Playlist:
     
     def __eq__(self, other: 'Playlist') -> bool:
         return self.service_id == other.service_id and self.service_name == other.service_name
+    
+    def __hash__(self):
+        return hash((self.service_id, self.service_name))
