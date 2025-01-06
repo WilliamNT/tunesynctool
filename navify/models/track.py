@@ -58,24 +58,46 @@ class Track:
     def __hash__(self):
         return hash((self.service_id, self.service_name))
 
-    def matches(self, other: Optional[Self], treshold: float = 0.6) -> bool:
+    def matches(self, other: Optional[Self], threshold: float = 0.75) -> bool:
         """
         Compares two tracks for equality, regardless of their source service.
         For primitive matching, use the __eq__ method (== operator).
+
+        This is not 100% accurate, but it's good enough in most cases.
         """
 
         if not other:
             return False
+        
+        if (self.isrc and other.isrc) and self.isrc == other.isrc:
+            return True
+        elif (self.musicbrainz_id and other.musicbrainz_id) and self.musicbrainz_id == other.musicbrainz_id:
+            return True
+        
+        title_similarity = calculate_str_similarity(clean_str(self.title), clean_str(other.title))
+        artist_similarity = calculate_str_similarity(clean_str(self.primary_artist), clean_str(other.primary_artist))
+
+        if title_similarity < 0.65 or artist_similarity < 0.6:
+            return False
+        
+        weights = {
+            'title': 4.0,
+            'artist': 3.0,
+            'album': 1.25 if self.album_name and other.album_name else 0.75,
+            'duration': 0.75,
+            'track': 0.5 if self.track_number and other.track_number else 0,
+            'year': 0.5 if self.track_number and other.track_number else 0,
+        }
 
         variables = [
-            calculate_str_similarity(clean_str(self.title), clean_str(other.title)), # title similarity
-            calculate_str_similarity(clean_str(self.primary_artist), clean_str(other.primary_artist)), # primary/album artist similarity
-            calculate_str_similarity(clean_str(self.album_name), clean_str(other.album_name)), # album name similarity
-            calculate_int_closeness(self.duration_seconds, other.duration_seconds), # duration similarity
-            calculate_int_closeness(self.track_number, other.track_number), # track number similarity
-            calculate_int_closeness(self.release_year, other.release_year), # release year similarity
+            title_similarity * weights['title'],
+            artist_similarity * weights['artist'],
+            calculate_str_similarity(clean_str(self.album_name), clean_str(other.album_name)) * weights['album'],
+            calculate_int_closeness(self.duration_seconds, other.duration_seconds) * weights['duration'],
+            calculate_int_closeness(self.track_number, other.track_number) * weights['track'],
+            calculate_int_closeness(self.release_year, other.release_year) * weights['year'],
         ]
 
-        similarity_ratio = sum(variables) / len(variables)
+        similarity_ratio = round(sum(variables) / sum(weights.values()), 2)
 
-        return similarity_ratio >= treshold
+        return similarity_ratio >= threshold
