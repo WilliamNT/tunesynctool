@@ -69,10 +69,13 @@ class TrackMatcher:
             return None
         
         if self._target.supports_musicbrainz_id_querying:
-            return self._target.search_tracks(
+            results = self._target.search_tracks(
                 query=track.musicbrainz_id,
                 limit=1
             )
+
+            if len(results) > 0:
+                return results[0]
         
         return None
     
