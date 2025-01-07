@@ -62,6 +62,10 @@ def sync(
 
     echo(style(f'Found {len(diff)} tracks that are missing from the target playlist', fg='blue'))
 
+    if len(diff) == 0:
+        echo(style('No tracks to sync, target playlist is up-to-date', fg='green'))
+        return
+
     if show_diff:
         for d in diff:
             echo(style(d, fg='yellow'))
