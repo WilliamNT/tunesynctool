@@ -47,7 +47,7 @@ def transfer(
         else:
             tqdm.write(style(f"Fail: No result for \"{track}\"", fg='yellow'))
 
-    echo(style(f"Found {len(matched_tracks)} matches in total", fg='green'))
+    echo(style(f"Found {len(matched_tracks)} matches in total", fg='blue' if len(matched_tracks) > 0 else 'red'))
 
     if is_preview:
         echo(style("Preview transfer complete", fg='green'))
