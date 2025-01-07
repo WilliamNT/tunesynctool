@@ -1,4 +1,4 @@
-from navify.drivers import *
+from tunesynctool.drivers import *
 
 DRIVERS = {
     'spotify': SpotifyDriver,

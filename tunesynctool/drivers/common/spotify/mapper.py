@@ -1,5 +1,5 @@
-from navify.drivers import ServiceMapper
-from navify.models import Playlist, Track
+from tunesynctool.drivers import ServiceMapper
+from tunesynctool.models import Playlist, Track
 
 class SpotifyMapper(ServiceMapper):
     """Maps Spotify API DTOs to internal models."""

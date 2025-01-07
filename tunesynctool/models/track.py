@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Optional, Self
 
-from navify.utilities import clean_str, calculate_str_similarity, calculate_int_closeness
+from tunesynctool.utilities import clean_str, calculate_str_similarity, calculate_int_closeness
 
 @dataclass
 class Track:

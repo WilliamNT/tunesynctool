@@ -1,9 +1,9 @@
 from typing import List, Optional
 import asyncio
 
-from navify.exceptions import PlaylistNotFoundException, ServiceDriverException, UnsupportedFeatureException
-from navify.models import Playlist, Configuration, Track
-from navify.drivers import ServiceDriver
+from tunesynctool.exceptions import PlaylistNotFoundException, ServiceDriverException, UnsupportedFeatureException
+from tunesynctool.models import Playlist, Configuration, Track
+from tunesynctool.drivers import ServiceDriver
 from .mapper import DeezerMapper
 
 from streamrip import Config as StreamRipConfig

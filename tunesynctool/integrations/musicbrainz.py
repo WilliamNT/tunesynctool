@@ -1,11 +1,11 @@
 from typing import Optional
 
-from navify.models import Track
-from navify.utilities import clean_str
+from tunesynctool.models import Track
+from tunesynctool.utilities import clean_str
 
 import musicbrainzngs
 
-musicbrainzngs.set_useragent("Navify", "0.1", "https://github.com/WilliamNT/navify")
+musicbrainzngs.set_useragent("tunesynctool", "1.0", "https://github.com/WilliamNT/tunesynctool")
 
 class Musicbrainz:
     """Responsible for interacting with the Musicbrainz API."""

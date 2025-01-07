@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from navify.models import Playlist, Track
+from tunesynctool.models import Playlist, Track
 
 class ServiceMapper(ABC):
     """

@@ -1,7 +1,7 @@
 from typing import List
 
-from navify.drivers import ServiceMapper
-from navify.models import Playlist, Track
+from tunesynctool.drivers import ServiceMapper
+from tunesynctool.models import Playlist, Track
 
 class DeezerMapper(ServiceMapper):
     """Maps Deezer API DTOs to internal models."""

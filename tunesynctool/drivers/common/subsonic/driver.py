@@ -1,8 +1,8 @@
 from typing import List, Optional
 
-from navify.exceptions import PlaylistNotFoundException, ServiceDriverException, TrackNotFoundException
-from navify.models import Playlist, Configuration, Track
-from navify.drivers import ServiceDriver
+from tunesynctool.exceptions import PlaylistNotFoundException, ServiceDriverException, TrackNotFoundException
+from tunesynctool.models import Playlist, Configuration, Track
+from tunesynctool.drivers import ServiceDriver
 from .mapper import SubsonicMapper
 
 from libsonic.connection import Connection

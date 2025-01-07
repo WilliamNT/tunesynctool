@@ -3,8 +3,8 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "navify"
-version = "1.0.0"
+name = "tunesynctool"
+version = "1.1.0"
 authors = [
     { name="WilliamNT", email="wntbox@gmail.com" }
 ]
@@ -28,8 +28,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/WilliamNT/navify"
-Issues = "https://github.com/WilliamNT/navify/issues"
+Homepage = "https://github.com/WilliamNT/tunesynctool"
+Issues = "https://github.com/WilliamNT/tunesynctool/issues"
 
 [project.scripts]
-navify = "navify.cli.main:cli"
+tunesynctool = "tunesynctool.cli.main:cli"

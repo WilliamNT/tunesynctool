@@ -1,13 +1,13 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from navify.models.track import Track
+from tunesynctool.models.track import Track
 
 @dataclass
 class Playlist:
     """Represents a playlist."""
 
-    name: str = field(default='Untitled Playlist [@navify]')
+    name: str = field(default='Untitled Playlist [@tunesynctool]')
     """Name of the playlist."""
 
     author_name: Optional[str] = field(default=None)

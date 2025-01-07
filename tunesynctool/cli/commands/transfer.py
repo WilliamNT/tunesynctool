@@ -1,8 +1,8 @@
 from typing import Optional
 
-from navify.cli.utils.driver import get_driver_by_name, SUPPORTED_PROVIDERS
-from navify.drivers import ServiceDriver
-from navify.features import TrackMatcher
+from tunesynctool.cli.utils.driver import get_driver_by_name, SUPPORTED_PROVIDERS
+from tunesynctool.drivers import ServiceDriver
+from tunesynctool.features import TrackMatcher
 
 from click import command, option, Choice, echo, argument, pass_obj, UsageError, style
 from tqdm import tqdm

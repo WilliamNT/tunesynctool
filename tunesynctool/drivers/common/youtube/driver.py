@@ -1,8 +1,8 @@
 from typing import List, Optional
 
-from navify.exceptions import PlaylistNotFoundException, ServiceDriverException, UnsupportedFeatureException
-from navify.models import Playlist, Configuration, Track
-from navify.drivers import ServiceDriver
+from tunesynctool.exceptions import PlaylistNotFoundException, ServiceDriverException, UnsupportedFeatureException
+from tunesynctool.models import Playlist, Configuration, Track
+from tunesynctool.drivers import ServiceDriver
 from .mapper import YouTubeMapper
 
 from ytmusicapi import YTMusic
@@ -35,7 +35,7 @@ class YouTubeDriver(ServiceDriver):
         if not self._config.youtube_request_headers:
             raise ValueError('Youtube request headers are required for this service to work but were not set.')
         
-        auth_file_path = 'navify_ytmusic_session.json'
+        auth_file_path = 'tunesynctool_ytmusic_session.json'
 
         ytmusicapi.setup(
             filepath=auth_file_path,

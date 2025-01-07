@@ -1,6 +1,6 @@
 import pytest
 
-from navify.models import Playlist
+from tunesynctool.models import Playlist
 
 class TestPlaylist:
     def test_playlist_str(self):
@@ -28,7 +28,7 @@ class TestPlaylist:
     def test_fallback_values(self):
         playlist = Playlist()
 
-        assert playlist.name == 'Untitled Playlist [@navify]'
+        assert playlist.name == 'Untitled Playlist [@tunesynctool]'
         assert playlist.author_name == None
         assert playlist.description == None
         assert playlist.is_public == False

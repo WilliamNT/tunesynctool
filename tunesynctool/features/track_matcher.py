@@ -1,9 +1,9 @@
 from typing import List, Optional
 
-from navify.drivers import ServiceDriver
-from navify.models import Track
-from navify.integrations import Musicbrainz
-from navify.utilities import clean_str
+from tunesynctool.drivers import ServiceDriver
+from tunesynctool.models import Track
+from tunesynctool.integrations import Musicbrainz
+from tunesynctool.utilities import clean_str
 
 class TrackMatcher:
     """

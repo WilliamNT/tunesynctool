@@ -1,5 +1,5 @@
-from navify.drivers import ServiceMapper
-from navify.models import Playlist, Track
+from tunesynctool.drivers import ServiceMapper
+from tunesynctool.models import Playlist, Track
 
 from typing import List
 
