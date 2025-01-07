@@ -11,9 +11,11 @@ authors = [
 description = "A package and CLI tool to build scripts that interact with various music streaming services."
 readme = "README.md"
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Intended Audience :: Developers",""
 ]
 dependencies = [
     "spotipy",
