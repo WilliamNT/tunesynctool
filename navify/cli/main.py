@@ -2,7 +2,7 @@ import click
 
 from typing import Optional
 
-from .commands import transfer
+from .commands import transfer, sync
 
 from navify.models.configuration import Configuration
 
@@ -45,7 +45,8 @@ def cli(
         youtube_request_headers=youtube_request_headers,
     )
 
-cli.add_command(transfer.transfer)
+cli.add_command(transfer)
+cli.add_command(sync)
 
 if __name__ == '__main__':
     cli()
