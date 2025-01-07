@@ -9,7 +9,7 @@ MOCK_SPOTIFY_PLAYLIST_RESPONSE = None
 with open('tests/mock/spotify_playlist.json', 'r') as f:
     MOCK_SPOTIFY_PLAYLIST_RESPONSE = json.load(f)
 
-from navify.drivers.common.spotify import SpotifyMapper
+from tunesynctool.drivers.common.spotify import SpotifyMapper
 
 @pytest.fixture
 def spotify_mapper():

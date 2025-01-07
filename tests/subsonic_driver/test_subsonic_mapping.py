@@ -9,7 +9,7 @@ MOCK_SUBSONIC_PLAYLIST_RESPONSE = None
 with open('tests/mock/subsonic_playlist.json', 'r') as f:
     MOCK_SUBSONIC_PLAYLIST_RESPONSE = json.load(f)
 
-from navify.drivers.common.subsonic import SubsonicMapper
+from tunesynctool.drivers.common.subsonic import SubsonicMapper
 
 @pytest.fixture
 def subsonic_mapper():

@@ -13,7 +13,7 @@ MOCK_YOUTUBE_SEARCH_RESPONSE = None
 with open('tests/mock/youtube_search.json', 'r') as f:
     MOCK_YOUTUBE_SEARCH_RESPONSE = json.load(f)
 
-from navify.drivers.common.youtube import YouTubeMapper
+from tunesynctool.drivers.common.youtube import YouTubeMapper
 
 @pytest.fixture
 def youtube_mapper():

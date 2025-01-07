@@ -1,6 +1,6 @@
 import pytest
 
-from navify.models import Track
+from tunesynctool.models import Track
 
 class TestTrack:
     def test_track_str(self):
