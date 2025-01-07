@@ -4,7 +4,7 @@ from typing import Optional
 
 from .commands import transfer, sync
 
-from navify.models.configuration import Configuration
+from tunesynctool.models.configuration import Configuration
 
 @click.group()
 @click.option('--spotify-client-id', 'spotify_client_id', help='Spotify client ID.')

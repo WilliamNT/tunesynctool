@@ -1,8 +1,8 @@
 from typing import List, Optional
 
-from navify.drivers import ServiceDriver
-from navify.models import Track
-from navify.features.track_matcher import TrackMatcher
+from tunesynctool.drivers import ServiceDriver
+from tunesynctool.models import Track
+from tunesynctool.features.track_matcher import TrackMatcher
 
 class PlaylistSynchronizer:
     """

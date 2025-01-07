@@ -1,4 +1,4 @@
-from navify import Configuration, SpotifyDriver, SubsonicDriver, TrackMatcher
+from tunesynctool import Configuration, SpotifyDriver, SubsonicDriver, TrackMatcher
 
 # Method 1:
 # Load environment variables from a .env file
