@@ -23,7 +23,7 @@ Configuration options can be loaded from the environment or be manually specifie
 # FAQ
 
 ## Is there a way to use tunesynctool from the CLI?
-It is currently under development but there is a CLI on the way.
+Yes, see the wiki.
 
 ## Does this package offer functionality to download or stream music?
 **No**, use the official clients for that.
