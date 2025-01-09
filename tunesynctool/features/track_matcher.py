@@ -21,8 +21,10 @@ class TrackMatcher:
         There is no guarantee that the tracks will be matched correctly or that any will be matched at all.
         """
 
-        if track.service_name == self._target.service_name:
-            return self._target.get_track(track.service_id)
+        # Strategy 0: If the track is suspected to originate from the same service, try to fetch it directly
+        matched_track = self.__search_on_origin_service(track)
+        if track.matches(matched_track):
+            return matched_track
         
         # Strategy 1: Using plain old text search
         matched_track = self.__search_with_text(track)
@@ -33,11 +35,6 @@ class TrackMatcher:
         matched_track = self.__search_with_musicbrainz_id(track)
         if track.matches(matched_track):
             return matched_track
-        
-        # Strategy 3: Using artist discographies
-        # matched_track = self.__search_with_discographies(track)
-        # if track.matches(matched_track):
-        #     return matched_track
 
         # At this point we haven't found any matches unfortunately
         return None
@@ -103,19 +100,15 @@ class TrackMatcher:
             
         return None
     
-    def __search_with_discographies(self, track: Track) -> Optional[Track]:
+    def __search_on_origin_service(self, track: Track) -> Optional[Track]:
         """
-        Searches for tracks using artist discographies.
+        If it is suspected that the track originates from the same service, it tries to fetch it directly.
         """
 
-        results: List[Track] = []
-
-        for artist in [track.primary_artist] + track.additional_artists:
-            results.extend(self._target.search_tracks(
-                query=artist,
-                limit=10
-            ))
-
-        
-
+        if (track.service_name and self._target.service_name) and (track.service_name == self._target.service_name):
+            maybe_match = self._target.get_track(track.service_id)
+            
+            if maybe_match and track.matches(maybe_match):
+                return maybe_match
+            
         return None
