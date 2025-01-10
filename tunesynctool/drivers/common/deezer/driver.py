@@ -18,7 +18,7 @@ class DeezerDriver(ServiceDriver):
     https://github.com/nathom/streamrip
     """
 
-    def __init__(self, config: Configuration, streamrip_config: StreamRipConfig) -> None:
+    def __init__(self, config: Configuration, streamrip_config: Optional[StreamRipConfig]) -> None:
         super().__init__(
             service_name='deezer',
             config=config,
@@ -29,10 +29,15 @@ class DeezerDriver(ServiceDriver):
             streamrip_config=streamrip_config
         )
 
-    def __get_client(self, streamrip_config: StreamRipConfig) -> DeezerClient:
+    def __get_client(self, streamrip_config: Optional[StreamRipConfig]) -> DeezerClient:
         if not self._config.deezer_arl:
             raise ValueError('Deezer ARL token is required for this service to work but was not set.')
         
+        if not streamrip_config:
+            streamrip_config = StreamRipConfig.defaults()
+
+        streamrip_config.session.deezer.arl = self._config.deezer_arl
+
         return DeezerClient(
             config=streamrip_config
         )
