@@ -4,6 +4,7 @@ from tunesynctool.cli.utils.driver import get_driver_by_name, SUPPORTED_PROVIDER
 from tunesynctool.drivers import ServiceDriver
 from tunesynctool.features import PlaylistSynchronizer, TrackMatcher
 from tunesynctool.models import Track
+from tunesynctool.exceptions import PlaylistNotFoundException
 
 from click import command, option, Choice, echo, argument, pass_obj, UsageError, style
 from tqdm import tqdm
@@ -41,11 +42,14 @@ def sync(
     except ValueError as e:
         raise UsageError(e)
     
-    echo(style('Looking up playlist...', fg='blue'))
-
-    source_playlist = source_driver.get_playlist(from_playlist_id)
-    target_playlist = target_driver.get_playlist(to_playlist_id)
-    echo(style(f"Found source playlist \"{target_playlist}\" and target playlist \"{source_playlist}\"", fg='blue'))
+    echo(style('Looking up playlists...', fg='blue'))
+    
+    try:
+        source_playlist = source_driver.get_playlist(from_playlist_id)
+        target_playlist = target_driver.get_playlist(to_playlist_id)
+        echo(style(f"Found source playlist \"{target_playlist}\" and target playlist \"{source_playlist}\"", fg='blue'))
+    except PlaylistNotFoundException:
+        raise UsageError('One or more playlist IDs are invalid.')
 
     source_playlist_tracks = source_driver.get_playlist_tracks(from_playlist_id)
     target_playlist_tracks = target_driver.get_playlist_tracks(to_playlist_id)
