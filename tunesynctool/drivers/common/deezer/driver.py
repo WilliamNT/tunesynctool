@@ -8,6 +8,7 @@ from .mapper import DeezerMapper
 
 from streamrip import Config as StreamRipConfig
 from streamrip.client import DeezerClient
+from deezer.errors import InvalidQueryException
 
 class DeezerDriver(ServiceDriver):
     """
@@ -69,11 +70,16 @@ class DeezerDriver(ServiceDriver):
         raise UnsupportedFeatureException('Fetching random tracks from Deezer is not supported currently.')
 
     def get_playlist(self, playlist_id: str) -> 'Playlist':
-        response = asyncio.run(self.__deezer.get_playlist(
-            item_id=playlist_id
-        ))
+        try:
+            response = asyncio.run(self.__deezer.get_playlist(
+                item_id=playlist_id
+            ))
 
-        return self._mapper.map_playlist(response)
+            return self._mapper.map_playlist(response)
+        except InvalidQueryException as e:
+            raise PlaylistNotFoundException(f'Deezer (API) said: {e}')
+        except Exception as e:
+            raise PlaylistNotFoundException(f'Deezer (streamrip) said: {e}')
 
     def get_track(self, track_id: str) -> 'Track':
         response = asyncio.run(self.__deezer.get_track(
