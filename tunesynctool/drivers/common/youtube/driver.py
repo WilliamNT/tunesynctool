@@ -6,6 +6,7 @@ from tunesynctool.drivers import ServiceDriver
 from .mapper import YouTubeMapper
 
 from ytmusicapi import YTMusic
+from ytmusicapi.exceptions import YTMusicServerError, YTMusicError
 import ytmusicapi
 
 class YouTubeDriver(ServiceDriver):
@@ -83,17 +84,22 @@ class YouTubeDriver(ServiceDriver):
         raise UnsupportedFeatureException()
 
     def get_playlist(self, playlist_id: str) -> 'Playlist':
-        response = self.__youtube.get_playlist(
-            playlistId=playlist_id,
-            limit=1,
-            related=False,
-            suggestions_limit=0
-        )
+        try:
+            response = self.__youtube.get_playlist(
+                playlistId=playlist_id,
+                limit=1,
+                related=False,
+                suggestions_limit=0
+            )
 
-        if not response:
-            raise PlaylistNotFoundException()
-        
-        return self._mapper.map_playlist(response)
+            if not response:
+                raise PlaylistNotFoundException()
+            
+            return self._mapper.map_playlist(response)
+        except YTMusicServerError as e:
+            raise PlaylistNotFoundException(f'YouTube (API) said: {e}')
+        except Exception as e:
+            raise PlaylistNotFoundException(f'YouTube (ytmusicapi) said: {e}')
 
     def get_track(self, track_id: str) -> 'Track':
         response: dict = self.__youtube.get_song(
