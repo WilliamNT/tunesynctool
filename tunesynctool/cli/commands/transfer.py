@@ -3,6 +3,7 @@ from typing import Optional
 from tunesynctool.cli.utils.driver import get_driver_by_name, SUPPORTED_PROVIDERS
 from tunesynctool.drivers import ServiceDriver
 from tunesynctool.features import TrackMatcher
+from tunesynctool.exceptions import PlaylistNotFoundException
 
 from click import command, option, Choice, echo, argument, pass_obj, UsageError, style
 from tqdm import tqdm
@@ -30,9 +31,12 @@ def transfer(
     
     echo(style('Looking up playlist...', fg='blue'))
 
-    source_playlist = source_driver.get_playlist(playlist_id)
-    echo(style(f"Found playlist: {source_playlist}", fg='green'))
-
+    try:
+        source_playlist = source_driver.get_playlist(playlist_id)
+        echo(style(f"Found playlist: {source_playlist}", fg='green'))
+    except PlaylistNotFoundException:
+        raise UsageError('Source playlist ID is invalid.')
+    
     source_tracks = source_driver.get_playlist_tracks(source_playlist.service_id)
 
     matcher = TrackMatcher(target_driver)
