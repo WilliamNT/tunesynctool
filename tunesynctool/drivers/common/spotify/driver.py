@@ -74,9 +74,9 @@ class SpotifyDriver(ServiceDriver):
 
             return mapped_tracks
         except SpotifyException as e:
-            raise PlaylistNotFoundException(f'Spotify (API) said: {e.msg}')
+            raise PlaylistNotFoundException(e)
         except Exception as e:
-            raise PlaylistNotFoundException(f'Spotify (spotipy) said: {e}')
+            raise ServiceDriverException(e)
         
     def create_playlist(self, name: str) -> 'Playlist':
         try:
@@ -87,7 +87,7 @@ class SpotifyDriver(ServiceDriver):
 
             return self._mapper.map_playlist(response)
         except Exception as e:
-            raise ServiceDriverException(f'Spotify (spotipy) said: {e}')
+            raise ServiceDriverException(e)
         
     def add_tracks_to_playlist(self, playlist_id: str, track_ids: List[str]) -> None:
         try:
@@ -96,9 +96,9 @@ class SpotifyDriver(ServiceDriver):
                 items=track_ids
             )
         except SpotifyException as e:
-            raise PlaylistNotFoundException(f'Spotify (API) said: {e.msg}')
+            raise PlaylistNotFoundException(e)
         except Exception as e:
-            raise ServiceDriverException(f'Spotify (spotipy) said: {e}')
+            raise ServiceDriverException(e)
         
     def get_random_track(self) -> Optional['Track']:
         raise UnsupportedFeatureException('Spotify does not support fetching a random track.')
@@ -108,18 +108,18 @@ class SpotifyDriver(ServiceDriver):
             response = self.__spotify.playlist(playlist_id)
             return self._mapper.map_playlist(response)
         except SpotifyException as e:
-            raise PlaylistNotFoundException(f'Spotify (API) said: {e.msg}')
+            raise PlaylistNotFoundException(e)
         except Exception as e:
-            raise PlaylistNotFoundException(f'Spotify (spotipy) said: {e}')
+            raise ServiceDriverException(e)
         
     def get_track(self, track_id: str) -> 'Track':
         try:
             response = self.__spotify.track(track_id)
             return self._mapper.map_track(response)
         except SpotifyException as e:
-            raise TrackNotFoundException(f'Spotify (API) said: {e.msg}')
+            raise TrackNotFoundException(e)
         except Exception as e:
-            raise TrackNotFoundException(f'Spotify (spotipy) said: {e}')
+            raise ServiceDriverException(e)
         
     def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
         if not query or len(query) == 0:
@@ -140,6 +140,6 @@ class SpotifyDriver(ServiceDriver):
 
             return mapped_tracks
         except SpotifyException as e:
-            raise PlaylistNotFoundException(f'Spotify (API) said: {e.msg}')
+            raise PlaylistNotFoundException(e)
         except Exception as e:
-            raise PlaylistNotFoundException(f'Spotify (spotipy) said: {e}')
+            raise ServiceDriver(e)

@@ -77,9 +77,9 @@ class DeezerDriver(ServiceDriver):
 
             return self._mapper.map_playlist(response)
         except InvalidQueryException as e:
-            raise PlaylistNotFoundException(f'Deezer (API) said: {e}')
+            raise PlaylistNotFoundException(e)
         except Exception as e:
-            raise PlaylistNotFoundException(f'Deezer (streamrip) said: {e}')
+            raise ServiceDriverException(e)
 
     def get_track(self, track_id: str) -> 'Track':
         try:
@@ -89,9 +89,9 @@ class DeezerDriver(ServiceDriver):
 
             return self._mapper.map_track(response)
         except InvalidQueryException as e:
-            raise TrackNotFoundException(f'Deezer (API) said: {e}')
+            raise TrackNotFoundException(e)
         except Exception as e:
-            raise TrackNotFoundException(f'Deezer (streamrip) said: {e}')
+            raise ServiceDriverException(e)
 
     def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
         response: List[dict] = asyncio.run(self.__deezer.search(

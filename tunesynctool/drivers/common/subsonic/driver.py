@@ -89,7 +89,7 @@ class SubsonicDriver(ServiceDriver):
 
             return self._mapper.map_playlist(response['playlist'])
         except Exception as e:
-            raise ServiceDriverException(f'Subsonic (libsonic) said: {e}')
+            raise ServiceDriverException(e)
         
     def add_tracks_to_playlist(self, playlist_id: str, track_ids: List[str]) -> None:
         try:
@@ -98,7 +98,7 @@ class SubsonicDriver(ServiceDriver):
                 songIdsToAdd=track_ids
             )
         except Exception as e:
-            raise ServiceDriverException(f'Subsonic (libsonic) said: {e}')
+            raise ServiceDriverException(e)
         
     def get_random_track(self) -> Optional['Track']:
         response = self.__subsonic.getRandomSongs(
@@ -119,9 +119,9 @@ class SubsonicDriver(ServiceDriver):
             )
             return self._mapper.map_playlist(response['playlist'])
         except DataNotFoundError as e:
-            raise PlaylistNotFoundException()
+            raise PlaylistNotFoundException(e)
         except Exception as e:
-            raise PlaylistNotFoundException(f'Subsonic (libsonic) said: {e}')
+            raise ServiceDriverException(e)
         
     def get_track(self, track_id: str) -> 'Track':
         try:
@@ -130,9 +130,9 @@ class SubsonicDriver(ServiceDriver):
             )
             return self._mapper.map_track(response['song'])
         except DataNotFoundError as e:
-            raise TrackNotFoundException()
+            raise TrackNotFoundException(e)
         except Exception as e:
-            raise TrackNotFoundException(f'Subsonic (libsonic) said: {e}')
+            raise ServiceDriverException(e)
         
     def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
         if not query or len(query) == 0:
@@ -154,4 +154,4 @@ class SubsonicDriver(ServiceDriver):
 
             return mapped_tracks
         except Exception as e:
-            raise ServiceDriverException(f'Subsonic (libsonic) said: {e}')
+            raise ServiceDriverException(e)

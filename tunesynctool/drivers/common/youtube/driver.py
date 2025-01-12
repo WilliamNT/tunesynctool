@@ -102,9 +102,9 @@ class YouTubeDriver(ServiceDriver):
             
             return self._mapper.map_playlist(response)
         except YTMusicServerError as e:
-            raise PlaylistNotFoundException(f'YouTube (API) said: {e}')
+            raise PlaylistNotFoundException(e)
         except Exception as e:
-            raise PlaylistNotFoundException(f'YouTube (ytmusicapi) said: {e}')
+            raise PlaylistNotFoundException(e)
 
     def get_track(self, track_id: str) -> 'Track':
         try:
@@ -121,9 +121,9 @@ class YouTubeDriver(ServiceDriver):
                 additional_data={}
             )
         except YTMusicError as e:
-            raise TrackNotFoundException(f'YouTube (API) said: {e}')
+            raise TrackNotFoundException(e)
         except Exception as e:
-            raise ServiceDriverException(f'YouTube (ytmusicapi) said: {e}')
+            raise ServiceDriverException(e)
         
     def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
         response: List[dict] = self.__youtube.search(
