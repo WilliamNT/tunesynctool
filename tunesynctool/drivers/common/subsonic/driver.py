@@ -101,16 +101,19 @@ class SubsonicDriver(ServiceDriver):
             raise ServiceDriverException(e)
         
     def get_random_track(self) -> Optional['Track']:
-        response = self.__subsonic.getRandomSongs(
-            size=1
-        )
-        fetched_tracks = response['randomSongs'].get('song', [])
-        mapped_tracks = [self._mapper.map_track(track) for track in fetched_tracks]
+        try:
+            response = self.__subsonic.getRandomSongs(
+                size=1
+            )
+            fetched_tracks = response['randomSongs'].get('song', [])
+            mapped_tracks = [self._mapper.map_track(track) for track in fetched_tracks]
 
-        for track in mapped_tracks:
-            track.service_name = self.service_name
+            for track in mapped_tracks:
+                track.service_name = self.service_name
 
-        return mapped_tracks[0] if mapped_tracks else None
+            return mapped_tracks[0] if mapped_tracks else None
+        except Exception as e:
+            raise ServiceDriverException(e)
     
     def get_playlist(self, playlist_id: str) -> 'Playlist':
         try:

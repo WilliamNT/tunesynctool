@@ -99,28 +99,37 @@ class DeezerDriver(ServiceDriver):
             raise ServiceDriverException(e)
 
     def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
-        response: List[dict] = asyncio.run(self.__deezer.search(
-            media_type='track',
-            query=query,
-            limit=limit
-        ))
+        if not query or len(query) == 0:
+            return []
+        
+        try:
+            response: List[dict] = asyncio.run(self.__deezer.search(
+                media_type='track',
+                query=query,
+                limit=limit
+            ))
 
-        response_tracks: List[dict] = response[0].get('data', [])
+            response_tracks: List[dict] = response[0].get('data', [])
 
-        # Deezer doesn't return all track information when using their search endpoint
-        # so we have to manually query for additional track information.
-        # If the limit is set too high, this may lead to unintentional API spamming...
-        return_values = []
-        for track in response_tracks:
-            track_id = track.get('id', None)
-            if not track_id:
-                continue
+            # Deezer doesn't return all track information when using their search endpoint
+            # so we have to manually query for additional track information.
+            # If the limit is set too high, this may lead to unintentional API spamming...
+            return_values = []
+            for track in response_tracks:
+                try:
+                    track_id = track.get('id', None)
+                    if not track_id:
+                        continue
 
-            result = self.get_track(
-                track_id=track_id
-            )
+                    result = self.get_track(
+                        track_id=track_id
+                    )
 
-            if result:
-                return_values.append(result)
+                    if result:
+                        return_values.append(result)
+                except TrackNotFoundException:
+                    continue
 
-        return return_values
+            return return_values
+        except Exception as e:
+            raise ServiceDriverException(e)

@@ -87,11 +87,14 @@ class YouTubeDriver(ServiceDriver):
             raise ServiceDriverException(e)
 
     def add_tracks_to_playlist(self, playlist_id: str, track_ids: List[str]) -> None:
-        self.__youtube.add_playlist_items(
-            playlistId=playlist_id,
-            videoIds=track_ids,
-            duplicates=True
-        )
+        try:
+            self.__youtube.add_playlist_items(
+                playlistId=playlist_id,
+                videoIds=track_ids,
+                duplicates=True
+            )
+        except Exception as e:
+            raise ServiceDriverException(e)
 
     def get_random_track(self) -> Optional['Track']:
         raise UnsupportedFeatureException()
@@ -134,27 +137,33 @@ class YouTubeDriver(ServiceDriver):
             raise ServiceDriverException(e)
         
     def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
-        response: List[dict] = self.__youtube.search(
-            query=query,
-            limit=limit,
-            ignore_spelling=True,
-            filter='songs'
-        )
+        if not query or len(query) == 0:
+            return []
+        
+        try:
+            response: List[dict] = self.__youtube.search(
+                query=query,
+                limit=limit,
+                ignore_spelling=True,
+                filter='songs'
+            )
 
-        response_tracks: List[dict] = []
-        for result in response:
-            try:
-                track = self.__youtube.get_song(
-                    videoId=result.get('videoId'),
-                    signatureTimestamp=None
-                )
+            response_tracks: List[dict] = []
+            for result in response:
+                try:
+                    track = self.__youtube.get_song(
+                        videoId=result.get('videoId'),
+                        signatureTimestamp=None
+                    )
 
-                response_tracks.append(self._mapper.map_track(
-                    data=track,
-                    additional_data=result
-                ))
-            except Exception as e:
-                # If we can't fetch the track, we'll just skip it.
-                pass
+                    response_tracks.append(self._mapper.map_track(
+                        data=track,
+                        additional_data=result
+                    ))
+                except Exception as e:
+                    # If we can't fetch the track, we'll just skip it.
+                    continue
 
-        return response_tracks
+            return response_tracks
+        except Exception as e:
+            raise ServiceDriverException(e)
