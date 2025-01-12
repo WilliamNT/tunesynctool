@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from tunesynctool.exceptions import PlaylistNotFoundException, ServiceDriverException, UnsupportedFeatureException
+from tunesynctool.exceptions import PlaylistNotFoundException, ServiceDriverException, UnsupportedFeatureException, TrackNotFoundException
 from tunesynctool.models import Playlist, Configuration, Track
 from tunesynctool.drivers import ServiceDriver
 from .mapper import YouTubeMapper
@@ -102,15 +102,23 @@ class YouTubeDriver(ServiceDriver):
             raise PlaylistNotFoundException(f'YouTube (ytmusicapi) said: {e}')
 
     def get_track(self, track_id: str) -> 'Track':
-        response: dict = self.__youtube.get_song(
-            videoId=track_id,
-            signatureTimestamp=None
-        )
+        try:
+            response: dict = self.__youtube.get_song(
+                videoId=track_id,
+                signatureTimestamp=None
+            )
 
-        return self._mapper.map_track(
-            data=response,
-            additional_data={}
-        )
+            if not response or dict(response.get('playabilityStatus', {})).get('status') == 'ERROR':
+                raise TrackNotFoundException()
+
+            return self._mapper.map_track(
+                data=response,
+                additional_data={}
+            )
+        except YTMusicError as e:
+            raise TrackNotFoundException(f'YouTube (API) said: {e}')
+        except Exception as e:
+            raise ServiceDriverException(f'YouTube (ytmusicapi) said: {e}')
         
     def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
         response: List[dict] = self.__youtube.search(

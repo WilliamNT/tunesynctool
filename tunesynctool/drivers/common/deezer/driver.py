@@ -1,7 +1,7 @@
 from typing import List, Optional
 import asyncio
 
-from tunesynctool.exceptions import PlaylistNotFoundException, ServiceDriverException, UnsupportedFeatureException
+from tunesynctool.exceptions import PlaylistNotFoundException, ServiceDriverException, UnsupportedFeatureException, TrackNotFoundException
 from tunesynctool.models import Playlist, Configuration, Track
 from tunesynctool.drivers import ServiceDriver
 from .mapper import DeezerMapper
@@ -82,11 +82,16 @@ class DeezerDriver(ServiceDriver):
             raise PlaylistNotFoundException(f'Deezer (streamrip) said: {e}')
 
     def get_track(self, track_id: str) -> 'Track':
-        response = asyncio.run(self.__deezer.get_track(
-            item_id=track_id
-        ))
+        try:
+            response = asyncio.run(self.__deezer.get_track(
+                item_id=track_id
+            ))
 
-        return self._mapper.map_track(response)
+            return self._mapper.map_track(response)
+        except InvalidQueryException as e:
+            raise TrackNotFoundException(f'Deezer (API) said: {e}')
+        except Exception as e:
+            raise TrackNotFoundException(f'Deezer (streamrip) said: {e}')
 
     def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
         response: List[dict] = asyncio.run(self.__deezer.search(

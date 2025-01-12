@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from tunesynctool.exceptions import PlaylistNotFoundException, ServiceDriverException, UnsupportedFeatureException
+from tunesynctool.exceptions import PlaylistNotFoundException, ServiceDriverException, UnsupportedFeatureException, TrackNotFoundException
 from tunesynctool.models import Playlist, Configuration, Track
 from tunesynctool.drivers import ServiceDriver
 from .mapper import SpotifyMapper
@@ -112,9 +112,9 @@ class SpotifyDriver(ServiceDriver):
             response = self.__spotify.track(track_id)
             return self._mapper.map_track(response)
         except SpotifyException as e:
-            raise PlaylistNotFoundException(f'Spotify (API) said: {e.msg}')
+            raise TrackNotFoundException(f'Spotify (API) said: {e.msg}')
         except Exception as e:
-            raise PlaylistNotFoundException(f'Spotify (spotipy) said: {e}')
+            raise TrackNotFoundException(f'Spotify (spotipy) said: {e}')
         
     def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
         if not query or len(query) == 0:

@@ -127,7 +127,7 @@ class SubsonicDriver(ServiceDriver):
         except DataNotFoundError as e:
             raise TrackNotFoundException()
         except Exception as e:
-            raise PlaylistNotFoundException(f'Subsonic (libsonic) said: {e}')
+            raise TrackNotFoundException(f'Subsonic (libsonic) said: {e}')
         
     def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
         if not query or len(query) == 0:
