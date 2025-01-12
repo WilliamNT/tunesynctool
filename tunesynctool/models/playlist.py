@@ -19,9 +19,6 @@ class Playlist:
     is_public: bool = field(default=False)
     """Whether the playlist is public or not."""
 
-    tracks: List['Track'] = field(default_factory=list)
-    """List of tracks in the playlist."""
-
     service_id: str = field(default=None)
     """Source-service specific ID for the playlist."""
 
