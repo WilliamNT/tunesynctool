@@ -74,14 +74,17 @@ class YouTubeDriver(ServiceDriver):
             raise ServiceDriverException(e)
 
     def create_playlist(self, name: str) -> 'Playlist':
-        response = self.__youtube.create_playlist(
-            title=name,
-            description=''
-        )
+        try:
+            response = self.__youtube.create_playlist(
+                title=name,
+                description=''
+            )
 
-        return self.get_playlist(
-            playlist_id=response
-        )
+            return self.get_playlist(
+                playlist_id=response
+            )
+        except YTMusicError as e:
+            raise ServiceDriverException(e)
 
     def add_tracks_to_playlist(self, playlist_id: str, track_ids: List[str]) -> None:
         self.__youtube.add_playlist_items(
