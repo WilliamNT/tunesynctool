@@ -60,13 +60,18 @@ class YouTubeDriver(ServiceDriver):
             raise ServiceDriverException(e)
 
     def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List['Track']:
-        response: dict = self.__youtube.get_playlist(
-            playlistId=playlist_id,
-            limit=limit,
-        )
+        try:
+            response: dict = self.__youtube.get_playlist(
+                playlistId=playlist_id,
+                limit=limit,
+            )
 
-        tracks = response.get('tracks', [])
-        return [self._mapper.map_track(data=track, additional_data=track) for track in tracks]
+            tracks = response.get('tracks', [])
+            return [self._mapper.map_track(data=track, additional_data=track) for track in tracks]
+        except YTMusicServerError as e:
+            raise PlaylistNotFoundException(e)
+        except Exception as e:
+            raise ServiceDriverException(e)
 
     def create_playlist(self, name: str) -> 'Playlist':
         response = self.__youtube.create_playlist(

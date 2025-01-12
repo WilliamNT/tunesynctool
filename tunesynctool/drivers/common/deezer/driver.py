@@ -47,18 +47,23 @@ class DeezerDriver(ServiceDriver):
         return UnsupportedFeatureException('Fetching user playlists from Deezer is not supported currently.')
 
     def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List['Track']:
-        response = asyncio.run(self.__deezer.get_playlist(
-            item_id=playlist_id
-        ))
-        
-        response_tracks: List[dict] = response.get('tracks', [])[:limit]
-        
-        return_values = []
+        try:
+            response = asyncio.run(self.__deezer.get_playlist(
+                item_id=playlist_id
+            ))
+            
+            response_tracks: List[dict] = response.get('tracks', [])[:limit]
+            
+            return_values = []
 
-        for track in response_tracks:
-            return_values.append(self._mapper.map_track(track))
+            for track in response_tracks:
+                return_values.append(self._mapper.map_track(track))
 
-        return return_values
+            return return_values
+        except InvalidQueryException as e:
+            raise PlaylistNotFoundException(e)
+        except Exception as e:
+            raise ServiceDriverException(e)
     
     def create_playlist(self, name: str) -> 'Playlist':
         raise UnsupportedFeatureException('Creating playlists on Deezer is not supported currently.')
