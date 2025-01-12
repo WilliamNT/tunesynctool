@@ -27,22 +27,52 @@ class ServiceDriver(ABC):
 
     @abstractmethod
     def get_user_playlists(self, limit: int = 25) -> List['Playlist']:
-        """Fetch the authenticated user's playlists from the service."""
+        """
+        Fetch the authenticated user's playlists from the service.
+
+        :param limit: The maximum number of playlists to fetch.
+        :return: A list of Playlist objects.
+        :raises: ServiceDriverException if an unknown error occurs while fetching the playlists.
+        """
+
         raise NotImplementedError()
 
     @abstractmethod
     def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List['Track']:
-        """Fetch the tracks in a playlist."""
+        """
+        Fetch the tracks in a playlist.
+        
+        :param playlist_id: The ID of the playlist to fetch.
+        :param limit: The maximum number of tracks to fetch.
+        :return: A list of Track objects.
+        :raises: PlaylistNotFoundException if the playlist does not exist.
+        :raises: ServiceDriverException if an unknown error occurs while fetching the tracks.
+        """
+
         raise NotImplementedError()
     
     @abstractmethod
     def create_playlist(self, name: str) -> 'Playlist':
-        """Create a new playlist on the service."""
+        """
+        Create a new playlist on the service.
+        
+        :param name: The name of the playlist to create.
+        :return: The created Playlist object.
+        :raises: ServiceDriverException if an unknown error occurs while creating the playlist.
+        """
+
         raise NotImplementedError()
     
     @abstractmethod
     def add_tracks_to_playlist(self, playlist_id: str, track_ids: List[str]) -> None:
-        """Add tracks to a playlist."""
+        """
+        Add tracks to a playlist. Does not validate if the tracks are already in the playlist or if they exist.
+        
+        :param playlist_id: The ID of the playlist to add tracks to.
+        :param track_ids: The IDs of the tracks to add.
+        :raises: ServiceDriverException if an unknown error occurs while adding the tracks.
+        """
+
         raise NotImplementedError()
     
     # @abstractmethod
@@ -55,26 +85,49 @@ class ServiceDriver(ABC):
         """
         Fetch a random track from the service.
         Depending on the streaming service, this may not be supported.
+
+        :return: A Track object.
+        :raises: UnsupportedFeatureException if the service does not support fetching a random track.
+        :raises: ServiceDriverException if an unknown error occurs while fetching the track.
         """
+
         raise NotImplementedError()
     
     @abstractmethod
     def get_playlist(self, playlist_id: str) -> 'Playlist':
         """
         Fetch a playlist by its ID.
+
+        :param playlist_id: The ID of the playlist to fetch.
+        :return: The Playlist object.
+        :raises: PlaylistNotFoundException if the playlist does not exist.
+        :raises: ServiceDriverException if an unknown error occurs while fetching the playlist.
         """
+
         raise NotImplementedError()
     
     @abstractmethod
     def get_track(self, track_id: str) -> 'Track':
         """
         Fetch a track by its ID.
+
+        :param track_id: The ID of the track to fetch.
+        :return: The Track object.
+        :raises: TrackNotFoundException if the track does not exist.
+        :raises: ServiceDriverException if an unknown error occurs while fetching the track.
         """
+
         raise NotImplementedError()
     
     @abstractmethod
     def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
         """
         Search for tracks by a query.
+
+        :param query: The search query.
+        :param limit: The maximum number of tracks to fetch.
+        :return: A list of Track objects.
+        :raises: ServiceDriverException if an unknown error occurs while searching for tracks.
         """
+        
         raise NotImplementedError()
