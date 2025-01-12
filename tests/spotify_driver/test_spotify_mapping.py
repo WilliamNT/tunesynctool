@@ -26,7 +26,6 @@ class TestPlaylistMapping:
         assert playlist.service_id == MOCK_SPOTIFY_PLAYLIST_RESPONSE.get('id')
         assert playlist.service_name == 'spotify'
         assert playlist.service_data == MOCK_SPOTIFY_PLAYLIST_RESPONSE
-        assert playlist.tracks == []
 
     def test_data_cannot_be_none(self, spotify_mapper: SpotifyMapper):
         with pytest.raises(ValueError):

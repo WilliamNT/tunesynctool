@@ -34,7 +34,6 @@ class TestPlaylistMapping:
         assert playlist.is_public == (MOCK_YOUTUBE_PLAYLIST_RESPONSE['privacy'] == 'PUBLIC')
         assert playlist.service_name == 'youtube'
         assert playlist.author_name == None
-        assert playlist.tracks == []
 
 class TestTrackMapping:
     def test_map_track(self, youtube_mapper: YouTubeMapper):

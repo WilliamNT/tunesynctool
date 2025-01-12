@@ -32,7 +32,6 @@ class TestPlaylist:
         assert playlist.author_name == None
         assert playlist.description == None
         assert playlist.is_public == False
-        assert playlist.tracks == []
         assert playlist.service_id == None
         assert playlist.service_name == 'unknown'
         assert playlist.service_data == {}

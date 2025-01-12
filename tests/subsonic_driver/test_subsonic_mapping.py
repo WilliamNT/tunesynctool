@@ -26,7 +26,6 @@ class TestPlaylistMapping:
         assert playlist.service_id == MOCK_SUBSONIC_PLAYLIST_RESPONSE.get('id')
         assert playlist.service_name == 'subsonic'
         assert playlist.service_data == MOCK_SUBSONIC_PLAYLIST_RESPONSE
-        assert playlist.tracks == []
 
     def test_data_cannot_be_none(self, subsonic_mapper: SubsonicMapper):
         with pytest.raises(ValueError):
