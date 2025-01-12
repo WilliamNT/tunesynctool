@@ -6,7 +6,7 @@ from tunesynctool.features import PlaylistSynchronizer, TrackMatcher
 from tunesynctool.models import Track
 from tunesynctool.exceptions import PlaylistNotFoundException
 
-from click import command, option, Choice, echo, argument, pass_obj, UsageError, style
+from click import command, option, Choice, echo, argument, pass_obj, UsageError, style, Abort
 from tqdm import tqdm
 
 COMMON_MATCH_ISSUE_REASON = 'This is likely caused by tracks not being available on the target service, they lack metadata or the matching algorithm was unsuccessful in finding them.'
@@ -94,11 +94,15 @@ def sync(
         if is_preview:
             echo(style("Preview mode is enabled, skipping actual update", fg='blue'))
         else:
-            target_driver.add_tracks_to_playlist(
-                playlist_id=to_playlist_id,
-                track_ids=[track.service_id for track in matched_tracks],
-            )
-            echo(style("Target playlist updated", fg='green'))
+            try:
+                target_driver.add_tracks_to_playlist(
+                    playlist_id=to_playlist_id,
+                    track_ids=[track.service_id for track in matched_tracks],
+                )
+                echo(style("Target playlist updated", fg='green'))
+            except Exception as e:
+                raise Abort()
+
     else:
         echo(style("Warning: Can't update target playlist because no matches were found.", fg='yellow'))
         echo(style(COMMON_MATCH_ISSUE_REASON, fg='yellow'))

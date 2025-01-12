@@ -5,7 +5,7 @@ from tunesynctool.drivers import ServiceDriver
 from tunesynctool.features import TrackMatcher
 from tunesynctool.exceptions import PlaylistNotFoundException
 
-from click import command, option, Choice, echo, argument, pass_obj, UsageError, style
+from click import command, option, Choice, echo, argument, pass_obj, UsageError, style, Abort
 from tqdm import tqdm
 
 @command()
@@ -57,11 +57,14 @@ def transfer(
         echo(style("Preview transfer complete", fg='green'))
         return
     
-    target_playlist = target_driver.create_playlist(source_playlist.name)
+    try:
+        target_playlist = target_driver.create_playlist(source_playlist.name)
 
-    target_driver.add_tracks_to_playlist(
-        playlist_id=target_playlist.service_id,
-        track_ids=[track.service_id for track in matched_tracks],
-    )
+        target_driver.add_tracks_to_playlist(
+            playlist_id=target_playlist.service_id,
+            track_ids=[track.service_id for track in matched_tracks],
+        )
+    except Exception as e:
+        raise Abort()
     
     echo(style(f"Playlist transfer complete!", fg='green'))
