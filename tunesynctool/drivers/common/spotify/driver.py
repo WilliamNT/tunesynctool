@@ -46,14 +46,19 @@ class SpotifyDriver(ServiceDriver):
         )
 
     def get_user_playlists(self, limit: int = 25) -> List['Playlist']:
-        response = self.__spotify.current_user_playlists(limit=limit)
-        fetched_playlists = response['items']
-        mapped_playlists = [self._mapper.map_playlist(playlist) for playlist in fetched_playlists]
+        try:
+            response = self.__spotify.current_user_playlists(limit=limit)
+            fetched_playlists = response['items']
+            mapped_playlists = [self._mapper.map_playlist(playlist) for playlist in fetched_playlists]
 
-        for playlist in mapped_playlists:
-            playlist.service_name = self.service_name
+            for playlist in mapped_playlists:
+                playlist.service_name = self.service_name
 
-        return mapped_playlists
+            return mapped_playlists
+        except SpotifyException as e:
+            raise PlaylistNotFoundException(e)
+        except Exception as e:
+            raise ServiceDriverException(e)
 
     def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List['Track']:
         try:

@@ -48,11 +48,16 @@ class YouTubeDriver(ServiceDriver):
         )
 
     def get_user_playlists(self, limit: int = 25) -> List['Playlist']:
-        response: List[dict] = self.__youtube.get_library_playlists(
-            limit=limit
-        )
-        
-        return [self._mapper.map_playlist(playlist) for playlist in response]
+        try:
+            response: List[dict] = self.__youtube.get_library_playlists(
+                limit=limit
+            )
+            
+            return [self._mapper.map_playlist(playlist) for playlist in response]
+        except YTMusicError as e:
+            raise ServiceDriverException(e)
+        except Exception as e:
+            raise ServiceDriverException(e)
 
     def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List['Track']:
         response: dict = self.__youtube.get_playlist(

@@ -46,18 +46,23 @@ class SubsonicDriver(ServiceDriver):
         )
     
     def get_user_playlists(self, limit: int = 25) -> List['Playlist']:
-        response = self.__subsonic.getPlaylists()
-        fetched_playlists = response['playlists'].get('playlist', [])
+        try:
+            response = self.__subsonic.getPlaylists()
+            fetched_playlists = response['playlists'].get('playlist', [])
 
-        if isinstance(fetched_playlists, dict):
-            fetched_playlists = [fetched_playlists]
+            if isinstance(fetched_playlists, dict):
+                fetched_playlists = [fetched_playlists]
 
-        mapped_playlists = [self._mapper.map_playlist(playlist) for playlist in fetched_playlists[:limit]]
+            mapped_playlists = [self._mapper.map_playlist(playlist) for playlist in fetched_playlists[:limit]]
 
-        for playlist in mapped_playlists:
-            playlist.service_name = self.service_name
+            for playlist in mapped_playlists:
+                playlist.service_name = self.service_name
 
-        return mapped_playlists
+            return mapped_playlists
+        except DataNotFoundError as e:
+            raise PlaylistNotFoundException(e)
+        except Exception as e:
+            raise ServiceDriverException(e)
     
     def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List['Track']:
         try:
@@ -72,9 +77,9 @@ class SubsonicDriver(ServiceDriver):
 
             return mapped_tracks
         except DataNotFoundError as e:
-            raise PlaylistNotFoundException()
+            raise PlaylistNotFoundException(e)
         except Exception as e:
-            raise ServiceDriverException(f'Subsonic (libsonic) said: {e}')
+            raise ServiceDriverException(e)
         
     def create_playlist(self, name: str) -> 'Playlist':
         try:
