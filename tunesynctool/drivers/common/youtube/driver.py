@@ -130,14 +130,18 @@ class YouTubeDriver(ServiceDriver):
 
         response_tracks: List[dict] = []
         for result in response:
-            track = self.__youtube.get_song(
-                videoId=result.get('videoId'),
-                signatureTimestamp=None
-            )
+            try:
+                track = self.__youtube.get_song(
+                    videoId=result.get('videoId'),
+                    signatureTimestamp=None
+                )
 
-            response_tracks.append(self._mapper.map_track(
-                data=track,
-                additional_data=result
-            ))
+                response_tracks.append(self._mapper.map_track(
+                    data=track,
+                    additional_data=result
+                ))
+            except Exception as e:
+                # If we can't fetch the track, we'll just skip it.
+                pass
 
         return response_tracks
