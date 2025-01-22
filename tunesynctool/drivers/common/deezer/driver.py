@@ -19,7 +19,7 @@ class DeezerDriver(ServiceDriver):
     https://github.com/nathom/streamrip
     """
 
-    def __init__(self, config: Configuration, streamrip_config: Optional[StreamRipConfig]) -> None:
+    def __init__(self, config: Configuration, streamrip_config: Optional[StreamRipConfig] = None) -> None:
         super().__init__(
             service_name='deezer',
             config=config,
