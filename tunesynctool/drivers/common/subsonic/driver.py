@@ -43,6 +43,7 @@ class SubsonicDriver(ServiceDriver):
             port=self._config.subsonic_port,
             username=self._config.subsonic_username,
             password=self._config.subsonic_password,
+            legacyAuth=True
         )
     
     def get_user_playlists(self, limit: int = 25) -> List['Playlist']:
