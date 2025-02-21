@@ -14,6 +14,7 @@ from tunesynctool.models.configuration import Configuration
 @click.option('--subsonic-port', 'subsonic_port', type=int, help='Port for the Subsonic server.')
 @click.option('--subsonic-username', 'subsonic_username', help='Username for the Subsonic server.')
 @click.option('--subsonic-password', 'subsonic_password', help='Password for the Subsonic server.')
+@click.option('--subsonic-legacy-auth', 'subsonic_legacy_auth', help='Whether to enable legacy authentication for the Subsonic server.')
 @click.option('--deezer-arl', 'deezer_arl', help='Deezer ARL token.')
 @click.option('--youtube-request-headers', 'youtube_request_headers', help='YouTube request headers.')
 @click.pass_context
@@ -26,6 +27,7 @@ def cli(
     subsonic_port: Optional[str],
     subsonic_username: Optional[str],
     subsonic_password: Optional[str],
+    subsonic_legacy_auth: Optional[bool],
     deezer_arl: Optional[str],
     youtube_request_headers: Optional[str]
     ):
@@ -41,6 +43,7 @@ def cli(
         subsonic_port=subsonic_port,
         subsonic_username=subsonic_username,
         subsonic_password=subsonic_password,
+        subsonic_legacy_auth=subsonic_legacy_auth,
         deezer_arl=deezer_arl,
         youtube_request_headers=youtube_request_headers,
     )
