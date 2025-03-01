@@ -25,7 +25,8 @@ class YouTubeDriver(ServiceDriver):
         super().__init__(
             service_name='youtube',
             config=config,
-            mapper=YouTubeMapper()
+            mapper=YouTubeMapper(),
+            supports_direct_isrc_querying=True,
         )
 
         self.__youtube = self.__get_client()
@@ -167,3 +168,14 @@ class YouTubeDriver(ServiceDriver):
             return response_tracks
         except Exception as e:
             raise ServiceDriverException(e)
+        
+    def get_track_by_isrc(self, isrc: str) -> 'Track':
+        results = self.search_tracks(
+            query=isrc.strip().upper(),
+            limit=1
+        )
+
+        if len(results) == 0:
+            raise TrackNotFoundException(f'No track found with ISRC {isrc}')
+        
+        return results[0]

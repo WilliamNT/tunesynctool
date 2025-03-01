@@ -159,3 +159,6 @@ class SubsonicDriver(ServiceDriver):
             return mapped_tracks
         except Exception as e:
             raise ServiceDriverException(e)
+        
+    def get_track_by_isrc(self, isrc: str) -> 'Track':
+        raise NotImplementedError('Subsonic does not support fetching tracks by ISRC.')

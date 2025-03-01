@@ -26,12 +26,17 @@ class TrackMatcher:
         if track.matches(matched_track):
             return matched_track
         
-        # Strategy 1: Using plain old text search
+        # Strategy 1: If the track has an ISRC, try to search for it directly
+        matched_track = self.__search_by_isrc_only(track)
+        if track.matches(matched_track):
+            return matched_track
+        
+        # Strategy 2: Using plain old text search
         matched_track = self.__search_with_text(track)
         if track.matches(matched_track):
             return matched_track
 
-        # Stategy 2: Using the ISRC + MusicBrainz ID
+        # Stategy 3: Using the ISRC + MusicBrainz ID
         matched_track = self.__search_with_musicbrainz_id(track)
         if track.matches(matched_track):
             return matched_track
@@ -111,4 +116,23 @@ class TrackMatcher:
             if maybe_match and track.matches(maybe_match):
                 return maybe_match
             
+        return None
+    
+    def __search_by_isrc_only(self, track: Track) -> Optional[Track]:
+        """
+        If supported by the target service, this tries to search for a track using its ISRC.
+
+        In theory, this should be the most reliable way to match tracks.
+        """
+
+        if not track.isrc or not self._target.supports_direct_isrc_querying:
+            return None
+        
+        likely_match = self._target.get_track_by_isrc(
+            isrc=track.isrc
+        )
+
+        if likely_match and track.matches(likely_match):
+            return likely_match
+
         return None

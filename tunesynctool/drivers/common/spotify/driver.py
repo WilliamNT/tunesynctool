@@ -21,7 +21,8 @@ class SpotifyDriver(ServiceDriver):
         super().__init__(
             service_name='spotify',
             config=config,
-            mapper=SpotifyMapper()
+            mapper=SpotifyMapper(),
+            supports_direct_isrc_querying=True,
         )
 
         self.__spotify = spotipy.Spotify(auth_manager=self.__get_auth_manager())
@@ -143,3 +144,14 @@ class SpotifyDriver(ServiceDriver):
             raise PlaylistNotFoundException(e)
         except Exception as e:
             raise ServiceDriver(e)
+        
+    def get_track_by_isrc(self, isrc: str) -> 'Track':
+        results = self.search_tracks(
+            query=f'isrc:{isrc.strip().upper()}',
+            limit=1
+        )
+
+        if len(results) == 0:
+            raise TrackNotFoundException(f'No track found with ISRC {isrc}')
+        
+        return results[0]

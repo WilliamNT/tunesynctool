@@ -19,11 +19,19 @@ class ServiceDriver(ABC):
     Do not use directly; subclass this class to implement a custom driver.
     """
 
-    def __init__(self, service_name: str, config: Configuration, mapper: ServiceMapper, supports_musicbrainz_id_querying: bool = False) -> None:
+    def __init__(
+        self,
+        service_name: str,
+        config: Configuration,
+        mapper: ServiceMapper,
+        supports_musicbrainz_id_querying: bool = False,
+        supports_direct_isrc_querying: bool = False,
+    ) -> None:
         self.service_name = service_name
         self._config = config
         self._mapper = mapper
         self.supports_musicbrainz_id_querying = supports_musicbrainz_id_querying
+        self.supports_direct_isrc_querying = supports_direct_isrc_querying
 
     @abstractmethod
     def get_user_playlists(self, limit: int = 25) -> List['Playlist']:
@@ -130,4 +138,17 @@ class ServiceDriver(ABC):
         :raises: ServiceDriverException if an unknown error occurs while searching for tracks.
         """
         
+        raise NotImplementedError()
+    
+    @abstractmethod
+    def get_track_by_isrc(self, isrc: str) -> 'Track':
+        """
+        Fetch a track by its ISRC.
+
+        :param isrc: The ISRC of the track to fetch.
+        :return: The Track object.
+        :raises: TrackNotFoundException if the track does not exist.
+        :raises: ServiceDriverException if an unknown error occurs while fetching the track.
+        """
+
         raise NotImplementedError()

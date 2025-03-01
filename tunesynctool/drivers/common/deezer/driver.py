@@ -133,3 +133,6 @@ class DeezerDriver(ServiceDriver):
             return return_values
         except Exception as e:
             raise ServiceDriverException(e)
+        
+    def get_track_by_isrc(self, isrc: str) -> 'Track':
+        raise UnsupportedFeatureException('Deezer does not support fetching tracks by ISRC.')
