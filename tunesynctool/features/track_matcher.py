@@ -136,7 +136,7 @@ class TrackMatcher:
 
             if likely_match and track.matches(likely_match):
                 return likely_match
-        except TrackNotFoundException:
+        except TrackNotFoundException as e:
             pass
-        else:
-            return None
+
+        return None

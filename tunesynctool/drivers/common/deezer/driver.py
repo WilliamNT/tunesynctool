@@ -142,9 +142,9 @@ class DeezerDriver(ServiceDriver):
         
     def get_track_by_isrc(self, isrc: str) -> 'Track':
         try:
-            response = asyncio.run(self.__deezer.client.api.get_track_by_ISRC(
-                isrc==isrc.replace('-', '').upper()
-            ))
+            response = self.__deezer.client.api.get_track_by_ISRC(
+                isrc=isrc.replace('-', '').upper()
+            )
 
             return self._mapper.map_track(response)
         except DataException as e:
