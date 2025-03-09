@@ -8,7 +8,7 @@ from .mapper import DeezerMapper
 
 from streamrip import Config as StreamRipConfig
 from streamrip.client import DeezerClient
-from deezer.errors import InvalidQueryException
+from deezer.errors import InvalidQueryException, DataException
 
 class DeezerDriver(ServiceDriver):
     """
@@ -23,7 +23,8 @@ class DeezerDriver(ServiceDriver):
         super().__init__(
             service_name='deezer',
             config=config,
-            mapper=DeezerMapper()
+            mapper=DeezerMapper(),
+            supports_direct_isrc_querying=True
         )
 
         self.__deezer = self.__get_client(
@@ -140,4 +141,15 @@ class DeezerDriver(ServiceDriver):
             raise ServiceDriverException(e)
         
     def get_track_by_isrc(self, isrc: str) -> 'Track':
-        raise UnsupportedFeatureException('Deezer does not support fetching tracks by ISRC.')
+        try:
+            response = asyncio.run(self.__deezer.client.api.get_track_by_ISRC(
+                isrc==isrc.replace('-', '').upper()
+            ))
+
+            return self._mapper.map_track(response)
+        except DataException as e:
+            raise TrackNotFoundException(f'No track found with ISRC {isrc}')
+        except InvalidQueryException as e:
+            raise TrackNotFoundException(e)
+        except Exception as e:
+            raise ServiceDriverException(e)
