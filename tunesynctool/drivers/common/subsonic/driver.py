@@ -70,8 +70,12 @@ class SubsonicDriver(ServiceDriver):
             response = self.__subsonic.getPlaylist(
                 pid=playlist_id
             )
+
             fetched_tracks = response['playlist'].get('entry', [])
-            mapped_tracks = [self._mapper.map_track(track) for track in fetched_tracks[:limit]]
+            if limit > 0:
+                fetched_tracks = fetched_tracks[:min(limit, len(fetched_tracks))]
+        
+            mapped_tracks = [self._mapper.map_track(track) for track in fetched_tracks]
 
             for track in mapped_tracks:
                 track.service_name = self.service_name
