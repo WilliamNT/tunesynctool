@@ -13,13 +13,15 @@ from tqdm import tqdm
 @option('--from', 'from_provider', type=Choice(SUPPORTED_PROVIDERS), required=True, help='The provider to copy the playlist from.')
 @option('--to', 'to_provider', type=Choice(SUPPORTED_PROVIDERS), required=True, help='The target provider to copy the playlist to.')
 @option('--preview', 'is_preview', is_flag=True, show_default=True, default=False, help='Preview the transfer without actually touching the target service.')
+@option('--limit', 'limit', type=int, default=0, show_default=True, help='Limit the number of tracks to transfer. 0 or smaller means no limit. Default is 100. There is no upper limit, but be aware that some services may rate limit you.')
 @argument('playlist_id', type=str, required=True)
 def transfer(
     ctx: Optional[dict],
     from_provider: str,
     to_provider: str,
     playlist_id: str,
-    is_preview: bool
+    is_preview: bool,
+    limit: int
     ):
     """Transfers a playlist from one provider to another."""
 
@@ -37,7 +39,10 @@ def transfer(
     except PlaylistNotFoundException:
         raise UsageError('Source playlist ID is invalid.')
     
-    source_tracks = source_driver.get_playlist_tracks(source_playlist.service_id)
+    source_tracks = source_driver.get_playlist_tracks(
+        playlist_id=source_playlist.service_id,
+        limit=limit
+    )
 
     matcher = TrackMatcher(target_driver)
     matched_tracks = []

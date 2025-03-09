@@ -24,6 +24,7 @@ def list_tracks(tracks: List[Track], color: str = 'yellow') -> None:
 @option('--preview', 'is_preview', is_flag=True, show_default=True, default=False, help='Preview the sync without actually touching the target service.')
 @option('--diff', 'show_diff', is_flag=True, show_default=True, default=False, help='Show the difference between the source and target playlists.')
 @option('--misses', 'show_misses', is_flag=True, show_default=True, default=False, help='Show the tracks that couldn\'t be matched.')
+@option('--limit', 'limit', type=int, default=0, show_default=True, help='Limit the number of tracks to transfer. 0 or smaller means no limit. Default is 100. There is no upper limit, but be aware that some services may rate limit you.')
 def sync(
     ctx: Optional[dict],
     from_provider: str,
@@ -32,7 +33,8 @@ def sync(
     to_playlist_id: str,
     is_preview: bool,
     show_diff: bool,
-    show_misses: bool
+    show_misses: bool,
+    limit: int
     ):
     """Synchronizes a playlist from one service to another. Updates the target playlist with the source playlist's missing tracks."""
 
@@ -51,8 +53,14 @@ def sync(
     except PlaylistNotFoundException:
         raise UsageError('One or more playlist IDs are invalid.')
 
-    source_playlist_tracks = source_driver.get_playlist_tracks(from_playlist_id)
-    target_playlist_tracks = target_driver.get_playlist_tracks(to_playlist_id)
+    source_playlist_tracks = source_driver.get_playlist_tracks(
+        playlist_id=from_playlist_id,
+        limit=limit
+    )
+    target_playlist_tracks = target_driver.get_playlist_tracks(
+        playlist_id=to_playlist_id,
+        limit=0,
+    )
 
     synchronizer = PlaylistSynchronizer(
         source_driver=source_driver,
