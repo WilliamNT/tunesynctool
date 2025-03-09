@@ -70,6 +70,7 @@ def transfer(
             track_ids=[track.service_id for track in matched_tracks],
         )
     except Exception as e:
+        echo(style(f"Failed to transfer playlist: {e}", fg='red'))
         raise Abort()
     
     echo(style(f"Playlist transfer complete!", fg='green'))

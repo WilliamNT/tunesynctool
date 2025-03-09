@@ -109,6 +109,7 @@ def sync(
                 )
                 echo(style("Target playlist updated", fg='green'))
             except Exception as e:
+                echo(style(f"Failed to transfer playlist: {e}", fg='red'))
                 raise Abort()
 
     else:
