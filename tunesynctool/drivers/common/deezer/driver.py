@@ -52,7 +52,9 @@ class DeezerDriver(ServiceDriver):
                 item_id=playlist_id
             ))
             
-            response_tracks: List[dict] = response.get('tracks', [])[:limit]
+            response_tracks: List[dict] = response.get('tracks', [])
+            if limit > 0:
+                response_tracks = response_tracks[:min(limit, len(response_tracks))]
             
             return_values = []
 
@@ -108,6 +110,9 @@ class DeezerDriver(ServiceDriver):
                 query=query,
                 limit=limit
             ))
+
+            if not response or len(response) == 0:
+                return []
 
             response_tracks: List[dict] = response[0].get('data', [])
 
