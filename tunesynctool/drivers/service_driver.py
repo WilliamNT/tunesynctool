@@ -51,7 +51,7 @@ class ServiceDriver(ABC):
         Fetch the tracks in a playlist.
         
         :param playlist_id: The ID of the playlist to fetch.
-        :param limit: The maximum number of tracks to fetch.
+        :param limit: The maximum number of tracks to fetch. 0 or smaller means no limit. There is no upper limit, but be aware that some services may rate limit you. If the service's API does not support limiting, the driver fetches all tracks and cuts the list down to the limit.
         :return: A list of Track objects.
         :raises: PlaylistNotFoundException if the playlist does not exist.
         :raises: ServiceDriverException if an unknown error occurs while fetching the tracks.
