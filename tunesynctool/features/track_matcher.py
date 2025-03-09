@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from tunesynctool.drivers import ServiceDriver
+from tunesynctool.exceptions import TrackNotFoundException
 from tunesynctool.models import Track
 from tunesynctool.integrations import Musicbrainz
 from tunesynctool.utilities import clean_str
@@ -128,11 +129,14 @@ class TrackMatcher:
         if not track.isrc or not self._target.supports_direct_isrc_querying:
             return None
         
-        likely_match = self._target.get_track_by_isrc(
-            isrc=track.isrc
-        )
+        try:
+            likely_match = self._target.get_track_by_isrc(
+                isrc=track.isrc
+            )
 
-        if likely_match and track.matches(likely_match):
-            return likely_match
-
-        return None
+            if likely_match and track.matches(likely_match):
+                return likely_match
+        except TrackNotFoundException:
+            pass
+        else:
+            return None
