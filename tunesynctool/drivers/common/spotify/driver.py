@@ -3,6 +3,7 @@ from typing import List, Optional
 from tunesynctool.exceptions import PlaylistNotFoundException, ServiceDriverException, UnsupportedFeatureException, TrackNotFoundException
 from tunesynctool.models import Playlist, Configuration, Track
 from tunesynctool.drivers import ServiceDriver
+from tunesynctool.utilities.collections import batch
 from .mapper import SpotifyMapper
 
 from spotipy.oauth2 import SpotifyOAuth
@@ -120,10 +121,11 @@ class SpotifyDriver(ServiceDriver):
         
     def add_tracks_to_playlist(self, playlist_id: str, track_ids: List[str]) -> None:
         try:
-            self.__spotify.playlist_add_items(
-                playlist_id=playlist_id,
-                items=track_ids
-            )
+            for chunked_ids in batch(track_ids, 100):
+                self.__spotify.playlist_add_items(
+                    playlist_id=playlist_id,
+                    items=chunked_ids
+                )
         except SpotifyException as e:
             raise PlaylistNotFoundException(e)
         except Exception as e:
