@@ -1,7 +1,7 @@
 from itertools import islice
-from typing import List
+from typing import Any, Generator, Iterable, List
 
-def batch(items: List, chunk_size: int):
+def batch(items: Iterable[Any], chunk_size: int) -> Generator[tuple, Any, None]:
     """
     Split a list of tracks into batches of a given size.
 
