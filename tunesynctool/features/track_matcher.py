@@ -23,6 +23,9 @@ class TrackMatcher:
 
         This is a best-effort operation and may not be perfect.
         There is no guarantee that the tracks will be matched correctly or that any will be matched at all.
+
+        :param track: The track to match.
+        :return: The matched track, if any.
         """
 
         # Strategy 0: If the track is suspected to originate from the same service, try to fetch it directly
@@ -56,6 +59,9 @@ class TrackMatcher:
     def __get_musicbrainz_id(self, track: Track) -> Optional[str]:
         """
         Fetches the MusicBrainz ID for a track.
+
+        :param track: The track to fetch the ID for.
+        :return: The MusicBrainz ID, if available.
         """
 
         if track.musicbrainz_id:
@@ -67,6 +73,9 @@ class TrackMatcher:
         """
         Searches for tracks using a MusicBrainz ID.
         Requires ISRC or Musicbrainz ID metadata to be available to work.
+
+        :param track: The track to search for.
+        :return: The matched track, if any.
         """
 
         if not track.musicbrainz_id:
@@ -89,12 +98,17 @@ class TrackMatcher:
     def __search_with_text(self, track: Track) -> Optional[Track]:
         """
         Searches for tracks using plain text.
+
+        :param track: The track to search for.
+        :return: The matched track, if any.
         """
 
         queries = [
             f'{clean_str(track.primary_artist)} {clean_str(track.title)}',
-            f'{clean_str(track.title)}',
-            f'{clean_str(track.primary_artist)}'
+            f'{clean_str(track.title)} {clean_str(track.primary_artist)}',
+            f'{clean_str(track.primary_artist)} - {clean_str(track.title)}',
+            clean_str(track.title),
+            clean_str(track.primary_artist),
         ]
 
         results: List[Track] = []
@@ -113,6 +127,9 @@ class TrackMatcher:
     def __search_on_origin_service(self, track: Track) -> Optional[Track]:
         """
         If it is suspected that the track originates from the same service, it tries to fetch it directly.
+
+        :param track: The track to search for.
+        :return: The matched track,
         """
 
         if (track.service_name and self._target.service_name) and (track.service_name == self._target.service_name):
@@ -128,6 +145,9 @@ class TrackMatcher:
         If supported by the target service, this tries to search for a track using its ISRC.
 
         In theory, this should be the most reliable way to match tracks.
+
+        :param track: The track to search for.
+        :return: The matched track,
         """
 
         if not track.isrc or not self._target.supports_direct_isrc_querying:
