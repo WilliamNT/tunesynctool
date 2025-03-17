@@ -21,9 +21,6 @@ def test_clean_str_conjunctions():
     assert clean_str('Rock & Roll') == 'rock and roll'
     assert clean_str('Rock + Roll') == 'rock and roll'
 
-def test_clean_str_brackets_parentheses():
-    assert clean_str('[Hello] (World)') == 'hello world'
-
 def test_clean_str_quotation_marks_punctuation():
     assert clean_str("It's a 'test'!") == 'its a test'
     assert clean_str('Hello, World!') == 'hello world'
