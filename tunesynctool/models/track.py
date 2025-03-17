@@ -88,8 +88,8 @@ class Track:
         title_similarity = calculate_str_similarity(clean_str(self.title), clean_str(other.title))
         artist_similarity = calculate_str_similarity(clean_str(self.primary_artist), clean_str(other.primary_artist))
         
-        if title_similarity < 0.65 or artist_similarity < 0.6:
-            return 0.0
+        # if title_similarity < 0.65 or artist_similarity < 0.6:
+        #     return 0.0
 
         weights = {
             'title': 4.0,

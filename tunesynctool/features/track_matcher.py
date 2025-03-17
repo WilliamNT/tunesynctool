@@ -118,9 +118,8 @@ class TrackMatcher:
                 limit=10
             ))
 
-        for result in results:
-            if track.matches(result):
-                return result
+        if len(results) > 0:
+            return max(results, key=lambda x: x.similarity(track))
             
         return None
     
