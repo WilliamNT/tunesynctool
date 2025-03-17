@@ -46,3 +46,10 @@ def test_clean_str_case():
     assert clean_str('Hello World') == 'hello world'
     assert clean_str('HELLO WORLD') == 'hello world'
     assert clean_str('hello world') == 'hello world'
+
+def test_clean_stuff_from_between_parentheses():
+    assert clean_str('Hello (World)') == 'hello'
+    assert clean_str('Hello (World) (Again)') == 'hello'
+    assert clean_str('{curly} [square] (parentheses)') == ''
+    assert clean_str('Hello (World) [Again]') == 'hello'
+    assert clean_str('2. - Sense Field - Save Yourself - (Album Version)') == '2 sense field save yourself'

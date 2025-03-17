@@ -46,6 +46,8 @@ def __apply_substitutions(text: str, substitutions: Dict[str, str]) -> str:
     Apply a dictionary of substitutions to the given text.
 
     :param text: The text to apply substitutions to.
+    :param substitutions: A dictionary of substitutions to apply.
+    :return: The text with substitutions applied.
     """
 
     for old, new in substitutions.items():
@@ -58,6 +60,7 @@ def __normalize_whitespace(text: str) -> str:
     Removes extra whitespace by converting multiple spaces to single space.
 
     :param text: The text to clean.
+    :return: The cleaned text.
     """
 
     return ' '.join(text.split())
@@ -65,11 +68,14 @@ def __normalize_whitespace(text: str) -> str:
 def __remove_version_tags(text: str) -> str:
     """
     Removes version-related tags like (album version), (remix), (live), etc.
+    Ensures that removed content does not leave unnecessary double spaces.
 
     :param text: The text to clean.
+    :return: The cleaned text.
     """
 
-    return re.sub(r'\((.*?)\)', '', text).strip()
+    return re.sub(r'\s*[\(\{\[][^()\[\]{}]*[\)\}\]]\s*', ' ', text)
+
 
 def clean_str(s: Optional[str]) -> str:
     """
@@ -84,10 +90,10 @@ def clean_str(s: Optional[str]) -> str:
     
     text = s.lower().strip()
     
+    text = __remove_version_tags(text)
     text = __apply_substitutions(text, ARTIST_FEATURES)
     text = __apply_substitutions(text, CONJUNCTIONS)
     text = __apply_substitutions(text, BRACKETS)
     text = __apply_substitutions(text, PUNCTUATION)
-    text = __remove_version_tags(text)
     
     return __normalize_whitespace(text)
