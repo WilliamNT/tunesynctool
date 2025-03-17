@@ -66,20 +66,31 @@ class Track:
         This is not 100% accurate, but it's good enough in most cases.
         """
 
+        return self.similarity(other) >= threshold
+    
+    def similarity(self, other: Optional[Self]) -> float:
+        """
+        Approximates the similarity between two tracks.
+
+        This is not 100% accurate, but it's good enough in most cases.
+
+        :param other: The other track to compare to.
+        :return: A float value representing the similarity between 0.0 and 1.0.
+        """
+
         if not other:
-            return False
-        
-        if (self.isrc and other.isrc) and self.isrc == other.isrc:
-            return True
+            return 0.0
+        elif (self.isrc and other.isrc) and self.isrc == other.isrc:
+            return 1.0
         elif (self.musicbrainz_id and other.musicbrainz_id) and self.musicbrainz_id == other.musicbrainz_id:
-            return True
+            return 1.0
         
         title_similarity = calculate_str_similarity(clean_str(self.title), clean_str(other.title))
         artist_similarity = calculate_str_similarity(clean_str(self.primary_artist), clean_str(other.primary_artist))
-
-        if title_similarity < 0.65 or artist_similarity < 0.6:
-            return False
         
+        if title_similarity < 0.65 or artist_similarity < 0.6:
+            return 0.0
+
         weights = {
             'title': 4.0,
             'artist': 3.0,
@@ -100,4 +111,4 @@ class Track:
 
         similarity_ratio = round(sum(variables) / sum(weights.values()), 2)
 
-        return similarity_ratio >= threshold
+        return similarity_ratio
