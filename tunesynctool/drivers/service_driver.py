@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
+import logging
 
 from tunesynctool.models import Playlist, Track, Configuration
 from .service_mapper import ServiceMapper
@@ -12,6 +13,8 @@ If a feature is not directly supported by the streaming service, the driver shou
 Even for features that may not be guaranteed to be supported by all implementations, the default behavior is to raise a NotImplementedError
 because it should be up to the individual driver implementations to indicate such limitations by raising an appropriate exception.
 """
+
+logger = logging.getLogger(__name__)
 
 class ServiceDriver(ABC):
     """
@@ -32,6 +35,8 @@ class ServiceDriver(ABC):
         self._mapper = mapper
         self.supports_musicbrainz_id_querying = supports_musicbrainz_id_querying
         self.supports_direct_isrc_querying = supports_direct_isrc_querying
+
+        logger.debug(f'Initialized {self.__class__.__name__} driver for {self.service_name} service.')
 
     @abstractmethod
     def get_user_playlists(self, limit: int = 25) -> List['Playlist']:

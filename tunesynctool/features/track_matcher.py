@@ -1,10 +1,13 @@
 from typing import List, Optional
+import logging
 
 from tunesynctool.drivers import ServiceDriver
 from tunesynctool.exceptions import TrackNotFoundException
 from tunesynctool.models import Track
 from tunesynctool.integrations import Musicbrainz
 from tunesynctool.utilities import clean_str
+
+logger = logging.getLogger(__name__)
 
 class TrackMatcher:
     """
@@ -25,24 +28,29 @@ class TrackMatcher:
         # Strategy 0: If the track is suspected to originate from the same service, try to fetch it directly
         matched_track = self.__search_on_origin_service(track)
         if track.matches(matched_track):
+            logger.debug(f'Success: matched track {track} to {matched_track} using origin service.')
             return matched_track
         
         # Strategy 1: If the track has an ISRC, try to search for it directly
         matched_track = self.__search_by_isrc_only(track)
         if track.matches(matched_track):
+            logger.debug(f'Success: matched track {track} to {matched_track} using direct ISRC. querying.')
             return matched_track
         
         # Strategy 2: Using plain old text search
         matched_track = self.__search_with_text(track)
         if track.matches(matched_track):
+            logger.debug(f'Success: matched track {track} to {matched_track} using text search.')
             return matched_track
 
         # Stategy 3: Using the ISRC + MusicBrainz ID
         matched_track = self.__search_with_musicbrainz_id(track)
         if track.matches(matched_track):
+            logger.debug(f'Success: matched track {track} to {matched_track} using its MusicBrainz ID.')
             return matched_track
 
         # At this point we haven't found any matches unfortunately
+        logger.debug(f'Failure: could not find a match for track {track}.')
         return None
     
     def __get_musicbrainz_id(self, track: Track) -> Optional[str]:
@@ -52,10 +60,6 @@ class TrackMatcher:
 
         if track.musicbrainz_id:
             return track.musicbrainz_id
-
-        # musicbrainz_id = Musicbrainz.id_from_isrc(track.isrc)
-        # if musicbrainz_id:
-        #     return musicbrainz_id
         
         return Musicbrainz.id_from_track(track)
     

@@ -1,6 +1,9 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class Configuration:
@@ -92,6 +95,8 @@ class Configuration:
                 deezer_arl=os.getenv("DEEZER_ARL"),
                 youtube_request_headers=os.getenv("YOUTUBE_REQUEST_HEADERS")
             )
+
+            logger.info('Loaded configuration from environmental variables.')
 
             return config
         except KeyError as e:
