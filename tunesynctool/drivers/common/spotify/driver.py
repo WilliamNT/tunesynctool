@@ -47,7 +47,7 @@ class SpotifyDriver(ServiceDriver):
             redirect_uri=self._config.spotify_redirect_uri
         )
 
-    def get_user_playlists(self, limit: int = 25) -> List['Playlist']:
+    def get_user_playlists(self, limit: int = 25) -> List[Playlist]:
         try:
             response = self.__spotify.current_user_playlists(limit=limit)
             fetched_playlists = response['items']
@@ -90,7 +90,7 @@ class SpotifyDriver(ServiceDriver):
 
         return fetched_tracks[:limit] if limit > 0 else fetched_tracks
 
-    def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List['Track']:
+    def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List[Track]:
         try:
             fetched_tracks = self.__fetch_playlist_items(
                 playlist_id=playlist_id,
@@ -108,7 +108,7 @@ class SpotifyDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
         
-    def create_playlist(self, name: str) -> 'Playlist':
+    def create_playlist(self, name: str) -> Playlist:
         try:
             response = self.__spotify.user_playlist_create(
                 user=self.__spotify.me()['id'],
@@ -131,7 +131,7 @@ class SpotifyDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
         
-    def get_random_track(self) -> Optional['Track']:
+    def get_random_track(self) -> Optional[Track]:
         raise UnsupportedFeatureException('Spotify does not support fetching a random track.')
     
     def get_playlist(self, playlist_id: str) -> 'Playlist':
@@ -143,7 +143,7 @@ class SpotifyDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
         
-    def get_track(self, track_id: str) -> 'Track':
+    def get_track(self, track_id: str) -> Track:
         try:
             response = self.__spotify.track(track_id)
             return self._mapper.map_track(response)
@@ -152,7 +152,7 @@ class SpotifyDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
         
-    def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
+    def search_tracks(self, query: str, limit: int = 10) -> List[Track]:
         if not query or len(query) == 0:
             return []
         
@@ -175,7 +175,7 @@ class SpotifyDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriver(e)
         
-    def get_track_by_isrc(self, isrc: str) -> 'Track':
+    def get_track_by_isrc(self, isrc: str) -> Track:
         results = self.search_tracks(
             query=f'isrc:{isrc.strip().upper()}',
             limit=1
