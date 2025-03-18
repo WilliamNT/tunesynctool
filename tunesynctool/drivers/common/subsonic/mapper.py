@@ -4,7 +4,7 @@ from tunesynctool.models import Playlist, Track
 class SubsonicMapper(ServiceMapper):
     """Maps Subsonic API DTOs to internal models."""
 
-    def map_playlist(self, data: dict) -> 'Playlist':
+    def map_playlist(self, data: dict) -> Playlist:
         if isinstance(data, type(None)):
             raise ValueError('Input data cannot be None')
 
@@ -24,7 +24,7 @@ class SubsonicMapper(ServiceMapper):
             service_data=data
         )
     
-    def map_track(self, data: dict) -> 'Track':
+    def map_track(self, data: dict) -> Track:
         if isinstance(data, type(None)):
             raise ValueError('Input data cannot be None')
         

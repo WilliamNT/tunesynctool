@@ -46,7 +46,7 @@ class SubsonicDriver(ServiceDriver):
             legacyAuth=self._config.subsonic_legacy_auth
         )
     
-    def get_user_playlists(self, limit: int = 25) -> List['Playlist']:
+    def get_user_playlists(self, limit: int = 25) -> List[Playlist]:
         try:
             response = self.__subsonic.getPlaylists()
             fetched_playlists = response['playlists'].get('playlist', [])
@@ -65,7 +65,7 @@ class SubsonicDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
     
-    def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List['Track']:
+    def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List[Track]:
         try:
             response = self.__subsonic.getPlaylist(
                 pid=playlist_id
@@ -86,7 +86,7 @@ class SubsonicDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
         
-    def create_playlist(self, name: str) -> 'Playlist':
+    def create_playlist(self, name: str) -> Playlist:
         try:
             response = self.__subsonic.createPlaylist(
                 name=name
@@ -105,7 +105,7 @@ class SubsonicDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
         
-    def get_random_track(self) -> Optional['Track']:
+    def get_random_track(self) -> Optional[Track]:
         try:
             response = self.__subsonic.getRandomSongs(
                 size=1
@@ -120,7 +120,7 @@ class SubsonicDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
     
-    def get_playlist(self, playlist_id: str) -> 'Playlist':
+    def get_playlist(self, playlist_id: str) -> Playlist:
         try:
             response = self.__subsonic.getPlaylist(
                 pid=playlist_id
@@ -131,7 +131,7 @@ class SubsonicDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
         
-    def get_track(self, track_id: str) -> 'Track':
+    def get_track(self, track_id: str) -> Track:
         try:
             response = self.__subsonic.getSong(
                 id=track_id
@@ -142,7 +142,7 @@ class SubsonicDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
         
-    def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
+    def search_tracks(self, query: str, limit: int = 10) -> List[Track]:
         if not query or len(query) == 0:
             return []
 
@@ -164,5 +164,5 @@ class SubsonicDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
         
-    def get_track_by_isrc(self, isrc: str) -> 'Track':
+    def get_track_by_isrc(self, isrc: str) -> Track:
         raise NotImplementedError('Subsonic does not support fetching tracks by ISRC.')
