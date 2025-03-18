@@ -5,7 +5,7 @@ from tunesynctool.drivers import ServiceDriver
 from tunesynctool.exceptions import TrackNotFoundException
 from tunesynctool.models import Track
 from tunesynctool.integrations import Musicbrainz
-from tunesynctool.utilities import clean_str
+from tunesynctool.utilities import clean_str, batch
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +95,46 @@ class TrackMatcher:
         
         return None
     
+    def __search_with_queries(self, query_attempts: List[str], reference_track: Track) -> Optional[Track]:
+        """
+        Searches for tracks using a list of queries and returns the most likely match.
+
+        Does multiple rounds with filtering.
+
+        :param query_attempts: A list of queries to attempt.
+        :param reference_track: The track to search for.
+        :return: The matched track, if any.
+        """
+
+        results: List[Track] = []
+
+        for queries in batch(query_attempts, 5):
+            subresults: List[Track] = []
+            
+            for query in queries:
+                search_results = self._target.search_tracks(
+                    query=query,
+                    limit=5
+                )
+
+                if len(search_results) == 0:
+                    continue
+
+                subresults.append(max(search_results, key=lambda x: x.similarity(reference_track)))
+
+            if len(subresults) == 0:
+                continue
+
+            best_match = max(subresults, key=lambda x: x.similarity(reference_track))
+            logger.debug(f'Found match {best_match} for query {query} with similarity {best_match.similarity(reference_track)}')
+            results.append(best_match)
+
+        maybe_match = None
+        if len(results) > 0 :
+            maybe_match = max(results, key=lambda x: x.similarity(reference_track))
+            
+        return maybe_match
+        
     def __search_with_text(self, track: Track) -> Optional[Track]:
         """
         Searches for tracks using plain text.
@@ -103,25 +143,32 @@ class TrackMatcher:
         :return: The matched track, if any.
         """
 
-        queries = [
-            f'{clean_str(track.primary_artist)} {clean_str(track.title)}',
-            f'{clean_str(track.title)} {clean_str(track.primary_artist)}',
-            f'{clean_str(track.primary_artist)} - {clean_str(track.title)}',
-            clean_str(track.title),
-            clean_str(track.primary_artist),
-        ]
+        queries = []
 
-        results: List[Track] = []
-        for query in queries:
-            results.extend(self._target.search_tracks(
-                query=query,
-                limit=10
-            ))
+        if track.title:
+            queries.append(clean_str(track.title))
+            queries.append(track.title)
 
-        if len(results) > 0:
-            return max(results, key=lambda x: x.similarity(track))
-            
-        return None
+        if track.primary_artist:
+            queries.append(clean_str(track.primary_artist))
+            queries.append(track.primary_artist)
+
+        if track.primary_artist and track.title:
+            queries.append(f'{clean_str(track.primary_artist)} {clean_str(track.title)}')
+            queries.append(f'{clean_str(track.title)} {clean_str(track.primary_artist)}')
+            queries.append(f'{clean_str(track.primary_artist)} - {clean_str(track.title)}')
+            queries.append(f'{clean_str(track.title)} - {clean_str(track.primary_artist)}')
+            queries.append(f'{track.primary_artist} {track.title}')
+            queries.append(f'{track.title} {track.primary_artist}')
+            queries.append(f'{track.primary_artist} - {track.title}')
+
+        if track.album_name:
+            queries.append(track.album_name)
+
+        return self.__search_with_queries(
+            query_attempts=queries,
+            reference_track=track
+        )
     
     def __search_on_origin_service(self, track: Track) -> Optional[Track]:
         """
