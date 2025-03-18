@@ -36,3 +36,6 @@ Documentation = "https://github.com/WilliamNT/tunesynctool/wiki"
 
 [project.scripts]
 tunesynctool = "tunesynctool.cli.main:cli"
+
+[tool.setuptools]
+packages = ["tunesynctool"]
