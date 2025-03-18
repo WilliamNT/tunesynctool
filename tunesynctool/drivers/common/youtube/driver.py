@@ -48,7 +48,7 @@ class YouTubeDriver(ServiceDriver):
             auth=auth_file_path
         )
 
-    def get_user_playlists(self, limit: int = 25) -> List['Playlist']:
+    def get_user_playlists(self, limit: int = 25) -> List[Playlist]:
         try:
             response: List[dict] = self.__youtube.get_library_playlists(
                 limit=limit
@@ -60,7 +60,7 @@ class YouTubeDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
 
-    def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List['Track']:
+    def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List[Track]:
         try:
             response: dict = self.__youtube.get_playlist(
                 playlistId=playlist_id,
@@ -74,7 +74,7 @@ class YouTubeDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
 
-    def create_playlist(self, name: str) -> 'Playlist':
+    def create_playlist(self, name: str) -> Playlist:
         try:
             response = self.__youtube.create_playlist(
                 title=name,
@@ -97,10 +97,10 @@ class YouTubeDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
 
-    def get_random_track(self) -> Optional['Track']:
+    def get_random_track(self) -> Optional[Track]:
         raise UnsupportedFeatureException()
 
-    def get_playlist(self, playlist_id: str) -> 'Playlist':
+    def get_playlist(self, playlist_id: str) -> Playlist:
         try:
             response = self.__youtube.get_playlist(
                 playlistId=playlist_id,
@@ -118,7 +118,7 @@ class YouTubeDriver(ServiceDriver):
         except Exception as e:
             raise PlaylistNotFoundException(e)
 
-    def get_track(self, track_id: str) -> 'Track':
+    def get_track(self, track_id: str) -> Track:
         try:
             response: dict = self.__youtube.get_song(
                 videoId=track_id,
@@ -137,7 +137,7 @@ class YouTubeDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
         
-    def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
+    def search_tracks(self, query: str, limit: int = 10) -> List[Track]:
         if not query or len(query) == 0:
             return []
         
@@ -169,7 +169,7 @@ class YouTubeDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
         
-    def get_track_by_isrc(self, isrc: str) -> 'Track':
+    def get_track_by_isrc(self, isrc: str) -> Track:
         results = self.search_tracks(
             query=isrc.strip().upper(),
             limit=1
