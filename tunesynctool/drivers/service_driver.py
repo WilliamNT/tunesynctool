@@ -39,7 +39,7 @@ class ServiceDriver(ABC):
         logger.debug(f'Initialized {self.__class__.__name__} driver for {self.service_name} service.')
 
     @abstractmethod
-    def get_user_playlists(self, limit: int = 25) -> List['Playlist']:
+    def get_user_playlists(self, limit: int = 25) -> List[Playlist]:
         """
         Fetch the authenticated user's playlists from the service.
 
@@ -51,7 +51,7 @@ class ServiceDriver(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List['Track']:
+    def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List[Track]:
         """
         Fetch the tracks in a playlist.
         
@@ -65,7 +65,7 @@ class ServiceDriver(ABC):
         raise NotImplementedError()
     
     @abstractmethod
-    def create_playlist(self, name: str) -> 'Playlist':
+    def create_playlist(self, name: str) -> Playlist:
         """
         Create a new playlist on the service.
         
@@ -94,7 +94,7 @@ class ServiceDriver(ABC):
     #     raise NotImplementedError()
 
     @abstractmethod
-    def get_random_track(self) -> Optional['Track']:
+    def get_random_track(self) -> Optional[Track]:
         """
         Fetch a random track from the service.
         Depending on the streaming service, this may not be supported.
@@ -107,7 +107,7 @@ class ServiceDriver(ABC):
         raise NotImplementedError()
     
     @abstractmethod
-    def get_playlist(self, playlist_id: str) -> 'Playlist':
+    def get_playlist(self, playlist_id: str) -> Playlist:
         """
         Fetch a playlist by its ID.
 
@@ -120,7 +120,7 @@ class ServiceDriver(ABC):
         raise NotImplementedError()
     
     @abstractmethod
-    def get_track(self, track_id: str) -> 'Track':
+    def get_track(self, track_id: str) -> Track:
         """
         Fetch a track by its ID.
 
@@ -133,7 +133,7 @@ class ServiceDriver(ABC):
         raise NotImplementedError()
     
     @abstractmethod
-    def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
+    def search_tracks(self, query: str, limit: int = 10) -> List[Track]:
         """
         Search for tracks by a query.
 
@@ -146,7 +146,7 @@ class ServiceDriver(ABC):
         raise NotImplementedError()
     
     @abstractmethod
-    def get_track_by_isrc(self, isrc: str) -> 'Track':
+    def get_track_by_isrc(self, isrc: str) -> Track:
         """
         Fetch a track by its ISRC.
 

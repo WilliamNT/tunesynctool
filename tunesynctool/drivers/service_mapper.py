@@ -11,11 +11,11 @@ class ServiceMapper(ABC):
     """
 
     @abstractmethod
-    def map_playlist(self, data: dict) -> 'Playlist':
+    def map_playlist(self, data: dict) -> Playlist:
         """Map a playlist DTO to a Playlist model."""
         raise NotImplementedError()
 
     @abstractmethod
-    def map_track(self, data: dict) -> 'Track':
+    def map_track(self, data: dict) -> Track:
         """Map a track DTO to a Track model."""
         raise NotImplementedError()
