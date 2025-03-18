@@ -44,10 +44,10 @@ class DeezerDriver(ServiceDriver):
             config=streamrip_config
         )
 
-    def get_user_playlists(self, limit: int = 25) -> List['Playlist']:
+    def get_user_playlists(self, limit: int = 25) -> List[Playlist]:
         return UnsupportedFeatureException('Fetching user playlists from Deezer is not supported currently.')
 
-    def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List['Track']:
+    def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List[Track]:
         try:
             response = asyncio.run(self.__deezer.get_playlist(
                 item_id=playlist_id
@@ -68,16 +68,16 @@ class DeezerDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
     
-    def create_playlist(self, name: str) -> 'Playlist':
+    def create_playlist(self, name: str) -> Playlist:
         raise UnsupportedFeatureException('Creating playlists on Deezer is not supported currently.')
 
     def add_tracks_to_playlist(self, playlist_id: str, track_ids: List[str]) -> None:
         raise UnsupportedFeatureException('Adding tracks to playlists on Deezer is not supported currently.')
 
-    def get_random_track(self) -> Optional['Track']:
+    def get_random_track(self) -> Optional[Track]:
         raise UnsupportedFeatureException('Fetching random tracks from Deezer is not supported currently.')
 
-    def get_playlist(self, playlist_id: str) -> 'Playlist':
+    def get_playlist(self, playlist_id: str) -> Playlist:
         try:
             response = asyncio.run(self.__deezer.get_playlist(
                 item_id=playlist_id
@@ -89,7 +89,7 @@ class DeezerDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
 
-    def get_track(self, track_id: str) -> 'Track':
+    def get_track(self, track_id: str) -> Track:
         try:
             response = asyncio.run(self.__deezer.get_track(
                 item_id=track_id
@@ -101,7 +101,7 @@ class DeezerDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
 
-    def search_tracks(self, query: str, limit: int = 10) -> List['Track']:
+    def search_tracks(self, query: str, limit: int = 10) -> List[Track]:
         if not query or len(query) == 0:
             return []
         
@@ -140,7 +140,7 @@ class DeezerDriver(ServiceDriver):
         except Exception as e:
             raise ServiceDriverException(e)
         
-    def get_track_by_isrc(self, isrc: str) -> 'Track':
+    def get_track_by_isrc(self, isrc: str) -> Track:
         try:
             response = self.__deezer.client.api.get_track_by_ISRC(
                 isrc=isrc.replace('-', '').upper()
