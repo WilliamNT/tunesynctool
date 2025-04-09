@@ -1,7 +1,6 @@
 from datetime import datetime
-from pydantic import BaseModel
 
-class Token(BaseModel):
+class Token:
     """
     Represents a token model.
     """
