@@ -1,17 +1,16 @@
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Annotated, Optional
+from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-from fastapi import HTTPException
 
 from api.models.user import UserCreate, User
-from api.core.security import create_access_token, hash_password, verify_password
+from api.core.security import hash_password
 from api.helpers.database import create
-from api.models.token import Token
+from api.core.database import get_session
 
 class UserService:
-    def __init__(self, session: AsyncSession):
-        self.db = session
+    def __init__(self, db: AsyncSession):
+        self.db = db
 
     async def create_user(self, user: UserCreate) -> User:
         """
@@ -20,6 +19,12 @@ class UserService:
         :param user: The user to create.
         :return: The created user.
         """
+
+        if await self.is_username_taken(user.username):
+            raise HTTPException(
+                status_code=400,
+                detail="Username already taken",
+            )
 
         new_user = User(
             username=user.username,
@@ -31,6 +36,20 @@ class UserService:
             session=self.db,
             obj=new_user,
         )
+    
+    async def is_username_taken(self, username: str) -> bool:
+        """
+        Checks if a username is already taken.
+        
+        :param username: The username to check.
+        :return: True if the username is taken, otherwise False.
+        """
+        
+        result = await self.db.execute(
+            select(User).where(User.username == username)
+        )
+
+        return result.scalar_one_or_none() is not None
     
     async def get_by_username(self, username: str) -> Optional[User]:
         """
@@ -46,53 +65,19 @@ class UserService:
 
         return result.scalar_one_or_none()
     
-    def verify_password(self, plain_password: str, hashed_password: str) -> bool:
+    async def get_by_id(self, user_id: int) -> Optional[User]:
         """
-        Verifies a password against a hashed password.
+        Retrieves a user by ID.
         
-        :param plain_password: The plain password to verify.
-        :param hashed_password: The hashed password to verify against.
-        :return: True if the password matches, otherwise False.
+        :param user_id: The ID of the user.
+        :return: The user if found, otherwise None.
         """
         
-        return verify_password(
-            plain_password=plain_password,
-            hashed_password=hashed_password,
+        result = await self.db.execute(
+            select(User).where(User.id == user_id)
         )
 
-    async def authenticate(self, username: str, password: str) -> Token:
-        """
-        Authenticates a user by username and password.
-        
-        :param username: The username of the user.
-        :param password: The password of the user.
-        :param expiration: The expiration time for the JWT token.
-        :return: The JWT token if authentication is successful.
-        :raises HTTPException: 401 Unauthorized if authentication fails.
-        """
-        
-        user = await self.get_by_username(username)
-        if not user:
-            self.raise_unauthorized()
-
-        if not self.verify_password(password, user.password_hash):
-            self.raise_unauthorized()
-
-        expiration = datetime.now(timezone.utc) + timedelta(days=30)
-
-        return create_access_token(
-            subject=str(user.id),
-            expiration=expiration,
-        )
-        
-    def raise_unauthorized(self):
-        """
-        Raises an unauthorized exception.
-        
-        :raises HTTPException: 401 Unauthorized
-        """
-        
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid credentials",
-        )
+        return result.scalar_one_or_none()
+    
+def get_user_service(db: Annotated[AsyncSession, Depends(get_session)]) -> UserService:
+    return UserService(db)

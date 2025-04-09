@@ -1,14 +1,20 @@
 from datetime import datetime, timedelta, timezone
-from typing import Any, Optional
+from typing import Optional
 import jwt
 import bcrypt
+from fastapi.security import OAuth2PasswordBearer
 
 from api.core.config import config
-from api.models.token import Token
+from api.models.token import AccessToken
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{config.API_BASE_URL}/auth/token")
 
 JWT_ALGORITHM = "HS256"
 
-def create_access_token(subject: str, expiration: datetime) -> Token:
+def create_access_token(subject: str, expires_in_days: int) -> AccessToken:
+    expiration = datetime.now(timezone.utc) + timedelta(days=expires_in_days)
+
+
     payload = {
         "sub": subject,
         "exp": expiration,
@@ -20,9 +26,10 @@ def create_access_token(subject: str, expiration: datetime) -> Token:
         algorithm=JWT_ALGORITHM
     )
 
-    return Token(
-        value=encoded_jwt,
-        expires_at=expiration,
+    return AccessToken(
+        access_token=encoded_jwt,
+        token_type="bearer",
+        expires_in=timedelta(days=expires_in_days).total_seconds()
     )
 
 def verify_access_token(token: str) -> Optional[str]:

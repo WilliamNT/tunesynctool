@@ -11,7 +11,7 @@ async def create(session: AsyncSession, obj: SQLModel) -> SQLModel:
     :return: The created object.
     """
 
-    await session.add(obj)
+    session.add(obj)
     await session.commit()
     await session.refresh(obj)
     

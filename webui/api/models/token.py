@@ -1,12 +1,17 @@
-from datetime import datetime
+from datetime import timedelta
 
-class Token:
+from pydantic import BaseModel
+
+class AccessToken(BaseModel):
     """
-    Represents a token model.
+    Represents an access token.
     """
 
-    value: str
+    access_token: str
     """The JWT itself."""
 
-    expires_at: datetime
+    token_type: str
+    """The expiration date of the token."""
+
+    expires_in: int
     """The expiration date of the token."""
