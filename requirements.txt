@@ -10,3 +10,10 @@ twine
 streamrip
 ytmusicapi
 click
+
+fastapi[standard]
+sqlmodel
+pydantic-settings
+passlib[bcrypt]
+pyjwt
+pymysql
