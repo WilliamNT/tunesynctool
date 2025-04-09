@@ -14,6 +14,7 @@ click
 fastapi[standard]
 sqlmodel
 pydantic-settings
-passlib[bcrypt]
+bcrypt
 pyjwt
-pymysql
+aiomysql
+greenlet

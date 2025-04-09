@@ -12,12 +12,13 @@ class Config(BaseSettings):
     DB_PASSWORD: str = ""
     APP_SECRET: str
     API_BASE_URL: str = "/api"
+    ADMIN_PASSWORD: str = "admin"
 
     @computed_field
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> MySQLDsn:
         return MultiHostUrl.build(
-            scheme="mysql+pymysql",
+            scheme="mysql+aiomysql",
             host=self.DB_HOST,
             port=self.DB_PORT,
             path=self.DB_NAME,

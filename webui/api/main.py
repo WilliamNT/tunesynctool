@@ -17,8 +17,8 @@ app = FastAPI(
 )
 
 @app.on_event("startup")
-def on_startup():
-    initialize_database()
+async def on_startup():
+    await initialize_database()
 
 app.add_middleware(
     CORSMiddleware,

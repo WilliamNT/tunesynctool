@@ -1,6 +1,9 @@
-from fastapi import APIRouter
+from typing import Annotated
+from fastapi import APIRouter, Depends
 
 from api.models.user import UserRead, UserCreate
+from api.services.user_service import UserService
+from api.core.database import get_session
 
 router = APIRouter(
     prefix="/users",
@@ -8,16 +11,11 @@ router = APIRouter(
 )
 
 @router.post("/", response_model=UserRead)
-async def create_user(user: UserCreate):
+async def create_user(user: UserCreate, session: Annotated[UserService, Depends(get_session)]):
     """
     Create a new user.
     """
 
-    # TODO: this is a test endpoint, will replace later
+    service = UserService(session)
 
-    return UserRead(
-        id=1,
-        username=user.username,
-        is_admin=False,
-    )
-
+    return await service.create(user)

@@ -1,14 +1,9 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
-from passlib.context import CryptContext
 import jwt
+import bcrypt
 
 from api.core.config import config
-
-hasher = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto",
-)
 
 JWT_ALGORITHM = "HS256"
 
@@ -49,11 +44,17 @@ def hash_password(password: str) -> str:
     Hash a password using bcrypt.
     """
 
-    return hasher.hash(password)
+    return bcrypt.hashpw(
+        password=password.encode("utf-8"),
+        salt=bcrypt.gensalt(),
+    )
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     Verify a password against a hashed password.
     """
 
-    return hasher.verify(plain_password, hashed_password)
+    return bcrypt.checkpw(
+        password=plain_password.encode("utf-8"),
+        hashed_password=hashed_password.encode("utf-8"),
+    )

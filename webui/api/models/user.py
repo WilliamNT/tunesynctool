@@ -17,8 +17,8 @@ class UserCreate(SQLModel):
     Represents a user creation DTO.
     """
 
-    username: str = Field(unique=True, index=True, max_length=255)    
-    password: str = Field(max_length=255)
+    username: str = Field(unique=True, index=True, max_length=255, min_length=3)    
+    password: str = Field(max_length=255, min_length=8)
 
 class UserRead(SQLModel):
     """
