@@ -1,7 +1,5 @@
-from datetime import datetime, timedelta, timezone
 from typing import Annotated
 from fastapi import Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.core.security import create_access_token, verify_password, verify_access_token
 from api.models.token import AccessToken

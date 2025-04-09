@@ -3,6 +3,10 @@ from typing import Optional
 import jwt
 import bcrypt
 from fastapi.security import OAuth2PasswordBearer
+from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
+from cryptography.hazmat.backends import default_backend
+from cryptography.fernet import Fernet
+import base64
 
 from api.core.config import config
 from api.models.token import AccessToken
@@ -66,4 +70,25 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(
         password=plain_password.encode("utf-8"),
         hashed_password=hashed_password.encode("utf-8"),
+    )
+
+def get_fernet() -> Fernet:
+    """
+    Generate a Fernet key for encryption/decryption.
+    This key is derived from the ENCRYPTION_KEY and ENCRYPTION_SALT.
+    """
+
+    kdf = Scrypt(
+        salt=config.ENCRYPTION_SALT.encode("utf-8"),
+        length=32,
+        n=2**14,
+        r=8,
+        p=1,
+        backend=default_backend(),
+    )
+
+    key = kdf.derive(config.ENCRYPTION_KEY.encode("utf-8"))
+
+    return Fernet(
+        key=base64.urlsafe_b64encode(key)
     )

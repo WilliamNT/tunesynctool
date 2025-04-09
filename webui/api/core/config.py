@@ -1,6 +1,7 @@
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import computed_field, MySQLDsn
+from tunesynctool.models.configuration import Configuration as TUNESYNCTOOL_CONFIG
 
 class Config(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env")
@@ -10,9 +11,16 @@ class Config(BaseSettings):
     DB_NAME: str = ""
     DB_USER: str
     DB_PASSWORD: str = ""
+    APP_HOST: str
     APP_SECRET: str
     API_BASE_URL: str = "/api"
     ADMIN_PASSWORD: str = "changeme"
+
+    ENCRYPTION_KEY: str
+    ENCRYPTION_SALT: str
+
+    SPOTIFY_CLIENT_ID: str
+    SPOTIFY_CLIENT_SECRET: str
 
     @computed_field
     @property
@@ -25,5 +33,15 @@ class Config(BaseSettings):
             username=self.DB_USER,
             password=self.DB_PASSWORD
         )
+    
+    @computed_field
+    @property
+    def SPOTIFY_REDIRECT_URI(self) -> str:
+        return f"{self.APP_HOST}{self.API_BASE_URL}/providers/spotify/callback"
+
+    @computed_field
+    @property
+    def SPOTIFY_SCOPES(self) -> str:
+        return TUNESYNCTOOL_CONFIG.spotify_scopes
 
 config = Config()

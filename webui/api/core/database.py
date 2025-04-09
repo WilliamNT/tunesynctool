@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from api.core.config import config
 from api.models.user import User
+from api.models.service import ServiceCredentials
 from api.core.security import hash_password
 
 engine = create_async_engine(

@@ -18,3 +18,5 @@ bcrypt
 pyjwt
 aiomysql
 greenlet
+httpx
+cryptography
