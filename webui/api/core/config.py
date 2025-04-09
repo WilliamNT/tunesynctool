@@ -12,7 +12,7 @@ class Config(BaseSettings):
     DB_PASSWORD: str = ""
     APP_SECRET: str
     API_BASE_URL: str = "/api"
-    ADMIN_PASSWORD: str = "admin"
+    ADMIN_PASSWORD: str = "changeme"
 
     @computed_field
     @property

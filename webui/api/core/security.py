@@ -4,15 +4,14 @@ import jwt
 import bcrypt
 
 from api.core.config import config
+from api.models.token import Token
 
 JWT_ALGORITHM = "HS256"
 
-def create_access_token(subject: str, expiration: timedelta) -> str:
-    expire = datetime.now(timezone.utc) + expiration
-
+def create_access_token(subject: str, expiration: datetime) -> Token:
     payload = {
         "sub": subject,
-        "exp": expire,
+        "exp": expiration,
     }
 
     encoded_jwt = jwt.encode(
@@ -21,7 +20,10 @@ def create_access_token(subject: str, expiration: timedelta) -> str:
         algorithm=JWT_ALGORITHM
     )
 
-    return encoded_jwt
+    return Token(
+        value=encoded_jwt,
+        expires_at=expiration,
+    )
 
 def verify_access_token(token: str) -> Optional[str]:
     try:

@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from sqlmodel import SQLModel, Field
 
 class User(SQLModel, table=True):
@@ -12,7 +13,7 @@ class User(SQLModel, table=True):
     password_hash: str = Field(max_length=255)
     is_admin: bool = Field(default=False)
 
-class UserCreate(SQLModel):
+class UserCreate(BaseModel):
     """
     Represents a user creation DTO.
     """
@@ -20,7 +21,7 @@ class UserCreate(SQLModel):
     username: str = Field(unique=True, index=True, max_length=255, min_length=3)    
     password: str = Field(max_length=255, min_length=8)
 
-class UserRead(SQLModel):
+class UserRead(BaseModel):
     """
     Represents a user response DTO.
     """
@@ -28,3 +29,12 @@ class UserRead(SQLModel):
     id: int
     username: str
     is_admin: bool
+
+class UserLogin(UserCreate):
+    """
+    Represents a user login DTO.
+
+    Currently an alias for UserCreate.
+    """
+
+    pass

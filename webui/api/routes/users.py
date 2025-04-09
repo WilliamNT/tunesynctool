@@ -18,4 +18,4 @@ async def create_user(user: UserCreate, session: Annotated[UserService, Depends(
 
     service = UserService(session)
 
-    return await service.create(user)
+    return await service.create_user(user)
