@@ -97,6 +97,14 @@ class CredentialsService:
         )
     
     async def get_provider_state(self, user: User, service_name: str) -> ProviderState:
+        """
+        Returns the state of the provider for the user.
+        
+        :param user: The user to get the provider state for.
+        :param service_name: The name of the service to get the provider state for.
+        :return: The provider state.
+        """
+        
         credentials = await self.get_service_credentials(
             user=user,
             service_name=service_name,
