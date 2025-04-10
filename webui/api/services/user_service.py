@@ -7,6 +7,7 @@ from api.models.user import UserCreate, User
 from api.core.security import hash_password
 from api.helpers.database import create
 from api.core.database import get_session
+from api.core.logging import logger
 
 class UserService:
     def __init__(self, db: AsyncSession):
@@ -31,6 +32,8 @@ class UserService:
             password_hash=hash_password(user.password),
             is_admin=False,
         )
+
+        logger.info(f"Creating user {user.username}.")
 
         return await create(
             session=self.db,

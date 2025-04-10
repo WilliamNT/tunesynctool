@@ -5,6 +5,7 @@ from api.core.security import create_access_token, verify_password, verify_acces
 from api.models.token import AccessToken
 from api.services.user_service import UserService, get_user_service
 from api.models.user import User
+from api.core.logging import logger
 
 class AuthService:
     """
@@ -58,6 +59,8 @@ class AuthService:
         if not self.verify_password(password, user.password_hash):
             self.raise_unauthorized()
 
+        logger.debug(f"Handed out JWT for user {user.id}.")
+        
         return create_access_token(
             subject=str(user.id),
             expires_in_days=30,
