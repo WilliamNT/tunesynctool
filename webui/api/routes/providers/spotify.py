@@ -39,19 +39,3 @@ async def callback(
         code=code,
         jwt=jwt,
     )
-
-@router.get("")
-async def test(
-    provider_service: Annotated[SpotifyService, Depends(get_spotify_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)],
-):
-    """
-    Test endpoint for the Spotify provider.
-    """
-
-    data =  await provider_service.credentials_service.get_service_credentials(
-        user=await provider_service.auth_service.resolve_user_from_jwt(jwt),
-        service_name="spotify",
-    )
-
-    return data.credentials
