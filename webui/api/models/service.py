@@ -38,3 +38,11 @@ class ServiceCredentialsCreate(BaseModel):
 
     service_name: str = Field(max_length=255, nullable=False)
     credentials: dict = Field(nullable=False)
+
+class ProviderState(BaseModel):
+    """
+    Represents the state of a provider.
+    """
+
+    provider_name: str
+    is_connected: bool

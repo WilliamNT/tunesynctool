@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends
 from api.services.auth_service import AuthService, get_auth_service
 from api.core.security import oauth2_scheme
 from api.services.spotify_service import SpotifyService, get_spotify_service
+from api.models.service import ProviderState
+from api.services.credentials_service import CredentialsService, get_credentials_service
 
 router = APIRouter(
     prefix="/spotify",
@@ -38,4 +40,24 @@ async def callback(
     return await provider_service.handle_authorization_callback(
         code=code,
         jwt=jwt,
+    )
+
+@router.get(
+    path="/",
+    response_model=ProviderState
+)
+async def state(
+    credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
+    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+    jwt: Annotated[str, Depends(oauth2_scheme)],
+):
+    """
+    Returns the status of the Spotify provider.
+    """
+
+    user = await auth_service.resolve_user_from_jwt(jwt)
+
+    return await credentials_service.get_provider_state(
+        user=user,
+        service_name="spotify",
     )

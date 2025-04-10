@@ -5,7 +5,7 @@ from sqlmodel import select
 
 from api.core.database import get_session
 from api.models.user import User
-from api.models.service import ServiceCredentials, ServiceCredentialsCreate
+from api.models.service import ProviderState, ServiceCredentials, ServiceCredentialsCreate
 from api.helpers.database import create, update
 from api.core.logging import logger
 
@@ -94,6 +94,17 @@ class CredentialsService:
         return await create(
             session=self.db,
             obj=new_credentials,
+        )
+    
+    async def get_provider_state(self, user: User, service_name: str) -> ProviderState:
+        credentials = await self.get_service_credentials(
+            user=user,
+            service_name=service_name,
+        )
+
+        return ProviderState(
+            provider_name=service_name,
+            is_connected=credentials is not None,
         )
 
 def get_credentials_service(db: Annotated[AsyncSession, Depends(get_session)]) -> CredentialsService:
