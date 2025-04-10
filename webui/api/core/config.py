@@ -26,6 +26,9 @@ class Config(BaseSettings):
     SUBSONIC_PORT: int
     SUBSONIC_LEGACY_AUTH: bool = False
 
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: str
+
     @computed_field
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> MySQLDsn:
@@ -47,5 +50,18 @@ class Config(BaseSettings):
     @property
     def SPOTIFY_SCOPES(self) -> str:
         return TUNESYNCTOOL_CONFIG.spotify_scopes
+    
+    @computed_field
+    @property
+    def GOOGLE_REDIRECT_URI(self) -> str:
+        return f"{self.APP_HOST}{self.API_BASE_URL}/providers/youtube/callback"
+    
+    @computed_field
+    @property
+    def GOOGLE_SCOPES(self) -> list[str]:
+        return [
+            "https://www.googleapis.com/auth/youtube",
+            "https://www.googleapis.com/auth/youtube.readonly"
+        ]
 
 config = Config()
