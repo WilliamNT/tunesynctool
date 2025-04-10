@@ -18,7 +18,8 @@ async def authorize(
     jwt: Annotated[str, Depends(oauth2_scheme)],
 ):
     """
-    Starts the Spotify Authorization Code Flow.
+    Starts the Spotify Authorization Code Flow. Redirects the user to the Spotify authorization page.
+    The user will be asked to log in and authorize the application.
 
     Details: https://developer.spotify.com/documentation/web-api/tutorials/code-flow
     """
@@ -33,6 +34,7 @@ async def callback(
 ):
     """
     Handles the Spotify Authorization Code Flow callback.
+    Do not call directly. This endpoint is called by Spotify after the user has authorized the application.
 
     Details: https://developer.spotify.com/documentation/web-api/tutorials/code-flow
     """
