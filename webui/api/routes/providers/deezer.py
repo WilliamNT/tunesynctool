@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 
 from api.core.security import oauth2_scheme
 from api.models.service import ProviderState
@@ -49,3 +49,22 @@ async def state(
         user=user,
         service_name="deezer",
     )
+
+@router.delete(
+    path="/unlink",
+    status_code=204,
+    responses={
+        status.HTTP_204_NO_CONTENT: {
+            "description": "Account unlinked successfully.",
+        },
+    }
+)
+async def unlink(
+    provider_service: Annotated[DeezerService, Depends(get_deezer_service)],
+    jwt: Annotated[str, Depends(oauth2_scheme)],
+):
+    """
+    Unlinks the Deezer account associated with the user.
+    """
+
+    return await provider_service.handle_account_unlink(jwt)
