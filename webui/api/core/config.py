@@ -22,6 +22,10 @@ class Config(BaseSettings):
     SPOTIFY_CLIENT_ID: str
     SPOTIFY_CLIENT_SECRET: str
 
+    SUBSONIC_BASE_URL: str
+    SUBSONIC_PORT: int
+    SUBSONIC_LEGACY_AUTH: bool = False
+
     @computed_field
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> MySQLDsn:
