@@ -53,6 +53,8 @@ async def state(
 ):
     """
     Returns the status of the Spotify provider.
+
+    Call this endpoint to check if the user has connected their Spotify account.
     """
 
     user = await auth_service.resolve_user_from_jwt(jwt)
