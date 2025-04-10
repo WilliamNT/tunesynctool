@@ -1,8 +1,9 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi.responses import RedirectResponse
 from fastapi import Depends, HTTPException, status
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.cache_handler import CacheHandler
+from spotipy.exceptions import SpotifyOauthError
 import asyncio
 
 from api.core.config import config
@@ -10,30 +11,21 @@ from api.services.auth_service import AuthService, get_auth_service
 from api.services.credentials_service import CredentialsService, get_credentials_service
 from api.models.service import ServiceCredentialsCreate
 from api.models.user import User
+from api.core.logging import logger
 
-class _CustomCacheHandler(CacheHandler):
+class _FakeCacheHandler(CacheHandler):
     """
-    We override the default cache handler to avoid using a file-based cache.
+    We override the default cache handler beause we use our own logic to store the credentials in the database.
     """
 
-    def __init__(self, credentials_service: CredentialsService, user: User):
-        self.credentials_service = credentials_service
-        self.user = user
+    def __init__(self):
         super().__init__()
 
-    def get_cached_token(self):
-        loop = asyncio.get_event_loop()
-        return asyncio.run_coroutine_threadsafe(self.credentials_service.get_service_credentials(
-            user=self.user,
-            service_name="spotify",
-        ), loop)
+    async def get_cached_token(self):
+        return None
     
-    def save_token_to_cache(self, token_info):
-        loop = asyncio.get_event_loop()
-        return asyncio.run_coroutine_threadsafe(self.credentials_service.set_service_credentials(
-            user=self.user,
-            credentials=token_info
-        ), loop)
+    async def save_token_to_cache(self, token_info):
+        pass
 
 class SpotifyService:
     """
@@ -51,10 +43,7 @@ class SpotifyService:
             redirect_uri=config.SPOTIFY_REDIRECT_URI,
             scope=config.SPOTIFY_SCOPES,
             show_dialog=True,
-            cache_handler=_CustomCacheHandler(
-                credentials_service=self.credentials_service,
-                user=user,
-            ),
+            cache_handler=_FakeCacheHandler(),
         )
 
     async def request_user_authorization(self, jwt: str) -> RedirectResponse:
@@ -65,9 +54,13 @@ class SpotifyService:
         This is done by redirecting the user to the Spotify authorization page.
         """
 
+        user = await self.auth_service.resolve_user_from_jwt(jwt)
+        
         spotify_oauth2 = self._get_spotify_oauth2(
-            user=await self.auth_service.resolve_user_from_jwt(jwt)
+            user=user
         )
+
+        logger.info(f"Initiating Spotify authorization code flow. Redirecting user {user.id} to Spotify to request access.")
 
         return RedirectResponse(
             url=spotify_oauth2.get_authorize_url(),
@@ -83,17 +76,20 @@ class SpotifyService:
         
         user = await self.auth_service.resolve_user_from_jwt(jwt)
 
-        token_details: dict = self._get_spotify_oauth2(user).get_access_token(
-            code=code,
-            check_cache=False,
-            as_dict=True
-        )
+        try:
+            logger.info(f"Received Spotify callback. User {user.id} has granted access.")
 
-        if not token_details:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authorization code",
+            token_details: dict = self._get_spotify_oauth2(user).get_access_token(
+                code=code,
+                check_cache=False,
+                as_dict=True
             )
+
+            if not token_details:
+                self.raise_flow_exception()
+        except SpotifyOauthError as e:
+            logger.error(f"Spotify authorization flow failed. Spotify said: \"{e.error_description}\".")
+            self.raise_flow_exception(e.error_description)
         
         credentials = ServiceCredentialsCreate(
             service_name="spotify",
@@ -104,6 +100,16 @@ class SpotifyService:
             user=user,
             credentials=credentials
         )
+
+    def raise_flow_exception(self, message: Optional[str] = None) -> None:
+        """
+        Raises an HTTPException with a 400 status code and a message indicating that the Spotify authorization flow failed.
+        """
+        
+        raise HTTPException(
+            status_code=400,
+            detail=f"Flow failed: {message}" if message else "Flow failed (unknown reason)",
+        )    
     
 def get_spotify_service(auth_service: Annotated[AuthService, Depends(get_auth_service)], credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)]) -> SpotifyService:
     """
