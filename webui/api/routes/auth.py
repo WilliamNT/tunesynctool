@@ -1,8 +1,7 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, Response, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 
-from api.models.user import UserLogin
 from api.services.auth_service import AuthService, get_auth_service
 
 router = APIRouter(
