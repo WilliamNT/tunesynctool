@@ -6,7 +6,7 @@ from sqlmodel import select
 from api.core.database import get_session
 from api.models.user import User
 from api.models.service import ProviderState, ServiceCredentials, ServiceCredentialsCreate
-from api.helpers.database import create, update
+from api.helpers.database import create, update, delete
 from api.core.logging import logger
 
 class CredentialsService:
@@ -104,7 +104,7 @@ class CredentialsService:
         :param service_name: The name of the service to get the provider state for.
         :return: The provider state.
         """
-        
+
         credentials = await self.get_service_credentials(
             user=user,
             service_name=service_name,
@@ -113,6 +113,32 @@ class CredentialsService:
         return ProviderState(
             provider_name=service_name,
             is_connected=credentials is not None,
+        )
+    
+    
+    async def delete_credentials(self, user: User, service_name: str) -> None:
+        """
+        Permanently deletes the credentials for the user and service.
+
+        :param user: The user to delete the credentials for.
+        :param service_name: The name of the service to delete the credentials for.
+        :return: None
+        """
+
+        credentials = await self.get_service_credentials(
+            user=user,
+            service_name=service_name,
+        )
+
+        if not credentials:
+            logger.warning(f"Credentials for user {user.id} and service \"{service_name}\" don't exist but their deletion was requested anyway.")
+            return
+        
+        logger.info(f"Deleting credentials for user {user.id} and service \"{service_name}\".")
+
+        await delete(
+            session=self.db,
+            obj=credentials,
         )
 
 def get_credentials_service(db: Annotated[AsyncSession, Depends(get_session)]) -> CredentialsService:

@@ -30,3 +30,15 @@ async def update(session: AsyncSession, obj: SQLModel) -> SQLModel:
     await session.refresh(obj)
     
     return obj
+
+async def delete(session: AsyncSession, obj: SQLModel) -> None:
+    """
+    Delete an existing object in the database.
+
+    :param session: The session to use for the database operation.
+    :param obj: The object to delete.
+    :return: None
+    """
+
+    await session.delete(obj)
+    await session.commit()

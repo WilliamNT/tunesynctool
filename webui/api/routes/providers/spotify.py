@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 
 from api.services.auth_service import AuthService, get_auth_service
 from api.core.security import oauth2_scheme
@@ -65,3 +65,22 @@ async def state(
         user=user,
         service_name="spotify",
     )
+
+@router.delete(
+    path="/unlink",
+    status_code=204,
+    responses={
+        status.HTTP_204_NO_CONTENT: {
+            "description": "Account unlinked successfully.",
+        },
+    }
+)
+async def unlink(
+    provider_service: Annotated[SpotifyService, Depends(get_spotify_service)],
+    jwt: Annotated[str, Depends(oauth2_scheme)],
+):
+    """
+    Unlinks the Spotify account associated with the user.
+    """
+
+    return await provider_service.handle_account_unlink(jwt)

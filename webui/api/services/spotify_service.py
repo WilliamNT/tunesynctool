@@ -101,6 +101,20 @@ class SpotifyService:
             credentials=credentials
         )
 
+    async def handle_account_unlink(self, jwt: str) -> None:
+        """
+        Unlinks the Spotify account from the user.
+        """
+
+        user = await self.auth_service.resolve_user_from_jwt(jwt)
+
+        logger.info(f"Unlinking Spotify account for user {user.id}.")
+
+        await self.credentials_service.delete_credentials(
+            user=user,
+            service_name="spotify"
+        )
+
     def raise_flow_exception(self, message: Optional[str] = None) -> None:
         """
         Raises an HTTPException with a 400 status code and a message indicating that the Spotify authorization flow failed.
