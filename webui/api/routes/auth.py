@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from api.services.auth_service import AuthService, get_auth_service
+from api.models.token import AccessToken
 
 router = APIRouter(
     prefix="/auth",
@@ -12,6 +13,7 @@ router = APIRouter(
 @router.post(
     path="/token",
     status_code=status.HTTP_200_OK,
+    response_model=AccessToken,
     responses={
         status.HTTP_200_OK: {
             "description": "Successfully logged in. ",
@@ -23,7 +25,10 @@ router = APIRouter(
 )
 async def obtain_token(credentials: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response, auth_service: Annotated[AuthService, Depends(get_auth_service)]):    
     """
-    Authenticates via username and password and sets a cookie containing a JWT. The JWT is valid for a limited time.
+    Generates a bearer JWT for the user.
+
+    Requires the user to provide their username and password.
+    The JWT is returned in the response body **and** as a cookie.
     """
 
     jwt = await auth_service.authenticate(
