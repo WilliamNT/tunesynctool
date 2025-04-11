@@ -18,17 +18,17 @@ class UserCreate(BaseModel):
     Represents a user creation DTO.
     """
 
-    username: str = Field(unique=True, index=True, max_length=255, min_length=3)    
-    password: str = Field(max_length=255, min_length=8)
+    username: str = Field(unique=True, index=True, max_length=255, min_length=3, description="Username must be unique and at least 3 characters long.")    
+    password: str = Field(max_length=255, min_length=8, description="Password must be at least 8 characters long.")
 
 class UserRead(BaseModel):
     """
     Represents a user response DTO.
     """
 
-    id: int
-    username: str
-    is_admin: bool
+    id: int = Field(nullable=False, description="User ID")
+    username: str = Field(max_length=255, description="Username")
+    is_admin: bool = Field(default=False, description="Whether the user is an admin")
 
 class UserLogin(UserCreate):
     """

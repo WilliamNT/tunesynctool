@@ -44,5 +44,5 @@ class ProviderState(BaseModel):
     Represents the state of a provider.
     """
 
-    provider_name: str
-    is_connected: bool
+    provider_name: str = Field(description="The name of the provider.")
+    is_connected: bool = Field(description="Whether the provider is connected (linked) to the authenticated user.")
