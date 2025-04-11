@@ -14,7 +14,6 @@ router = APIRouter(
 @router.post(
     path="/",
     status_code=201,
-    response_model=UserRead,
     responses={
         status.HTTP_201_CREATED: {
             "description": "User created successfully.",
@@ -24,7 +23,10 @@ router = APIRouter(
         },
     }
 )
-async def create_user(user: UserCreate, user_service: Annotated[UserService, Depends(get_user_service)]):
+async def create_user(
+    user: UserCreate,
+    user_service: Annotated[UserService, Depends(get_user_service)]
+) -> UserRead:
     """
     Create a new user.
     """
@@ -33,15 +35,11 @@ async def create_user(user: UserCreate, user_service: Annotated[UserService, Dep
 
 @router.get(
     path="/me",
-    status_code=status.HTTP_200_OK,
-    response_model=UserRead,
-    responses={
-        status.HTTP_200_OK: {
-            "description": "User retrieved successfully.",
-        }
-    }
 )
-async def get_authenticated_user(auth_service: Annotated[AuthService, Depends(get_auth_service)], jwt: Annotated[str, Depends(oauth2_scheme)]):
+async def get_authenticated_user(
+    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+    jwt: Annotated[str, Depends(oauth2_scheme)]
+) -> UserRead:
     """
     Get the authenticated user.
     """
