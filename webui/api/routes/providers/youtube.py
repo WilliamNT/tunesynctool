@@ -1,5 +1,6 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, Request, status
+from fastapi.responses import RedirectResponse
 
 from api.services.youtube_service import YouTubeService, get_youtube_service
 from api.core.security import oauth2_scheme
@@ -12,11 +13,19 @@ router = APIRouter(
     tags=["youtube"],
 )
 
-@router.get("/authorize")
+@router.get(
+    path="/authorize",
+    status_code=302,
+    responses={
+        status.HTTP_302_FOUND: {
+            "description": "Redirecting to YouTube authorization page.",
+        },
+    }
+)
 async def authorize(
     provider_service: Annotated[YouTubeService, Depends(get_youtube_service)],
     jwt: Annotated[str, Depends(oauth2_scheme)],
-):
+) -> RedirectResponse:
     """
     Starts the YouTube Authorization Code Flow. Redirects the user to the YouTube authorization page.
     The user will be asked to log in and authorize the application.
@@ -26,12 +35,20 @@ async def authorize(
     
     return await provider_service.request_user_authorization(jwt)
 
-@router.get("/callback")
+@router.get(
+    path="/callback",
+    status_code=204,
+    responses={
+        status.HTTP_204_NO_CONTENT: {
+            "description": "The user granted access.",
+        },
+    }
+)
 async def callback(
     provider_service: Annotated[YouTubeService, Depends(get_youtube_service)],
     jwt: Annotated[str, Depends(oauth2_scheme)],
     request: Request
-):
+) -> None:
     """
     Handles the Google OAuth2 callback.
     Do not call directly. This endpoint is called by Google after the user has authorized the application.
@@ -46,13 +63,12 @@ async def callback(
 
 @router.get(
     path="/",
-    response_model=ProviderState
 )
 async def state(
     credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
     jwt: Annotated[str, Depends(oauth2_scheme)],
-):
+) -> ProviderState:
     """
     Returns the status of the YouTube provider.
 
@@ -78,7 +94,7 @@ async def state(
 async def unlink(
     provider_service: Annotated[YouTubeService, Depends(get_youtube_service)],
     jwt: Annotated[str, Depends(oauth2_scheme)],
-):
+) -> None:
     """
     Unlinks the Google account associated with the user.
     """

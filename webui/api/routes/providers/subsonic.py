@@ -13,12 +13,20 @@ router = APIRouter(
     tags=["subsonic"],
 )
 
-@router.post("/credentials")
+@router.post(
+    path="/credentials",
+    status_code=204,
+    responses={
+        status.HTTP_204_NO_CONTENT: {
+            "description": "Credentials set successfully.",
+        },
+    }
+)
 async def credentials(
     provider_service: Annotated[SubsonicService, Depends(get_subsonic_service)],
     credentials: SubsonicCredentials,
     jwt: Annotated[str, Depends(oauth2_scheme)],
-):
+) -> None:
     """
     Allows the user to set their Subsonic credentials.
     """
@@ -30,13 +38,12 @@ async def credentials(
 
 @router.get(
     path="/",
-    response_model=ProviderState
 )
 async def state(
     credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
     jwt: Annotated[str, Depends(oauth2_scheme)],
-):
+) -> ProviderState:
     """
     Returns the status of the Subsonic provider.
 
@@ -62,7 +69,7 @@ async def state(
 async def unlink(
     provider_service: Annotated[SubsonicService, Depends(get_subsonic_service)],
     jwt: Annotated[str, Depends(oauth2_scheme)],
-):
+) -> None:
     """
     Unlinks the Subsonic account associated with the user.
     """

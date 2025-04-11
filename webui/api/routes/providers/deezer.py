@@ -13,12 +13,20 @@ router = APIRouter(
     tags=["deezer"],
 )
 
-@router.post("/arl")
+@router.post(
+    path="/arl",
+    status_code=204,
+    responses={
+        status.HTTP_204_NO_CONTENT: {
+            "description": "ARL set successfully.",
+        },
+    }
+)
 async def arl(
     provider_service: Annotated[DeezerService, Depends(get_deezer_service)],
     arl: ARLCreate,
     jwt: Annotated[str, Depends(oauth2_scheme)],
-):
+) -> None:
     """
     Allows the user to set their Deezer ARL cookie.
     """
@@ -30,13 +38,12 @@ async def arl(
 
 @router.get(
     path="/",
-    response_model=ProviderState
 )
 async def state(
     credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
     jwt: Annotated[str, Depends(oauth2_scheme)],
-):
+) -> ProviderState:
     """
     Returns the status of the Deezer provider.
 
@@ -62,7 +69,7 @@ async def state(
 async def unlink(
     provider_service: Annotated[DeezerService, Depends(get_deezer_service)],
     jwt: Annotated[str, Depends(oauth2_scheme)],
-):
+) -> None:
     """
     Unlinks the Deezer account associated with the user.
     """
