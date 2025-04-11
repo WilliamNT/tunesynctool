@@ -1,1 +1,1 @@
-from .router import endpoints
+from .providers import router

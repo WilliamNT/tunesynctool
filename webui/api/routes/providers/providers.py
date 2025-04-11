@@ -5,11 +5,11 @@ from .deezer import router as deezer_router
 from .subsonic import router as subsonic_router
 from .youtube import router as youtube_router
 
-endpoints = APIRouter(
+router = APIRouter(
     prefix="/providers",
 )
 
-endpoints.include_router(spotify_router)
-endpoints.include_router(deezer_router)
-endpoints.include_router(subsonic_router)
-endpoints.include_router(youtube_router)
+router.include_router(spotify_router)
+router.include_router(deezer_router)
+router.include_router(subsonic_router)
+router.include_router(youtube_router)
