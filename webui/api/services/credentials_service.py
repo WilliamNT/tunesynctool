@@ -141,5 +141,32 @@ class CredentialsService:
             obj=credentials,
         )
 
+    async def get_states_of_all_connected_providers(self, user: User) -> list[ProviderState]:
+        """
+        Returns the list of all **connected** providers for the user.
+
+        :param user: The user to get the connected providers for.
+        :return: The list of connected providers.
+        """
+
+        logger.info(f"Getting all connected providers for user {user.id}.")
+
+        result = await self.db.execute(
+            select(ServiceCredentials).where(
+                ServiceCredentials.user_id == user.id,
+            )
+        )
+
+        credentials = []
+        for row in result.scalars().all():
+            credentials.append(
+                ProviderState(
+                    provider_name=row.service_name,
+                    is_connected=True,
+                )
+            )
+
+        return credentials
+
 def get_credentials_service(db: Annotated[AsyncSession, Depends(get_session)]) -> CredentialsService:
     return CredentialsService(db)
