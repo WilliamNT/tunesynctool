@@ -40,11 +40,16 @@ class CatalogService:
             logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to search anyway.")
             self.raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
 
-        driver = await self.service_driver_helper_service.get_initialized_driver(
-            user=user,
-            credentials=credentials,
-            provider_name=search_parameters.provider
-        )
+        try:
+            driver = await self.service_driver_helper_service.get_initialized_driver(
+                credentials=credentials,
+                provider_name=search_parameters.provider
+            )
+        except ValueError as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Provider \"{search_parameters.provider}\" is not supported.",
+            ) from e
 
         return await self.search(
             search_parameters=search_parameters,

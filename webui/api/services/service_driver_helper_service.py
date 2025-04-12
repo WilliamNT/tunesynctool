@@ -5,13 +5,14 @@ from api.models.user import User
 from api.models.service import ServiceCredentials
 from api.core.config import config
 from api.helpers.service_driver import get_driver_by_name
+from api.core.logging import logger
 
 class ServiceDriverHelperService:
     """
     Provides methods to initialize service drivers.
     """
 
-    async def get_initialized_driver(self, user: User, credentials: ServiceCredentials, provider_name: str) -> ServiceDriver:
+    async def get_initialized_driver(self, credentials: ServiceCredentials, provider_name: str) -> ServiceDriver:
         """
         Returns an initialized driver for the specified provider.
         This method retrieves the user's credentials for the specified provider and initializes the driver with those credentials.
@@ -19,12 +20,17 @@ class ServiceDriverHelperService:
         :param user: The user to get the driver for.
         :param provider_name: The name of the provider.
         :return: The initialized driver.
+        :raises ValueError: If the provider name is not supported.
         """
 
-        config = self._get_config(
-            credentials=credentials,
-            provider_name=provider_name
-        )
+        try:
+            config = self._get_config(
+                credentials=credentials,
+                provider_name=provider_name
+            )
+        except ValueError:
+            logger.error(f"Attempted to resolve non-existent service driver: {provider_name}")
+            raise
 
         driver: ServiceDriver = get_driver_by_name(provider_name)
 
@@ -38,6 +44,8 @@ class ServiceDriverHelperService:
                 return self._get_subsonic_config(credentials)
             case "youtube", "spotify":
                 pass
+            case _:
+                raise ValueError(f"Unsupported provider: {provider_name}")
 
     def _get_deezer_config(self, credentials: ServiceCredentials) -> Configuration:
         return Configuration(
