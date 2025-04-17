@@ -1,11 +1,12 @@
 from tunesynctool.drivers import ServiceDriver
 from tunesynctool.models import Configuration
+from google.oauth2.credentials import Credentials as GoogleCredentials
 
-from api.models.user import User
 from api.models.service import ServiceCredentials
 from api.core.config import config
 from api.helpers.service_driver import get_driver_by_name
 from api.core.logging import logger
+from api.core.config import config
 
 class ServiceDriverHelperService:
     """
@@ -34,7 +35,18 @@ class ServiceDriverHelperService:
 
         driver: ServiceDriver = get_driver_by_name(provider_name)
 
-        return driver(config)
+        match provider_name.lower().strip():
+            case "youtube":
+                return driver(
+                    google_credentials=config
+                )
+            case "spotify":
+                logger.warning("Spotify driver is not implemented yet.")
+                pass
+            case _:
+                return driver(
+                    config=config
+                )
 
     def _get_config(self, credentials: ServiceCredentials, provider_name: str) -> Configuration:
         match provider_name:
@@ -42,7 +54,9 @@ class ServiceDriverHelperService:
                 return self._get_deezer_config(credentials)
             case "subsonic":
                 return self._get_subsonic_config(credentials)
-            case "youtube", "spotify":
+            case "youtube":
+                return self._get_youtube_config(credentials)
+            case "spotify":
                 pass
             case _:
                 raise ValueError(f"Unsupported provider: {provider_name}")
@@ -59,6 +73,12 @@ class ServiceDriverHelperService:
             subsonic_base_url=config.SUBSONIC_BASE_URL,
             subsonic_port=config.SUBSONIC_PORT,
             subsonic_legacy_auth=config.SUBSONIC_LEGACY_AUTH
+        )
+    
+    def _get_youtube_config(self, credentials: ServiceCredentials) -> GoogleCredentials:
+        return GoogleCredentials.from_authorized_user_info(
+            info=credentials.credentials,
+            scopes=config.GOOGLE_SCOPES
         )
 
 def get_service_driver_helper_service() -> ServiceDriverHelperService:

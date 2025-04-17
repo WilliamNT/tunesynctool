@@ -1,8 +1,10 @@
-from tunesynctool.drivers import *
+from tunesynctool.drivers import ServiceDriver, SpotifyDriver, SubsonicDriver, DeezerDriver
+
+from api.drivers.youtube import YouTubeOAuth2Driver
 
 DRIVERS = {
     "spotify": SpotifyDriver,
-    "youtube": YouTubeDriver,
+    "youtube": YouTubeOAuth2Driver,
     "subsonic": SubsonicDriver,
     "deezer": DeezerDriver,
 }
