@@ -2,14 +2,14 @@ from typing import List, Optional
 
 from tunesynctool.exceptions import PlaylistNotFoundException, ServiceDriverException, UnsupportedFeatureException, TrackNotFoundException
 from tunesynctool.models import Playlist, Configuration, Track
-from tunesynctool.drivers import ServiceDriver
+from tunesynctool.drivers import AsyncWrappedServiceDriver, ServiceDriver
 from .mapper import DeezerMapper
 
 from streamrip import Config as StreamRipConfig
 from streamrip.client import DeezerClient
 from deezer.errors import InvalidQueryException, DataException
 
-class AsyncDeezerDriver(ServiceDriver):
+class AsyncDeezerDriver(ServiceDriver, AsyncWrappedServiceDriver):
     """
     Deezer service driver.
 
