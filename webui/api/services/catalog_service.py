@@ -71,11 +71,18 @@ class CatalogService:
                 ))
 
             return mapped_results
-        except (ServiceDriverException, UnsupportedFeatureException) as e:
+        except UnsupportedFeatureException as e:
+            logger.warning(f"Provider \"{search_parameters.provider}\" does not support a feature but it was called anyway: {e}")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Provider \"{search_parameters.provider}\" does not support this feature.",
+            ) from e
+        
+        except ServiceDriverException as e:
             logger.error(f"Service driver error: {e}")
             raise HTTPException(
                 status_code=400,
-                detail=f"Provider returned an error: {e}",
+                detail=f"Provider returned an error.",
             )
                 
     def _map_track(self, track: Track, provider_name: str) -> TrackRead:
