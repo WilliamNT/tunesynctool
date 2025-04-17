@@ -61,7 +61,8 @@ class Config(BaseSettings):
     def GOOGLE_SCOPES(self) -> list[str]:
         return [
             "https://www.googleapis.com/auth/youtube",
-            "https://www.googleapis.com/auth/youtube.readonly"
+            "https://www.googleapis.com/auth/youtube.readonly",
+            "https://www.googleapis.com/auth/youtube.force-ssl"
         ]
 
 config = Config()
