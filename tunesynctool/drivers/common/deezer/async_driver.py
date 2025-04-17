@@ -125,7 +125,7 @@ class AsyncDeezerDriver(ServiceDriver, AsyncWrappedServiceDriver):
                     if not track_id:
                         continue
 
-                    result = self.get_track(
+                    result = await self.get_track(
                         track_id=track_id
                     )
 
