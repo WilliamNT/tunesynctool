@@ -1,4 +1,4 @@
-from tunesynctool.drivers import ServiceDriver
+from tunesynctool.drivers import AsyncWrappedServiceDriver
 from tunesynctool.models import Configuration
 from google.oauth2.credentials import Credentials as GoogleCredentials
 
@@ -13,7 +13,7 @@ class ServiceDriverHelperService:
     Provides methods to initialize service drivers.
     """
 
-    async def get_initialized_driver(self, credentials: ServiceCredentials, provider_name: str) -> ServiceDriver:
+    async def get_initialized_driver(self, credentials: ServiceCredentials, provider_name: str) -> AsyncWrappedServiceDriver:
         """
         Returns an initialized driver for the specified provider.
         This method retrieves the user's credentials for the specified provider and initializes the driver with those credentials.
@@ -33,7 +33,7 @@ class ServiceDriverHelperService:
             logger.error(f"Attempted to resolve non-existent service driver: {provider_name}")
             raise
 
-        driver: ServiceDriver = get_driver_by_name(provider_name)
+        driver: AsyncWrappedServiceDriver = get_driver_by_name(provider_name)
 
         match provider_name.lower().strip():
             case "youtube":

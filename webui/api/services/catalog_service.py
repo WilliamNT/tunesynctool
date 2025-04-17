@@ -1,7 +1,7 @@
 from typing import Annotated, Optional
 
 from fastapi import Depends, HTTPException
-from tunesynctool.drivers import ServiceDriver
+from tunesynctool.drivers import AsyncWrappedServiceDriver
 from tunesynctool.exceptions import ServiceDriverException, UnsupportedFeatureException
 from tunesynctool.models import Track
 
@@ -56,9 +56,9 @@ class CatalogService:
             service_driver=driver
         )
 
-    async def search(self, search_parameters: SearchParams, service_driver: ServiceDriver) -> list[TrackRead]:
+    async def search(self, search_parameters: SearchParams, service_driver: AsyncWrappedServiceDriver) -> list[TrackRead]:
         try:
-            results = service_driver.search_tracks(
+            results = await service_driver.search_tracks(
                 query=search_parameters.query,
                 limit=search_parameters.limit
             )
@@ -96,7 +96,7 @@ class CatalogService:
         )
 
         identifiers = TrackIdentifiersRead(
-            provider_id=track.service_id,
+            provider_id=str(track.service_id),
             musicbrainz=track.musicbrainz_id,
             isrc=track.isrc
         )

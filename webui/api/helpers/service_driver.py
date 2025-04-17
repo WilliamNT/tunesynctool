@@ -1,12 +1,17 @@
-from tunesynctool.drivers import ServiceDriver, SpotifyDriver, SubsonicDriver, DeezerDriver
+from tunesynctool.drivers import (
+    AsyncWrappedServiceDriver,
+    AsyncDeezerDriver,
+    AsyncSpotifyDriver,
+    AsyncSubsonicDriver
+)
 
-from api.drivers.youtube import YouTubeOAuth2Driver
+from api.drivers.youtube import AsyncYouTubeOAuth2Driver
 
 DRIVERS = {
-    "spotify": SpotifyDriver,
-    "youtube": YouTubeOAuth2Driver,
-    "subsonic": SubsonicDriver,
-    "deezer": DeezerDriver,
+    "spotify": AsyncSpotifyDriver,
+    "youtube": AsyncYouTubeOAuth2Driver,
+    "subsonic": AsyncSubsonicDriver,
+    "deezer": AsyncDeezerDriver,
 }
 
 SUPPORTED_PROVIDERS = list(DRIVERS.keys())
@@ -21,7 +26,7 @@ def is_valid_provider(name: str) -> bool:
 
     return name.lower().strip() in SUPPORTED_PROVIDERS
 
-def get_driver_by_name(name: str) -> ServiceDriver:
+def get_driver_by_name(name: str) -> AsyncWrappedServiceDriver:
     """
     Get a driver class by its name.
 
