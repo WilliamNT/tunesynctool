@@ -1,7 +1,7 @@
 import json
 from typing import Annotated, Optional
 from fastapi import Depends, HTTPException
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
 from google_auth_oauthlib.flow import Flow
 from oauthlib.oauth2.rfc6749.errors import OAuth2Error
 
@@ -96,6 +96,10 @@ class YouTubeService:
         await self.credentials_service.set_service_credentials(
             user=user,
             credentials=credentials
+        )
+
+        return HTMLResponse(
+            content=f"<h1>Authorization successful!</h1><p>This is a placeholder. Here's some of your info for verification: {credentials.credentials}</p>",
         )
 
     async def handle_account_unlink(self, jwt: str) -> None:
