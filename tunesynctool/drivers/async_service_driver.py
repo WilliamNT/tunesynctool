@@ -32,8 +32,7 @@ class AsyncWrappedServiceDriver:
         logger.debug(f'Initialized async wrapper for {self.__class__.__name__} driver for {self.service_name} service.')
 
     async def _wrap_sync(self, fn, *args, **kwargs):
-        return await anyio.to_thread.run_sync(fn, *args, **kwargs)
-
+        return await anyio.to_thread.run_sync(lambda: fn(*args, **kwargs))
 
     async def get_user_playlists(self, limit: int = 25) -> List[Playlist]:
         return await self._wrap_sync(
