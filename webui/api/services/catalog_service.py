@@ -256,7 +256,7 @@ class CatalogService:
     async def track_lookup(self, search_parameters: TrackLookupByIDParams, service_driver: AsyncWrappedServiceDriver) -> TrackRead:
         try:
             result = await service_driver.get_track(
-                track_id=search_parameters.service_id
+                track_id=search_parameters.provider_id
             )
 
             return self._map_track(

@@ -69,7 +69,7 @@ async def search_isrc(
     )
 
 @router.get(
-    path="/tracks/{service_id}",
+    path="/tracks/{provider_id}",
     responses={
         status.HTTP_400_BAD_REQUEST: {
             "description": "Something went wrong with the provider. See message for details.",

@@ -38,4 +38,4 @@ class TrackLookupByIDParams(SearchParamsBase):
     Track lookup by ID parameters.
     """
 
-    service_id: str = Field(description="ID of the track to look up.")
+    provider_id: str = Field(description="ID of the track to look up.")
