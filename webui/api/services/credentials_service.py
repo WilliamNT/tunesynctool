@@ -190,7 +190,7 @@ class CredentialsService:
             raise ValueError(f"Cannot refresh credentials for service \"{credentials.service_name}\". This method only supports Google services.")
 
         google_credentials = GoogleCredentials.from_authorized_user_info(
-            info=json.loads(credentials.credentials),
+            info=credentials.credentials,
             scopes=config.GOOGLE_SCOPES
         )
 

@@ -1,12 +1,11 @@
 from tunesynctool.drivers import ServiceDriver
-from tunesynctool.exceptions import ServiceDriverException
+from tunesynctool.exceptions import ServiceDriverException, UnsupportedFeatureException
 from tunesynctool.models import Track, Playlist
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials as GoogleCredentials
 from typing import List, Optional
 
 from .mapper import YouTubeAPIV3Mapper
-from api.core.logging import logger
 
 class YouTubeOAuth2Driver(ServiceDriver):
     """
@@ -22,7 +21,7 @@ class YouTubeOAuth2Driver(ServiceDriver):
             service_name="youtube",
             config=None,
             mapper=YouTubeAPIV3Mapper(),
-            supports_direct_isrc_querying=True
+            supports_direct_isrc_querying=False
         )
 
         self.client = self.__get_client(google_credentials)
@@ -105,4 +104,4 @@ class YouTubeOAuth2Driver(ServiceDriver):
             raise ServiceDriverException(e)
 
     def get_track_by_isrc(self, isrc: str) -> Track:
-        pass
+        raise UnsupportedFeatureException("This feature is not implemented because there is no reliable way to query by ISRC with the YouTube API.")

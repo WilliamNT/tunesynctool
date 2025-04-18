@@ -94,7 +94,7 @@ class ServiceDriverHelperService:
         )
 
         google_credentials = GoogleCredentials.from_authorized_user_info(
-            info=json.loads(fresh_credentials.credentials),
+            info=fresh_credentials.credentials,
             scopes=config.GOOGLE_SCOPES
         )
 
