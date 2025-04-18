@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, status
 
 from api.services.catalog_service import CatalogService, get_catalog_service
-from api.models.search import SearchParams, ISRCSearchParams, TrackLookupByIDParams
+from api.models.search import SearchParams, ISRCSearchParams, LookupByProviderIDParams
 from api.models.collection import SearchResultCollection
 from api.models.track import TrackRead
 from api.core.security import oauth2_scheme
@@ -80,7 +80,7 @@ async def search_isrc(
     }
 )
 async def get_track(
-    filter_query: Annotated[TrackLookupByIDParams, Query()],
+    filter_query: Annotated[LookupByProviderIDParams, Query()],
     catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
     jwt: Annotated[str, Depends(oauth2_scheme)]
 ) -> TrackRead:

@@ -7,7 +7,7 @@ from tunesynctool.models import Track
 
 from api.services.credentials_service import CredentialsService, get_credentials_service
 from api.core.logging import logger
-from api.models.search import SearchParams, ISRCSearchParams, TrackLookupByIDParams
+from api.models.search import SearchParams, ISRCSearchParams, LookupByProviderIDParams
 from api.models.collection import SearchResultCollection
 from api.services.auth_service import AuthService, get_auth_service
 from api.models.track import TrackRead, TrackArtistsRead, TrackIdentifiersRead, TrackMetaRead
@@ -226,7 +226,7 @@ class CatalogService:
                 detail=f"Track not found.",
             ) from e
 
-    async def handle_track_lookup(self, search_parameters: TrackLookupByIDParams, jwt: str) -> TrackRead:
+    async def handle_track_lookup(self, search_parameters: LookupByProviderIDParams, jwt: str) -> TrackRead:
         user = await self.auth_service.resolve_user_from_jwt(jwt)
         credentials = await self.credentials_service.get_service_credentials(
             user=user,
@@ -253,7 +253,7 @@ class CatalogService:
             service_driver=driver
         )
     
-    async def track_lookup(self, search_parameters: TrackLookupByIDParams, service_driver: AsyncWrappedServiceDriver) -> TrackRead:
+    async def track_lookup(self, search_parameters: LookupByProviderIDParams, service_driver: AsyncWrappedServiceDriver) -> TrackRead:
         try:
             result = await service_driver.get_track(
                 track_id=search_parameters.provider_id
