@@ -9,7 +9,26 @@ class YouTubeAPIV3Mapper(ServiceMapper):
     """
 
     def map_playlist(self, data: dict) -> Playlist:
-        pass
+        if data.get("kind") != "youtube#playlist":
+            raise ValueError(f"Invalid data provided for mapping playlist! Unrecognized resource kind: \"{data.get('kind')}\". Expected \"youtube#playlist\".")
+        
+        details = data.get("snippet")
+
+        service_id = data.get("id")
+        name = details.get("title")
+        description = details.get("description")
+        author_name = details.get("channelTitle")
+        is_public = details.get("status", {}).get("privacyStatus") == "public"
+
+        return Playlist(
+            name=name,
+            author_name=author_name,
+            description=description,
+            is_public=is_public,
+            service_id=service_id,
+            service_name="youtube",
+            service_data=data
+        )
 
     def map_track(self, data: dict) -> Track:
         if data.get("kind") != "youtube#video":
