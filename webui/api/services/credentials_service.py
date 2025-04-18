@@ -63,6 +63,9 @@ class CredentialsService:
         :param new_credentials: The new service credentials to set.
         :return: The updated credentials.
         """
+
+        if current_credentials.service_name != new_credentials.service_name:
+            raise ValueError(f"Service name mismatch: {current_credentials.service_name} != {new_credentials.service_name}. Did you mean make mix up the update and create methods?")
         
         current_credentials.credentials = new_credentials.credentials
 
