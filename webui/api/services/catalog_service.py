@@ -9,6 +9,7 @@ from api.services.credentials_service import CredentialsService, get_credentials
 from api.helpers.service_driver import get_driver_by_name
 from api.core.logging import logger
 from api.models.search import SearchParams
+from api.models.collection import SearchResultCollection
 from api.services.auth_service import AuthService, get_auth_service
 from api.models.track import TrackRead, TrackArtistsRead, TrackIdentifiersRead, TrackMetaRead
 from api.services.service_driver_helper_service import ServiceDriverHelperService, get_service_driver_helper_service
@@ -25,7 +26,7 @@ class CatalogService:
         self.auth_service = auth_service
         self.service_driver_helper_service = service_driver_helper_service
         
-    async def handle_search(self, search_parameters: SearchParams, jwt: str) -> list[TrackRead]:
+    async def handle_search(self, search_parameters: SearchParams, jwt: str) -> SearchResultCollection[TrackRead]:
         """
         Handle search using the specified provider.
         """
@@ -51,9 +52,14 @@ class CatalogService:
                 detail=f"Provider \"{search_parameters.provider}\" is not supported.",
             ) from e
 
-        return await self.search(
+        results = await self.search(
             search_parameters=search_parameters,
             service_driver=driver
+        )
+
+        return SearchResultCollection(
+            items=results,
+            query=search_parameters.query
         )
 
     async def search(self, search_parameters: SearchParams, service_driver: AsyncWrappedServiceDriver) -> list[TrackRead]:
