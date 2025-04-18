@@ -45,11 +45,10 @@ class DeezerMapper(ServiceMapper):
 
         if len(_raw_artists) > 1:
             for artist in _raw_artists:
-                if artist.get('role', None) != 'Main':
-                    artist_name = artist.get('name', None)
+                artist_name = artist.get('name', None)
 
-                    if artist_name:
-                        additional_artists.append(artist_name)
+                if artist_name != primary_artist:
+                    additional_artists.append(artist_name)
         
         return Track(
             title=title,
