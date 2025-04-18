@@ -12,7 +12,7 @@ router = APIRouter(
 )
 
 @router.post(
-    path="/",
+    path="",
     status_code=201,
     responses={
         status.HTTP_201_CREATED: {

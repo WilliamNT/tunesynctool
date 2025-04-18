@@ -37,7 +37,7 @@ async def arl(
     )
 
 @router.get(
-    path="/",
+    path="",
 )
 async def state(
     credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
