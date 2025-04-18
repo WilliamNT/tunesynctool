@@ -62,7 +62,7 @@ class AsyncDeezerDriver(ServiceDriver, AsyncWrappedServiceDriver):
                 return_values.append(self._mapper.map_track(track))
 
             return return_values
-        except InvalidQueryException as e:
+        except (InvalidQueryException, DataException) as e:
             raise PlaylistNotFoundException(e)
         except Exception as e:
             raise ServiceDriverException(e)
