@@ -1,2 +1,2 @@
-from .driver import YouTubeOAuth2Driver
+from .async_driver import AsyncYouTubeOAuth2Driver
 from .mapper import YouTubeAPIV3Mapper
