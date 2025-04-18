@@ -111,7 +111,7 @@ class CatalogService:
             duration=track.duration_seconds,
             track_number=track.track_number,
             release_year=track.release_year,
-            artists=artists,
+            author=artists,
             meta=meta,
             identifiers=identifiers,
         )

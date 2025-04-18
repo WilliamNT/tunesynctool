@@ -7,6 +7,7 @@ from api.models.collection import SearchResultCollection
 from api.models.track import TrackRead
 from api.core.security import oauth2_scheme
 from api.models.playlist import PlaylistRead
+from api.helpers.route_level_dependencies import get_lookup_by_provider_id_params, get_isrc_search_params
 
 router = APIRouter(
     tags=["catalog"],
@@ -53,7 +54,7 @@ async def search(
     }
 )
 async def search_isrc(
-    filter_query: Annotated[ISRCSearchParams, Query()],
+    filter_query: Annotated[ISRCSearchParams, Depends(get_isrc_search_params)],
     catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
     jwt: Annotated[str, Depends(oauth2_scheme)]
 ) -> TrackRead:
@@ -81,7 +82,7 @@ async def search_isrc(
     }
 )
 async def get_track(
-    filter_query: Annotated[LookupByProviderIDParams, Query()],
+    filter_query: Annotated[LookupByProviderIDParams, Depends(get_lookup_by_provider_id_params)],
     catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
     jwt: Annotated[str, Depends(oauth2_scheme)]
 ) -> TrackRead:
@@ -109,7 +110,7 @@ async def get_track(
     }
 )
 async def get_playlist(
-    filter_query: Annotated[LookupByProviderIDParams, Query()],
+    filter_query: Annotated[LookupByProviderIDParams, Depends(get_lookup_by_provider_id_params)],
     catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
     jwt: Annotated[str, Depends(oauth2_scheme)]
 ) -> PlaylistRead:
