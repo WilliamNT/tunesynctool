@@ -1,5 +1,5 @@
 from tunesynctool.drivers import ServiceDriver
-from tunesynctool.exceptions import ServiceDriverException, UnsupportedFeatureException
+from tunesynctool.exceptions import ServiceDriverException, UnsupportedFeatureException, TrackNotFoundException
 from tunesynctool.models import Track, Playlist
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials as GoogleCredentials
@@ -66,7 +66,22 @@ class YouTubeOAuth2Driver(ServiceDriver):
         pass
 
     def get_track(self, track_id: str) -> Track:
-        pass
+        try:
+            result = self.client.videos().list(
+                part="id,snippet,contentDetails",
+                id=track_id
+            ).execute()
+
+            if not result or "items" not in result or len(result["items"]) == 0:
+                raise TrackNotFoundException()
+            
+            video = result["items"][0]
+            
+            return self._mapper.map_track(video)
+        except TrackNotFoundException:
+            raise
+        except Exception as e:
+            raise ServiceDriverException(e)
 
     def search_tracks(self, query: str, limit: int = 10) -> List[Track]:
         if not query or len(query) == 0:
@@ -96,7 +111,7 @@ class YouTubeOAuth2Driver(ServiceDriver):
                 video = filter(lambda x: x.get("id") == video_id, video_results.get("items", []))
                 video = list(video)[0]
 
-                mapped_video = self._mapper.map_track(result, video)
+                mapped_video = self._mapper.map_track_from_search(result, video)
                 mapped_videos.append(mapped_video)
 
             return mapped_videos

@@ -7,7 +7,7 @@ from tunesynctool.models import Track
 
 from api.services.credentials_service import CredentialsService, get_credentials_service
 from api.core.logging import logger
-from api.models.search import SearchParams, ISRCSearchParams
+from api.models.search import SearchParams, ISRCSearchParams, TrackLookupByIDParams
 from api.models.collection import SearchResultCollection
 from api.services.auth_service import AuthService, get_auth_service
 from api.models.track import TrackRead, TrackArtistsRead, TrackIdentifiersRead, TrackMetaRead
@@ -204,6 +204,59 @@ class CatalogService:
         try:
             result = await service_driver.get_track_by_isrc(
                 isrc=search_parameters.isrc
+            )
+
+            return self._map_track(
+                track=result,
+                provider_name=search_parameters.provider
+            )
+        except UnsupportedFeatureException as e:
+            self.raise_unsupported_driver_feature_exception(
+                provider_name=search_parameters.provider,
+                e=e
+            )
+        except ServiceDriverException as e:
+            self.raise_service_driver_generic_exception(
+                provider_name=search_parameters.provider,
+                e=e
+            )
+        except TrackNotFoundException as e:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Track not found.",
+            ) from e
+
+    async def handle_track_lookup(self, search_parameters: TrackLookupByIDParams, jwt: str) -> TrackRead:
+        user = await self.auth_service.resolve_user_from_jwt(jwt)
+        credentials = await self.credentials_service.get_service_credentials(
+            user=user,
+            service_name=search_parameters.provider,
+        )
+
+        if not credentials:
+            logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to look a track up by its ID anyway.")
+            self.raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+
+        try:
+            driver = await self.service_driver_helper_service.get_initialized_driver(
+                credentials=credentials,
+                provider_name=search_parameters.provider,
+                user=user
+            )
+        except ValueError:
+            self.raise_unsupported_provider_exception(
+                provider_name=search_parameters.provider
+            )
+
+        return await self.track_lookup(
+            search_parameters=search_parameters,
+            service_driver=driver
+        )
+    
+    async def track_lookup(self, search_parameters: TrackLookupByIDParams, service_driver: AsyncWrappedServiceDriver) -> TrackRead:
+        try:
+            result = await service_driver.get_track(
+                track_id=search_parameters.service_id
             )
 
             return self._map_track(

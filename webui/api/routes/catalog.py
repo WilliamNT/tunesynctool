@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, status
 
 from api.services.catalog_service import CatalogService, get_catalog_service
-from api.models.search import SearchParams, ISRCSearchParams
+from api.models.search import SearchParams, ISRCSearchParams, TrackLookupByIDParams
 from api.models.collection import SearchResultCollection
 from api.models.track import TrackRead
 from api.core.security import oauth2_scheme
@@ -64,6 +64,34 @@ async def search_isrc(
     """
 
     return await catalog_service.handle_isrc_search(
+        search_parameters=filter_query,
+        jwt=jwt
+    )
+
+@router.get(
+    path="/tracks/{service_id}",
+    responses={
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "Something went wrong with the provider. See message for details.",
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "description": "The provider didn't return a match for the given track ID.",
+        }
+    }
+)
+async def get_track(
+    filter_query: Annotated[TrackLookupByIDParams, Query()],
+    catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
+    jwt: Annotated[str, Depends(oauth2_scheme)]
+) -> TrackRead:
+    """
+    Retrieve a track by its ID from the specified provider. This is basically a proxy.
+    
+    Notes:
+    - Some providers (like Spotify) may support multiple ID formats. In these cases, all formats are supported.
+    """
+
+    return await catalog_service.handle_track_lookup(
         search_parameters=filter_query,
         jwt=jwt
     )

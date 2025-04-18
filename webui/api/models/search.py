@@ -32,3 +32,10 @@ class ISRCSearchParams(SearchParamsBase):
     """
 
     isrc: str = Field(min_length=12, max_length=12, description="ISRC (International Standard Recording Code) to search for.")
+
+class TrackLookupByIDParams(SearchParamsBase):
+    """
+    Track lookup by ID parameters.
+    """
+
+    service_id: str = Field(description="ID of the track to look up.")
