@@ -127,7 +127,7 @@ class CatalogService:
         )   
 
     def raise_unsupported_driver_feature_exception(self, provider_name: str, e: Optional[Exception] = None) -> None:
-        logger.warning(f"Provider \"{provider_name}\" does not support a feature but it was called anyway: {e}")
+        logger.warning(f"Provider \"{provider_name}\" does not support a feature but it was called anyway{": " + str(e) if e else "."}")
 
         msg = f"Provider \"{provider_name}\" does not support this feature."
         code = 400
