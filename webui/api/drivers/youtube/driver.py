@@ -4,6 +4,7 @@ from tunesynctool.models import Track, Playlist
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials as GoogleCredentials
 from typing import List, Optional
+from googleapiclient.errors import HttpError
 
 from .mapper import YouTubeAPIV3Mapper
 
@@ -51,7 +52,41 @@ class YouTubeOAuth2Driver(ServiceDriver):
         pass
 
     def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List[Track]:
-        pass
+        try:
+            results = self.client.playlistItems().list(
+                part="id,snippet,contentDetails",
+                maxResults=limit,
+                playlistId=playlist_id
+            ).execute()
+
+            if not results or "items" not in results or len(results["items"]) == 0:
+                return []
+            
+            result_ids = [result.get("snippet", {}).get("resourceId", {}).get("videoId") for result in results.get("items", [])]
+
+            video_results = self.client.videos().list(
+                part="contentDetails",
+                id=",".join(result_ids)
+            ).execute()
+
+            mapped_videos = []
+
+            for result in results.get("items", []):
+                video_id = result.get("snippet", {}).get("resourceId", {}).get("videoId")
+                video = filter(lambda x: x.get("id") == video_id, video_results.get("items", []))
+                video = list(video)[0]
+
+                mapped_video = self._mapper.map_track_from_playlist_item(result, video)
+                mapped_videos.append(mapped_video)
+
+            return mapped_videos
+        except HttpError as e:
+            if e.status_code == 404:
+                raise PlaylistNotFoundException()
+            elif e.status_code == 403:
+                raise ServiceDriverException("You do not have permission to access this playlist.")
+        except Exception as e:
+            raise ServiceDriverException(e)
 
     def create_playlist(self, name: str) -> Playlist:
         pass

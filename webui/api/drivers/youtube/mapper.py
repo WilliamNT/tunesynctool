@@ -104,3 +104,37 @@ class YouTubeAPIV3Mapper(ServiceMapper):
     def _get_year(self, stamp: str) -> int:
         dt = datetime.strptime(stamp, "%Y-%m-%dT%H:%M:%SZ")
         return dt.year
+    
+    def map_track_from_playlist_item(self, data: dict, additional_data: dict) -> Track:
+        if data.get("kind") != "youtube#playlistItem" or additional_data.get("kind") != "youtube#video":
+            raise ValueError(f"Invalid data provided for mapping track! Unrecognized resource kind: \"{data.get('kind')}\" or \"{additional_data.get('kind')}\". Expected \"youtube#playlistItem\" and \"youtube#video\" respectively.")
+        
+        details = data.get("snippet")
+        if not details:
+            raise ValueError("Missing snippet in search list response! Either the YouTube API has changed or the \"snippet\" part parameter was not defined correctly in the request.")
+
+        extra_details = additional_data.get("contentDetails")
+        if not extra_details:
+            raise ValueError("Missing contentDetails in video response! Either the YouTube API has changed or the \"contentDetails\" part parameter was not defined correctly in the request.")
+
+        service_id = details.get("resourceId", {}).get("videoId")
+        title = details.get("title")
+        primary_artist = details.get("channelTitle")
+        duration_seconds = isodate.parse_duration(
+            additional_data.get("contentDetails", {}).get("duration", "PT0S")
+        ).total_seconds()
+        release_year = self._get_year(details.get("publishedAt", "1970-01-01T00:00:00Z"))
+
+        return Track(
+            title=title,
+            album_name=None,
+            primary_artist=primary_artist,
+            additional_artists=[],
+            duration_seconds=duration_seconds,
+            track_number=None,
+            release_year=release_year,
+            isrc=None,
+            service_id=service_id,
+            service_name="youtube",
+            service_data=data
+        )

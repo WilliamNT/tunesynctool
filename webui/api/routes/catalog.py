@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Query, status
 
 from api.services.catalog_service import CatalogService, get_catalog_service
 from api.models.search import SearchParams, ISRCSearchParams, LookupByProviderIDParams
-from api.models.collection import SearchResultCollection
+from api.models.collection import SearchResultCollection, Collection
 from api.models.track import TrackRead
 from api.core.security import oauth2_scheme
 from api.models.playlist import PlaylistRead
@@ -122,6 +122,34 @@ async def get_playlist(
     """
 
     return await catalog_service.handle_playlist_lookup(
+        search_parameters=filter_query,
+        jwt=jwt
+    )
+
+@router.get(
+    path="/playlists/{provider_id}/tracks",
+    responses={
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "Something went wrong with the provider. See message for details.",
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "description": "The provider didn't return a match for the given playlist ID.",
+        }
+    }
+)
+async def get_playlist_tracks(
+    filter_query: Annotated[LookupByProviderIDParams, Depends(get_lookup_by_provider_id_params)],
+    catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
+    jwt: Annotated[str, Depends(oauth2_scheme)]
+) -> Collection[TrackRead]:
+    """
+    Retrieve a playlist by its ID from the specified provider. This is basically a proxy.
+    
+    Notes:
+    - Some providers (like Spotify) may support multiple ID formats. In these cases, all formats are supported.
+    """
+
+    return await catalog_service.handle_playlist_tracks_lookup(
         search_parameters=filter_query,
         jwt=jwt
     )
