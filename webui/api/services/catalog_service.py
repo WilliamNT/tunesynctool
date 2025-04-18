@@ -44,7 +44,8 @@ class CatalogService:
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
                 credentials=credentials,
-                provider_name=search_parameters.provider
+                provider_name=search_parameters.provider,
+                user=user
             )
         except ValueError as e:
             raise HTTPException(

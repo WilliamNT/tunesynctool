@@ -1,19 +1,27 @@
+from typing import Annotated
 from tunesynctool.drivers import AsyncWrappedServiceDriver
 from tunesynctool.models import Configuration
 from google.oauth2.credentials import Credentials as GoogleCredentials
+from fastapi import Depends
+import json
 
 from api.models.service import ServiceCredentials
 from api.core.config import config
 from api.helpers.service_driver import get_driver_by_name
 from api.core.logging import logger
 from api.core.config import config
+from api.services.credentials_service import get_credentials_service, CredentialsService
+from api.models.user import User
 
 class ServiceDriverHelperService:
     """
     Provides methods to initialize service drivers.
     """
 
-    async def get_initialized_driver(self, credentials: ServiceCredentials, provider_name: str) -> AsyncWrappedServiceDriver:
+    def __init__(self, credentials_service: CredentialsService) -> None:
+        self.credentials_service = credentials_service
+
+    async def get_initialized_driver(self, user: User, credentials: ServiceCredentials, provider_name: str) -> AsyncWrappedServiceDriver:
         """
         Returns an initialized driver for the specified provider.
         This method retrieves the user's credentials for the specified provider and initializes the driver with those credentials.
@@ -25,9 +33,10 @@ class ServiceDriverHelperService:
         """
 
         try:
-            config = self._get_config(
+            config = await self._get_config(
                 credentials=credentials,
-                provider_name=provider_name
+                provider_name=provider_name,
+                user=user
             )
         except ValueError:
             logger.error(f"Attempted to resolve non-existent service driver: {provider_name}")
@@ -48,14 +57,17 @@ class ServiceDriverHelperService:
                     config=config
                 )
 
-    def _get_config(self, credentials: ServiceCredentials, provider_name: str) -> Configuration:
+    async def _get_config(self, user: User, credentials: ServiceCredentials, provider_name: str) -> Configuration:
         match provider_name:
             case "deezer":
                 return self._get_deezer_config(credentials)
             case "subsonic":
                 return self._get_subsonic_config(credentials)
             case "youtube":
-                return self._get_youtube_config(credentials)
+                return await self._get_youtube_config(
+                    credentials=credentials,
+                    user=user
+                )
             case "spotify":
                 pass
             case _:
@@ -75,11 +87,20 @@ class ServiceDriverHelperService:
             subsonic_legacy_auth=config.SUBSONIC_LEGACY_AUTH
         )
     
-    def _get_youtube_config(self, credentials: ServiceCredentials) -> GoogleCredentials:
-        return GoogleCredentials.from_authorized_user_info(
-            info=credentials.credentials,
+    async def _get_youtube_config(self, user: User, credentials: ServiceCredentials) -> GoogleCredentials:
+        fresh_credentials = await self.credentials_service.refresh_google_credentials(
+            user=user,
+            credentials=credentials
+        )
+
+        google_credentials = GoogleCredentials.from_authorized_user_info(
+            info=json.loads(fresh_credentials.credentials),
             scopes=config.GOOGLE_SCOPES
         )
 
-def get_service_driver_helper_service() -> ServiceDriverHelperService:
-    return ServiceDriverHelperService()
+        return google_credentials
+
+def get_service_driver_helper_service(credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)]) -> ServiceDriverHelperService:
+    return ServiceDriverHelperService(
+        credentials_service=credentials_service
+    )

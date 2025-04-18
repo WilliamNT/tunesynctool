@@ -2,12 +2,17 @@ from typing import Annotated, Optional
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
+from google.oauth2.credentials import Credentials as GoogleCredentials
+from google.auth.credentials import TokenState as GoogleTokenState
+from google.auth.transport.requests import Request as GoogleTokenRequest
+import json
 
 from api.core.database import get_session
 from api.models.user import User
 from api.models.service import ProviderState, ServiceCredentials, ServiceCredentialsCreate
 from api.helpers.database import create, update, delete
 from api.core.logging import logger
+from api.core.config import config
 
 class CredentialsService:
     """
@@ -170,6 +175,46 @@ class CredentialsService:
             )
 
         return credentials
+    
+    async def refresh_google_credentials(self, user: User, credentials: ServiceCredentials) -> ServiceCredentials:
+        """
+        Refreshes the Google credentials for the user **if needed**.
+
+        :param user: The user to refresh the credentials for.
+        :param credentials: The service credentials to refresh.
+        :return: The refreshed credentials.
+        :raises ValueError: If the credentials are somehow invalid.
+        """
+
+        if credentials.service_name != "youtube":
+            raise ValueError(f"Cannot refresh credentials for service \"{credentials.service_name}\". This method only supports Google services.")
+
+        google_credentials = GoogleCredentials.from_authorized_user_info(
+            info=json.loads(credentials.credentials),
+            scopes=config.GOOGLE_SCOPES
+        )
+
+        if google_credentials.token_state == GoogleTokenState.FRESH:
+            logger.debug(f"Google credentials for user {user.id} are already fresh. No need to refresh.")
+            return credentials
+        
+        if not google_credentials.refresh_token:
+            logger.error(f"Google credentials for user {user.id} are not fresh and do not have a refresh token. Cannot refresh.")
+            raise ValueError(f"Cannot refresh Google credentials because they are missing a refresh token. This is likely a bug with the Google library.")
+        
+        logger.debug(f"Refreshing Google credentials for user {user.id}.")
+        google_credentials.refresh(GoogleTokenRequest())
+
+        fresh_credentials = await self._update_credentials(
+            user_id=user.id,
+            current_credentials=credentials,
+            new_credentials=ServiceCredentialsCreate(
+                service_name=credentials.service_name,
+                credentials=json.loads(google_credentials.to_json())
+            )
+        )
+
+        return fresh_credentials
 
 def get_credentials_service(db: Annotated[AsyncSession, Depends(get_session)]) -> CredentialsService:
     return CredentialsService(db)
