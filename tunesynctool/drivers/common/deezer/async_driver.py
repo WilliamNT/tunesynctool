@@ -8,6 +8,7 @@ from .mapper import DeezerMapper
 from streamrip import Config as StreamRipConfig
 from streamrip.client import DeezerClient
 from deezer.errors import InvalidQueryException, DataException
+from streamrip.exceptions import NonStreamableError
 
 class AsyncDeezerDriver(ServiceDriver, AsyncWrappedServiceDriver):
     """
@@ -94,7 +95,7 @@ class AsyncDeezerDriver(ServiceDriver, AsyncWrappedServiceDriver):
             )
 
             return self._mapper.map_track(response)
-        except InvalidQueryException as e:
+        except (InvalidQueryException, NonStreamableError) as e:
             raise TrackNotFoundException(e)
         except Exception as e:
             raise ServiceDriverException(e)
