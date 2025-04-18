@@ -41,7 +41,7 @@ class AsyncWrappedServiceDriver:
         )
 
     async def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List[Track]:
-        return self._wrap_sync(
+        return await self._wrap_sync(
             self.sync_driver.get_playlist_tracks,
             playlist_id=playlist_id,
             limit=limit
