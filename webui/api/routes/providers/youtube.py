@@ -9,7 +9,7 @@ from api.services.auth_service import AuthService, get_auth_service
 from api.services.credentials_service import CredentialsService, get_credentials_service
 
 router = APIRouter(
-    prefix="/youtube",
+    prefix="/providers/youtube",
     tags=["YouTube"],
 )
 

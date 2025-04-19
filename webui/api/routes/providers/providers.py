@@ -6,23 +6,13 @@ from api.services.auth_service import AuthService, get_auth_service
 from api.services.credentials_service import CredentialsService, get_credentials_service
 from api.core.security import oauth2_scheme
 
-from .spotify import router as spotify_router
-from .deezer import router as deezer_router
-from .subsonic import router as subsonic_router
-from .youtube import router as youtube_router
-
 router = APIRouter(
     prefix="/providers",
+    tags=["Providers"],
 )
-
-router.include_router(spotify_router)
-router.include_router(deezer_router)
-router.include_router(subsonic_router)
-router.include_router(youtube_router)
 
 @router.get(
     path="/connected",
-    tags=["providers"],
     summary="Get the list of all connected providers",
     operation_id="getConnectedProviders",
 )

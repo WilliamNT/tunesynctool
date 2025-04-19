@@ -9,7 +9,7 @@ from api.models.deezer_arl import ARLCreate
 from api.services.deezer_service import DeezerService, get_deezer_service
 
 router = APIRouter(
-    prefix="/deezer",
+    prefix="/providers/deezer",
     tags=["Deezer"],
 )
 

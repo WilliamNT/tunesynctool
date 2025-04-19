@@ -9,7 +9,7 @@ from api.models.service import ProviderState
 from api.services.credentials_service import CredentialsService, get_credentials_service
 
 router = APIRouter(
-    prefix="/spotify",
+    prefix="/providers/spotify",
     tags=["Spotify"],
 )
 

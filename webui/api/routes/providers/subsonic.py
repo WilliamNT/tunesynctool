@@ -9,7 +9,7 @@ from api.models.subsonic import SubsonicCredentials
 from api.services.subsonic_service import SubsonicService, get_subsonic_service
 
 router = APIRouter(
-    prefix="/subsonic",
+    prefix="/providers/subsonic",
     tags=["Subsonic"],
 )
 
