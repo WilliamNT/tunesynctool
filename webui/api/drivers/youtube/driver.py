@@ -35,21 +35,25 @@ class YouTubeOAuth2Driver(ServiceDriver):
         )
     
     def get_user_playlists(self, limit: int = 25) -> List[Playlist]:
-        # playlists = []
-        # next_page_token = None
+        try:
+            results = self.client.playlists().list(
+                part="id,snippet,status,contentDetails",
+                maxResults=limit,
+                mine=True
+            ).execute()
 
-        # while True:
-        #     request = self.client.playlists().list(
-        #         part="snippet,status",
-        #         mine=True,
-        #         maxResults=limit,
-        #         pageToken=next_page_token
-        #     )
+            if not results or "items" not in results or len(results["items"]) == 0:
+                return []
+            
+            mapped_playlists = []
 
-        #     response = request.execute()
+            for result in results.get("items", []):
+                mapped_playlist = self._mapper.map_playlist(result)
+                mapped_playlists.append(mapped_playlist)
 
-        #     print(response)
-        pass
+            return mapped_playlists
+        except Exception as e:
+            raise ServiceDriverException(e)
 
     def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List[Track]:
         try:

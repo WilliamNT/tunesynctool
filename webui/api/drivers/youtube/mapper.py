@@ -18,8 +18,8 @@ class YouTubeAPIV3Mapper(ServiceMapper):
         name = details.get("title")
         description = details.get("description")
         author_name = details.get("channelTitle")
-        is_public = details.get("status", {}).get("privacyStatus") == "public"
-
+        is_public = data.get("status", {}).get("privacyStatus") == "public"
+        
         return Playlist(
             name=name,
             author_name=author_name,
