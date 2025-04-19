@@ -39,3 +39,10 @@ class LookupByProviderIDParams(SearchParamsBase):
     """
 
     provider_id: str = Field(description="ID of the entity to look up.")
+
+class LookupLibraryPlaylistsParams(SearchParamsBase):
+    """
+    Lookup playlists saved or owned by a user.
+    """
+
+    limit: int = Field(default=10, ge=1, le=25, description="Max numbers of results to return.")

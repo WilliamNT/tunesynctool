@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, status
 
 from api.services.catalog_service import CatalogService, get_catalog_service
-from api.models.search import SearchParams, ISRCSearchParams, LookupByProviderIDParams
+from api.models.search import SearchParams, ISRCSearchParams, LookupByProviderIDParams, LookupLibraryPlaylistsParams
 from api.models.collection import SearchResultCollection, Collection
 from api.models.track import TrackRead
 from api.core.security import oauth2_scheme
@@ -150,6 +150,30 @@ async def get_playlist_tracks(
     """
 
     return await catalog_service.handle_playlist_tracks_lookup(
+        search_parameters=filter_query,
+        jwt=jwt
+    )
+
+@router.get(
+    path="/playlists",
+    responses={
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "Something went wrong with the provider. See message for details."
+        }
+    },
+)
+async def get_saved_playlists(
+    filter_query: Annotated[LookupLibraryPlaylistsParams, Query()],
+    catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
+    jwt: Annotated[str, Depends(oauth2_scheme)]
+) -> Collection[PlaylistRead]:
+    """
+    Returns all playlists the user owns or has saved to their library on the specified provider.
+    Keep in mind that results may not be exhaustive.
+    Some providers may not return all playlists like those that are automatically generated.
+    """
+
+    return await catalog_service.handle_compilation_of_user_playlists(
         search_parameters=filter_query,
         jwt=jwt
     )
