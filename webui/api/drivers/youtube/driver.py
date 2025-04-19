@@ -116,7 +116,7 @@ class YouTubeOAuth2Driver(ServiceDriver):
         pass
 
     def get_random_track(self) -> Optional[Track]:
-        pass
+        raise UnsupportedFeatureException("YouTube does not support this feature.")
 
     def get_playlist(self, playlist_id: str) -> Playlist:
         try:
