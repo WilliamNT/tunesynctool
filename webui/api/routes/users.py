@@ -8,7 +8,7 @@ from api.services.auth_service import AuthService, get_auth_service
 
 router = APIRouter(
     prefix="/users",
-    tags=["users"],
+    tags=["Users"],
 )
 
 @router.post(
@@ -21,7 +21,9 @@ router = APIRouter(
         status.HTTP_400_BAD_REQUEST: {
             "description": "A field is invalid.",
         },
-    }
+    },
+    summary="Create a new user",
+    operation_id="createUser"
 )
 async def create_user(
     user: UserCreate,
@@ -35,6 +37,8 @@ async def create_user(
 
 @router.get(
     path="/me",
+    summary="Get information about the authenticated user",
+    operation_id="getAuthenticatedUser"
 )
 async def get_authenticated_user(
     auth_service: Annotated[AuthService, Depends(get_auth_service)],

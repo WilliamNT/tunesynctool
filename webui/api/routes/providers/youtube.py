@@ -10,7 +10,7 @@ from api.services.credentials_service import CredentialsService, get_credentials
 
 router = APIRouter(
     prefix="/youtube",
-    tags=["youtube"],
+    tags=["YouTube"],
 )
 
 @router.get(
@@ -20,7 +20,9 @@ router = APIRouter(
         status.HTTP_302_FOUND: {
             "description": "Redirecting to YouTube authorization page.",
         },
-    }
+    },
+    summary="Start the YouTube Authorization Code Flow",
+    operation_id="signInWithGoogle"
 )
 async def authorize(
     provider_service: Annotated[YouTubeService, Depends(get_youtube_service)],
@@ -42,7 +44,9 @@ async def authorize(
         status.HTTP_204_NO_CONTENT: {
             "description": "The user granted access.",
         },
-    }
+    },
+    summary="Handle the YouTube Authorization Code Flow callback",
+    include_in_schema=False,
 )
 async def callback(
     provider_service: Annotated[YouTubeService, Depends(get_youtube_service)],
@@ -63,6 +67,8 @@ async def callback(
 
 @router.get(
     path="",
+    summary="Get the YouTube provider state",
+    operation_id="getYouTubeProviderState",
 )
 async def state(
     credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
@@ -89,7 +95,9 @@ async def state(
         status.HTTP_204_NO_CONTENT: {
             "description": "Account unlinked successfully.",
         },
-    }
+    },
+    summary="Unlink YouTube",
+    operation_id="unlinkYouTubeAccount",
 )
 async def unlink(
     provider_service: Annotated[YouTubeService, Depends(get_youtube_service)],

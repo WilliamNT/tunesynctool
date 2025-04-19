@@ -10,7 +10,7 @@ from api.services.deezer_service import DeezerService, get_deezer_service
 
 router = APIRouter(
     prefix="/deezer",
-    tags=["deezer"],
+    tags=["Deezer"],
 )
 
 @router.post(
@@ -20,7 +20,9 @@ router = APIRouter(
         status.HTTP_204_NO_CONTENT: {
             "description": "ARL set successfully.",
         },
-    }
+    },
+    summary="Set the Deezer ARL cookie",
+    operation_id="setDeezerARL",
 )
 async def arl(
     provider_service: Annotated[DeezerService, Depends(get_deezer_service)],
@@ -38,6 +40,8 @@ async def arl(
 
 @router.get(
     path="",
+    summary="Get the Deezer provider state",
+    operation_id="getDeezerProviderState",
 )
 async def state(
     credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
@@ -64,7 +68,9 @@ async def state(
         status.HTTP_204_NO_CONTENT: {
             "description": "Account unlinked successfully.",
         },
-    }
+    },
+    summary="Unlink Deezer",
+    operation_id="unlinkDeezerAccount",
 )
 async def unlink(
     provider_service: Annotated[DeezerService, Depends(get_deezer_service)],

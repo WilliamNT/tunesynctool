@@ -10,7 +10,7 @@ from api.models.playlist import PlaylistRead
 from api.helpers.route_level_dependencies import get_lookup_by_provider_id_params, get_isrc_search_params
 
 router = APIRouter(
-    tags=["catalog"],
+    tags=["Catalog"],
 )
 
 @router.get(
@@ -19,7 +19,9 @@ router = APIRouter(
         status.HTTP_400_BAD_REQUEST: {
             "description": "Something went wrong with the provider. See message for details.",
         }
-    }
+    },
+    summary="Search for tracks",
+    operation_id="searchTracks",
 )
 async def search(
     filter_query: Annotated[SearchParams, Query()],
@@ -51,7 +53,9 @@ async def search(
         status.HTTP_404_NOT_FOUND: {
             "description": "The provider didn't return a match for the given ISRC.",
         }
-    }
+    },
+    summary="Get a track by its ISRC",
+    operation_id="getTrackByISRC"
 )
 async def search_isrc(
     filter_query: Annotated[ISRCSearchParams, Depends(get_isrc_search_params)],
@@ -79,7 +83,9 @@ async def search_isrc(
         status.HTTP_404_NOT_FOUND: {
             "description": "The provider didn't return a match for the given track ID.",
         }
-    }
+    },
+    summary="Get a track by its ID",
+    operation_id="getTrack"
 )
 async def get_track(
     filter_query: Annotated[LookupByProviderIDParams, Depends(get_lookup_by_provider_id_params)],
@@ -107,7 +113,9 @@ async def get_track(
         status.HTTP_404_NOT_FOUND: {
             "description": "The provider didn't return a match for the given playlist ID.",
         }
-    }
+    },
+    summary="Get a playlist by its ID",
+    operation_id="getPlaylist"
 )
 async def get_playlist(
     filter_query: Annotated[LookupByProviderIDParams, Depends(get_lookup_by_provider_id_params)],
@@ -135,7 +143,9 @@ async def get_playlist(
         status.HTTP_404_NOT_FOUND: {
             "description": "The provider didn't return a match for the given playlist ID.",
         }
-    }
+    },
+    summary="Get all tracks from a playlist",
+    operation_id="getPlaylistTracks"
 )
 async def get_playlist_tracks(
     filter_query: Annotated[LookupByProviderIDParams, Depends(get_lookup_by_provider_id_params)],
@@ -161,6 +171,8 @@ async def get_playlist_tracks(
             "description": "Something went wrong with the provider. See message for details."
         }
     },
+    summary="Get playlists owned (and saved) by the user",
+    operation_id="getSavedPlaylists"
 )
 async def get_saved_playlists(
     filter_query: Annotated[LookupLibraryPlaylistsParams, Query()],
@@ -171,6 +183,10 @@ async def get_saved_playlists(
     Returns all playlists the user owns or has saved to their library on the specified provider.
     Keep in mind that results may not be exhaustive.
     Some providers may not return all playlists like those that are automatically generated.
+
+    Notes:
+    - YouTube does not support retrieving playlists that are saved but **not owned** by the linked account.
+    - YouTube results are not filtered to only contain music related playlists (e.g. any owned playlist will be returned).
     """
 
     return await catalog_service.handle_compilation_of_user_playlists(

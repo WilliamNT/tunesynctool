@@ -10,7 +10,7 @@ from api.services.credentials_service import CredentialsService, get_credentials
 
 router = APIRouter(
     prefix="/spotify",
-    tags=["spotify"],
+    tags=["Spotify"],
 )
 
 @router.get(
@@ -20,7 +20,9 @@ router = APIRouter(
         status.HTTP_302_FOUND: {
             "description": "Redirecting to Spotify authorization page.",
         },
-    }
+    },
+    summary="Start the Spotify Authorization Code Flow",
+    operation_id="signInWithSpotify",
 )
 async def authorize(
     provider_service: Annotated[SpotifyService, Depends(get_spotify_service)],
@@ -41,7 +43,9 @@ async def authorize(
         status.HTTP_204_NO_CONTENT: {
             "description": "The user granted access.",
         },
-    }
+    },
+    summary="Handle the Spotify Authorization Code Flow callback",
+    include_in_schema=False,
 )
 async def callback(
     provider_service: Annotated[SpotifyService, Depends(get_spotify_service)],
@@ -62,6 +66,8 @@ async def callback(
 
 @router.get(
     path="",
+    summary="Get the Spotify provider state",
+    operation_id="getSpotifyProviderState",
 )
 async def state(
     credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
@@ -88,7 +94,9 @@ async def state(
         status.HTTP_204_NO_CONTENT: {
             "description": "Account unlinked successfully.",
         },
-    }
+    },
+    summary="Unlink Spotify",
+    operation_id="unlinkSpotifyAccount",
 )
 async def unlink(
     provider_service: Annotated[SpotifyService, Depends(get_spotify_service)],

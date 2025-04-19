@@ -23,6 +23,8 @@ router.include_router(youtube_router)
 @router.get(
     path="/connected",
     tags=["providers"],
+    summary="Get the list of all connected providers",
+    operation_id="getConnectedProviders",
 )
 async def providers(
     credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],

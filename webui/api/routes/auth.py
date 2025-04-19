@@ -7,7 +7,7 @@ from api.models.token import AccessToken
 
 router = APIRouter(
     prefix="/auth",
-    tags=["auth"],
+    tags=["Authentication"],
 )
 
 @router.post(
@@ -21,7 +21,9 @@ router = APIRouter(
         status.HTTP_401_UNAUTHORIZED: {
             "description": "Invalid credentials.",
         },
-    }
+    },
+    summary="Obtain a JWT token (and cookie)",
+    operation_id="getToken",
 )
 async def obtain_token(credentials: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response, auth_service: Annotated[AuthService, Depends(get_auth_service)]):    
     """

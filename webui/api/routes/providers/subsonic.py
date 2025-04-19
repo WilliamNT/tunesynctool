@@ -10,7 +10,7 @@ from api.services.subsonic_service import SubsonicService, get_subsonic_service
 
 router = APIRouter(
     prefix="/subsonic",
-    tags=["subsonic"],
+    tags=["Subsonic"],
 )
 
 @router.post(
@@ -20,7 +20,9 @@ router = APIRouter(
         status.HTTP_204_NO_CONTENT: {
             "description": "Credentials set successfully.",
         },
-    }
+    },
+    summary="Set the Subsonic credentials",
+    operation_id="setSubsonicCredentials",
 )
 async def credentials(
     provider_service: Annotated[SubsonicService, Depends(get_subsonic_service)],
@@ -38,6 +40,8 @@ async def credentials(
 
 @router.get(
     path="",
+    summary="Get the Subsonic provider state",
+    operation_id="getSubsonicProviderState",
 )
 async def state(
     credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
@@ -64,7 +68,9 @@ async def state(
         status.HTTP_204_NO_CONTENT: {
             "description": "Account unlinked successfully.",
         },
-    }
+    },
+    summary="Unlink Subsonic",
+    operation_id="unlinkSubsonicAccount",
 )
 async def unlink(
     provider_service: Annotated[SubsonicService, Depends(get_subsonic_service)],
