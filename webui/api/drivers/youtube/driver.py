@@ -59,7 +59,7 @@ class YouTubeOAuth2Driver(ServiceDriver):
         try:
             results = self.client.playlistItems().list(
                 part="id,snippet,contentDetails",
-                maxResults=limit,
+                maxResults=limit if limit > 0 else None,
                 playlistId=playlist_id
             ).execute()
 
@@ -113,7 +113,34 @@ class YouTubeOAuth2Driver(ServiceDriver):
             raise ServiceDriverException(e)
 
     def add_tracks_to_playlist(self, playlist_id: str, track_ids: List[str]) -> None:
-        pass
+        try:
+            for track_id in track_ids:
+                self.client.playlistItems().insert(
+                    part="snippet",
+                    body={
+                        "snippet": {
+                            "playlistId": playlist_id,
+                            "resourceId": {
+                                "kind": "youtube#video",
+                                "videoId": track_id
+                            }
+                        }
+                    }
+                ).execute()
+        except HttpError as e:
+            if e.status_code == 404:
+                if isinstance(e.error_details, list) and len(e.error_details) > 0:
+                    error = e.error_details[0]
+                    if error.get("reason") == "playlistNotFound":
+                        raise PlaylistNotFoundException()
+                    elif error.get("reason") == "videoNotFound":
+                        raise TrackNotFoundException()
+            elif e.status_code == 403:
+                raise ServiceDriverException("Permission error. This is either happening because the playlist doesn't belong to the linked account or not all required scopes were granted during authorization. Relinking the account should fix this.")
+            else:
+                raise ServiceDriverException(e) from e
+        except Exception as e:
+            raise ServiceDriverException(e)
 
     def get_random_track(self) -> Optional[Track]:
         raise UnsupportedFeatureException("YouTube does not support this feature.")

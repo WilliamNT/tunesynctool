@@ -13,7 +13,7 @@ from api.services.auth_service import AuthService, get_auth_service
 from api.models.track import TrackRead, TrackIdentifiersRead
 from api.models.entity import EntityMetaRead, EntityMultiAuthorRead, EntitySingleAuthorRead, EntityIdentifiersBase
 from api.services.service_driver_helper_service import ServiceDriverHelperService, get_service_driver_helper_service
-from api.models.playlist import PlaylistRead, PlaylistCreate
+from api.models.playlist import PlaylistRead, PlaylistCreate, PlaylistMultiTrackInsert
 
 class CatalogService:
     """
@@ -386,7 +386,8 @@ class CatalogService:
     async def playlist_tracks_lookup(self, search_parameters: LookupByProviderIDParams, service_driver: AsyncWrappedServiceDriver) -> Collection[TrackRead]:
         try:
             results = await service_driver.get_playlist_tracks(
-                playlist_id=search_parameters.provider_id
+                playlist_id=search_parameters.provider_id,
+                limit=0
             )
 
             mapped_results = []
@@ -517,6 +518,66 @@ class CatalogService:
                 provider_name=search_parameters.provider,
                 e=e
             )
+
+    async def handle_adding_track_to_playlist(self, search_parameters: LookupByProviderIDParams, track_details: PlaylistMultiTrackInsert, jwt: str) -> Collection[TrackRead]:
+        user = await self.auth_service.resolve_user_from_jwt(jwt)
+        credentials = await self.credentials_service.get_service_credentials(
+            user=user,
+            service_name=search_parameters.provider
+        )
+
+        if not credentials:
+            logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to add one or more tracks to a playlist anyway.")
+            self.raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+
+        try:
+            driver = await self.service_driver_helper_service.get_initialized_driver(
+                credentials=credentials,
+                provider_name=search_parameters.provider,
+                user=user
+            )
+        except ValueError:
+            self.raise_unsupported_provider_exception(
+                provider_name=search_parameters.provider
+            )
+
+        return await self.add_track_to_playlist(
+            search_parameters=search_parameters,
+            track_details=track_details,
+            service_driver=driver
+        )
+    
+    async def add_track_to_playlist(self, search_parameters: LookupByProviderIDParams, track_details: PlaylistMultiTrackInsert, service_driver: AsyncWrappedServiceDriver) -> Collection[TrackRead]:
+        try:
+            await service_driver.add_tracks_to_playlist(
+                playlist_id=search_parameters.provider_id,
+                track_ids=track_details.provider_ids
+            )
+
+            return await self.playlist_tracks_lookup(
+                search_parameters=search_parameters,
+                service_driver=service_driver
+            )
+        except UnsupportedFeatureException as e:
+            self.raise_unsupported_driver_feature_exception(
+                provider_name=search_parameters.provider,
+                e=e
+            )
+        except ServiceDriverException as e:
+            self.raise_service_driver_generic_exception(
+                provider_name=search_parameters.provider,
+                e=e
+            )
+        except PlaylistNotFoundException as e:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Playlist not found.",
+            ) from e
+        except TrackNotFoundException as e:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Track not found.",
+            ) from e
 
 def get_catalog_service(
     auth_service: Annotated[AuthService, Depends(get_auth_service)],

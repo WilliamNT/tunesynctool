@@ -6,7 +6,7 @@ from api.models.search import SearchParams, ISRCSearchParams, LookupByProviderID
 from api.models.collection import SearchResultCollection, Collection
 from api.models.track import TrackRead
 from api.core.security import oauth2_scheme
-from api.models.playlist import PlaylistCreate, PlaylistRead
+from api.models.playlist import PlaylistCreate, PlaylistRead, PlaylistMultiTrackInsert
 from api.helpers.route_level_dependencies import get_lookup_by_provider_id_params, get_isrc_search_params
 
 router = APIRouter(
@@ -221,6 +221,38 @@ async def create_playlist(
 
     return await catalog_service.handle_playlist_creation(
         playlist_details=playlist_details,
+        search_parameters=filter_query,
+        jwt=jwt
+    )
+
+@router.post(
+    path="/playlists/{provider_id}/tracks",
+    responses={
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "Something went wrong with the provider. See message for details."
+        },
+        status.HTTP_200_OK: {
+            "description": "Track added successfully."
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "description": "The provider didn't return a match for the given playlist ID or one or more of the supplied track IDs are invalid.",
+        }
+    },
+    summary="Add tracks to a playlist",
+    operation_id="addTrackToPlaylist"
+)
+async def add_tracks_to_playlist(
+    filter_query: Annotated[LookupByProviderIDParams, Depends(get_lookup_by_provider_id_params)],
+    track_details: Annotated[PlaylistMultiTrackInsert, Body()],
+    catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
+    jwt: Annotated[str, Depends(oauth2_scheme)]
+) -> Collection[TrackRead]:
+    """
+    Add a track to a playlist on the specified provider.
+    """
+
+    return await catalog_service.handle_adding_track_to_playlist(
+        track_details=track_details,
         search_parameters=filter_query,
         jwt=jwt
     )

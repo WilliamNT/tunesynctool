@@ -119,7 +119,7 @@ class YouTubeAPIV3Mapper(ServiceMapper):
 
         service_id = details.get("resourceId", {}).get("videoId")
         title = details.get("title")
-        primary_artist = details.get("channelTitle")
+        primary_artist = details.get("videoOwnerChannelTitle")
         duration_seconds = isodate.parse_duration(
             additional_data.get("contentDetails", {}).get("duration", "PT0S")
         ).total_seconds()
