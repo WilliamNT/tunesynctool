@@ -93,7 +93,24 @@ class YouTubeOAuth2Driver(ServiceDriver):
             raise ServiceDriverException(e)
 
     def create_playlist(self, name: str) -> Playlist:
-        pass
+        try:
+            result = self.client.playlists().insert(
+                part="snippet",
+                body={
+                    "snippet": {
+                        "title": name
+                    }
+                }
+            ).execute()
+
+            return self._mapper.map_playlist(result)
+        except HttpError as e:
+            if e.status_code == 403:
+                raise ServiceDriverException("Permission error. This is most likely happening because not all required scopes were granted during authorization. Relinking the account should fix this.")
+            elif e.status_code == 400:
+                raise ServiceDriverException(e)
+        except Exception as e:
+            raise ServiceDriverException(e)
 
     def add_tracks_to_playlist(self, playlist_id: str, track_ids: List[str]) -> None:
         pass

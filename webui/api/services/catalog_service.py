@@ -7,13 +7,13 @@ from tunesynctool.models import Track, Playlist
 
 from api.services.credentials_service import CredentialsService, get_credentials_service
 from api.core.logging import logger
-from api.models.search import SearchParams, ISRCSearchParams, LookupByProviderIDParams, LookupLibraryPlaylistsParams
+from api.models.search import SearchParams, ISRCSearchParams, LookupByProviderIDParams, LookupLibraryPlaylistsParams, SearchParamsBase
 from api.models.collection import SearchResultCollection, Collection
 from api.services.auth_service import AuthService, get_auth_service
 from api.models.track import TrackRead, TrackIdentifiersRead
 from api.models.entity import EntityMetaRead, EntityMultiAuthorRead, EntitySingleAuthorRead, EntityIdentifiersBase
 from api.services.service_driver_helper_service import ServiceDriverHelperService, get_service_driver_helper_service
-from api.models.playlist import PlaylistRead
+from api.models.playlist import PlaylistRead, PlaylistCreate
 
 class CatalogService:
     """
@@ -457,6 +457,55 @@ class CatalogService:
 
             return Collection(
                 items=mapped_results
+            )
+        except UnsupportedFeatureException as e:
+            self.raise_unsupported_driver_feature_exception(
+                provider_name=search_parameters.provider,
+                e=e
+            )
+        except ServiceDriverException as e:
+            self.raise_service_driver_generic_exception(
+                provider_name=search_parameters.provider,
+                e=e
+            )
+
+    async def handle_playlist_creation(self, search_parameters: SearchParamsBase, playlist_details: PlaylistCreate, jwt: str) -> PlaylistRead:
+        user = await self.auth_service.resolve_user_from_jwt(jwt)
+        credentials = await self.credentials_service.get_service_credentials(
+            user=user,
+            service_name=search_parameters.provider
+        )
+
+        if not credentials:
+            logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to create a playlist anyway.")
+            self.raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+
+        try:
+            driver = await self.service_driver_helper_service.get_initialized_driver(
+                credentials=credentials,
+                provider_name=search_parameters.provider,
+                user=user
+            )
+        except ValueError:
+            self.raise_unsupported_provider_exception(
+                provider_name=search_parameters.provider
+            )
+
+        return await self.create_playlist(
+            search_parameters=search_parameters,
+            playlist_details=playlist_details,
+            service_driver=driver
+        )
+    
+    async def create_playlist(self, search_parameters: SearchParamsBase, playlist_details: PlaylistCreate, service_driver: AsyncWrappedServiceDriver) -> PlaylistRead:
+        try:
+            result = await service_driver.create_playlist(
+                name=playlist_details.title,
+            )
+
+            return self._map_playlist(
+                playlist=result,
+                provider_name=search_parameters.provider
             )
         except UnsupportedFeatureException as e:
             self.raise_unsupported_driver_feature_exception(

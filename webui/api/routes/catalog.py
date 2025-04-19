@@ -1,12 +1,12 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, status, Body
 
 from api.services.catalog_service import CatalogService, get_catalog_service
-from api.models.search import SearchParams, ISRCSearchParams, LookupByProviderIDParams, LookupLibraryPlaylistsParams
+from api.models.search import SearchParams, ISRCSearchParams, LookupByProviderIDParams, LookupLibraryPlaylistsParams, SearchParamsBase
 from api.models.collection import SearchResultCollection, Collection
 from api.models.track import TrackRead
 from api.core.security import oauth2_scheme
-from api.models.playlist import PlaylistRead
+from api.models.playlist import PlaylistCreate, PlaylistRead
 from api.helpers.route_level_dependencies import get_lookup_by_provider_id_params, get_isrc_search_params
 
 router = APIRouter(
@@ -190,6 +190,37 @@ async def get_saved_playlists(
     """
 
     return await catalog_service.handle_compilation_of_user_playlists(
+        search_parameters=filter_query,
+        jwt=jwt
+    )
+
+@router.post(
+    path="/playlists",
+    responses={
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "Something went wrong with the provider. See message for details."
+        },
+        status.HTTP_200_OK: {
+            "description": "Playlist created successfully."
+        }
+    },
+    summary="Create a new playlist",
+    operation_id="createPlaylist"
+)
+async def create_playlist(
+    filter_query: Annotated[SearchParamsBase, Query()],
+    playlist_details: Annotated[PlaylistCreate, Body()],
+    catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
+    jwt: Annotated[str, Depends(oauth2_scheme)]
+) -> PlaylistRead:
+    """
+    Create a new playlist on the specified provider.
+
+    To keep things uniform, you cannot add initial tracks to the playlist because not all providers support this.
+    """
+
+    return await catalog_service.handle_playlist_creation(
+        playlist_details=playlist_details,
         search_parameters=filter_query,
         jwt=jwt
     )

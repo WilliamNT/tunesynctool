@@ -22,3 +22,17 @@ class PlaylistRead(BaseModel):
         if isinstance(v, str) and v.strip() == "":
             return None
         return v
+    
+class PlaylistCreate(BaseModel):
+    """
+    Information required to create a new playlist.
+    """
+
+    title: str = Field(description="Title of the playlist. Cannot be an empty string.")
+
+    @field_validator("title", mode="before")
+    @classmethod
+    def empty_string_to_none(cls, v):
+        if isinstance(v, str) and v.strip() == "":
+            return None
+        return v
