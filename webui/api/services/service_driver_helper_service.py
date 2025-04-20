@@ -1,9 +1,10 @@
-from typing import Annotated
+from typing import Annotated, Union
 from tunesynctool.drivers import AsyncWrappedServiceDriver
 from tunesynctool.models import Configuration
 from google.oauth2.credentials import Credentials as GoogleCredentials
 from fastapi import Depends
-import json
+from spotipy.oauth2 import SpotifyOAuth
+from spotipy.cache_handler import MemoryCacheHandler
 
 from api.models.service import ServiceCredentials
 from api.core.config import config
@@ -33,7 +34,7 @@ class ServiceDriverHelperService:
         """
 
         try:
-            config = await self._get_config(
+            config: Union[Configuration | GoogleCredentials | SpotifyOAuth] = await self._get_config(
                 credentials=credentials,
                 provider_name=provider_name,
                 user=user
@@ -50,8 +51,10 @@ class ServiceDriverHelperService:
                     google_credentials=config
                 )
             case "spotify":
-                logger.warning("Spotify driver is not implemented yet.")
-                pass
+                return driver(
+                    config=Configuration(),
+                    auth_manager=config
+                )
             case _:
                 return driver(
                     config=config
@@ -69,7 +72,7 @@ class ServiceDriverHelperService:
                     user=user
                 )
             case "spotify":
-                pass
+                return self._get_spotify_config(credentials)
             case _:
                 raise ValueError(f"Unsupported provider: {provider_name}")
 
@@ -99,6 +102,23 @@ class ServiceDriverHelperService:
         )
 
         return google_credentials
+    
+    def _get_spotify_config(self, credentials: ServiceCredentials) -> SpotifyOAuth:
+        cache_handler = MemoryCacheHandler(
+            token_info=credentials.credentials
+        )
+
+        return SpotifyOAuth(
+            client_id=config.SPOTIFY_CLIENT_ID,
+            client_secret=config.SPOTIFY_CLIENT_SECRET,
+            redirect_uri=config.SPOTIFY_REDIRECT_URI,
+            scope=config.SPOTIFY_SCOPES,
+            open_browser=False,
+            show_dialog=True,
+            cache_path=None,
+            cache_handler=cache_handler
+        )
+
 
 def get_service_driver_helper_service(credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)]) -> ServiceDriverHelperService:
     return ServiceDriverHelperService(

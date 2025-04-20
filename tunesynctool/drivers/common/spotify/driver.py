@@ -18,7 +18,17 @@ class SpotifyDriver(ServiceDriver):
     https://github.com/spotipy-dev/spotipy
     """
     
-    def __init__(self, config: Configuration) -> None:
+    def __init__(self, config: Configuration, auth_manager: Optional[SpotifyOAuth] = None) -> None:
+        """
+        Initializes the Spotify driver with the given configuration and optional authentication manager.
+
+        Note: If the auth_manager parameter is provided, the config parameter is not used, meaning you can safely pass an empty Configuration object.
+        
+        :param config: The configuration object containing Spotify credentials. Ifi
+        :param auth_manager: Optional SpotifyOAuth object for authentication in server side contexts. If not provided, a new one will be created from the provided config.
+        :raises ValueError: If any required Spotify credentials are missing in the configuration.
+        """
+
         super().__init__(
             service_name='spotify',
             config=config,
@@ -26,7 +36,9 @@ class SpotifyDriver(ServiceDriver):
             supports_direct_isrc_querying=True,
         )
 
-        self.__spotify = spotipy.Spotify(auth_manager=self.__get_auth_manager())
+        self.__spotify = spotipy.Spotify(
+            auth_manager=auth_manager if auth_manager else self.__get_auth_manager()
+        )
     
     def __get_auth_manager(self) -> SpotifyOAuth:
         """Configures and returns a SpotifyOAuth object."""
