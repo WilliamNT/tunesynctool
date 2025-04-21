@@ -84,6 +84,7 @@ class CatalogService:
                 e=e
             )
         except ServiceDriverException as e:
+            raise
             self.raise_service_driver_generic_exception(
                 provider_name=search_parameters.provider,
                 e=e

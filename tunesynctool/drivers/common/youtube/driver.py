@@ -5,7 +5,7 @@ from tunesynctool.models import Playlist, Configuration, Track
 from tunesynctool.drivers import ServiceDriver
 from .mapper import YouTubeMapper
 
-from ytmusicapi import YTMusic
+from ytmusicapi import YTMusic, OAuthCredentials
 from ytmusicapi.exceptions import YTMusicServerError, YTMusicError
 import ytmusicapi
 
@@ -21,7 +21,17 @@ class YouTubeDriver(ServiceDriver):
     https://github.com/sigma67/ytmusicapi
     """
 
-    def __init__(self, config: Configuration) -> None:
+    def __init__(self, config: Configuration, oauth_credentials: Optional[OAuthCredentials] = None, auth_dict: Optional[dict] = None) -> None:
+        """"
+        Initializes the YouTube driver with the given configuration and optional OAuth credentials.
+        
+        Note: if oauth_credentials is provided, you have to also provide the auth_dict parameter but you can safely pass an empty Configuration object.
+        :param config: The configuration object containing YouTube credentials. If oauth_credentials is provided, this parameter is ignored.
+        :param oauth_credentials: Optional OAuth credentials for authentication. If not provided, the driver will use the request headers from the config.
+        :param auth_dict: Optional dictionary containing authentication data. If not provided, the driver will use the request headers from the config.
+        :raises ValueError: If any required YouTube credentials are missing in the configuration.
+        """
+
         super().__init__(
             service_name='youtube',
             config=config,
@@ -29,9 +39,15 @@ class YouTubeDriver(ServiceDriver):
             supports_direct_isrc_querying=True,
         )
 
-        self.__youtube = self.__get_client()
+        if oauth_credentials and auth_dict:
+            self.__youtube = self.__get_client_from_oauth_credentials(
+                oauth_credentials=oauth_credentials,
+                auth_dict=auth_dict
+            )
+        else:
+            self.__youtube = self.__get_client_from_browser_headers()
 
-    def __get_client(self) -> YTMusic:
+    def __get_client_from_browser_headers(self) -> YTMusic:
         """Configures and returns a YTMusic object."""
 
         if not self._config.youtube_request_headers:
@@ -46,6 +62,17 @@ class YouTubeDriver(ServiceDriver):
 
         return YTMusic(
             auth=auth_file_path
+        )
+    
+    def __get_client_from_oauth_credentials(self, oauth_credentials: OAuthCredentials, auth_dict: dict) -> YTMusic:
+        if not oauth_credentials:
+            raise ValueError('OAuth credentials are required for this service to work but were not set.')
+        if not auth_dict:
+            raise ValueError('Auth dict is required for this service to work but was not set.')
+        
+        return YTMusic(
+            auth=auth_dict,
+            oauth_credentials=oauth_credentials,
         )
 
     def get_user_playlists(self, limit: int = 25) -> List[Playlist]:

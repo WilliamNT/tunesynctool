@@ -13,7 +13,7 @@ class EntitySingleAuthorRead(BaseModel):
     Represents the author of an entity.
     """
 
-    primary: str = Field(description="Name of the primary author.")
+    primary: Optional[str] = Field(description="Name of the primary author.", default=None)
 
 class EntityMultiAuthorRead(EntitySingleAuthorRead):
     """
