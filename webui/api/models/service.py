@@ -46,3 +46,21 @@ class ProviderState(BaseModel):
 
     provider_name: str = Field(description="The name of the provider.")
     is_connected: bool = Field(description="Whether the provider is connected (linked) to the authenticated user.")
+
+class ProviderAboutRead(BaseModel):
+    """
+    Generic, UI display information about a provider.
+    """
+
+    description: str = Field(description="A description of the provider meant to be used in user facing interfaces.")
+    display_name: str = Field(description="The name of the provider meant to be used in user facing interfaces.")
+    favicon: str = Field(description="The URL to the favicon of the provider.")
+
+class ProviderRead(BaseModel):
+    """
+    Generic, UI display information about a provider.
+    """
+
+    provider_name: str = Field(description="The name of the provider.")
+    is_configured: bool = Field(description="Whether the provider was configured.")
+    ui: ProviderAboutRead = Field(description="The UI display information about the provider.")
