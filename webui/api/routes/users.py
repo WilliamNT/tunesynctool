@@ -31,6 +31,8 @@ async def create_user(
 ) -> UserRead:
     """
     Create a new user.
+
+    Anyone may create a new account for themselves, assuming their chosen username is not already taken.
     """
 
     return await user_service.create_user(user)

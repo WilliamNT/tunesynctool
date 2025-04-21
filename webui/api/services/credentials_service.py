@@ -13,6 +13,7 @@ from api.models.service import ProviderState, ServiceCredentials, ServiceCredent
 from api.helpers.database import create, update, delete
 from api.core.logging import logger
 from api.core.config import config
+from api.models.collection import Collection
 
 class CredentialsService:
     """
@@ -149,7 +150,7 @@ class CredentialsService:
             obj=credentials,
         )
 
-    async def get_states_of_all_connected_providers(self, user: User) -> list[ProviderState]:
+    async def get_states_of_all_connected_providers(self, user: User) -> Collection[ProviderState]:
         """
         Returns the list of all **connected** providers for the user.
 
@@ -174,7 +175,9 @@ class CredentialsService:
                 )
             )
 
-        return credentials
+        return Collection(
+            items=credentials,
+        )
     
     async def refresh_google_credentials(self, user: User, credentials: ServiceCredentials) -> ServiceCredentials:
         """
