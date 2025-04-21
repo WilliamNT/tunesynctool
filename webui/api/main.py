@@ -7,9 +7,9 @@ from api.core.config import config
 from api.core.database import initialize_database
 
 app = FastAPI(
-    title="tunescyntool web API",
+    title="tunesynctool web API",
     openapi_url=f"{config.API_BASE_URL}/openapi.json",
-    description="Web API wrapper for the tunescyntool Python package with some extra features.",
+    description="Web API wrapper for the tunesynctool Python package with some extra features.",
 )
 
 @app.on_event("startup")
