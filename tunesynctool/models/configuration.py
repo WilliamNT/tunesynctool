@@ -23,7 +23,7 @@ class Configuration:
     Learn more: https://developer.spotify.com/documentation/web-api/concepts/apps
     """
 
-    spotify_redirect_uri: str = field(default='http://localhost:8888/callback')
+    spotify_redirect_uri: str = field(default='http://127.0.0.1:8888/callback')
     """
     Spotify redirect URI. Required for Spotify API access.
 
