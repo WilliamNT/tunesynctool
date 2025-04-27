@@ -1,28 +1,42 @@
 {
-  "name": "frontend",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
-    "preview": "vite preview",
-    "build-only": "vite build",
-    "type-check": "vue-tsc --build"
-  },
-  "dependencies": {
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
-  },
-  "devDependencies": {
-    "@tsconfig/node22": "^22.0.1",
-    "@types/node": "^22.14.0",
-    "@vitejs/plugin-vue": "^5.2.3",
-    "@vue/tsconfig": "^0.7.0",
-    "npm-run-all2": "^7.0.2",
-    "typescript": "~5.8.0",
-    "vite": "^6.2.4",
-    "vite-plugin-vue-devtools": "^7.7.2",
-    "vue-tsc": "^2.2.8"
-  }
+    "name": "frontend",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "run-p type-check \"build-only {@}\" --",
+        "preview": "vite preview",
+        "build-only": "vite build",
+        "type-check": "vue-tsc --build",
+        "generate-sdk": "openapi-generator-cli generate -i http://localhost:8000/api/openapi.json -g typescript-axios -o ./src/api --skip-validate-spec --additional-properties=withSeparateModelsAndApi=true,apiPackage=api,modelPackage=models,withInterfaces=true",
+        "lint": "eslint . --fix",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
+    },
+    "dependencies": {
+        "@tailwindcss/vite": "^4.1.4",
+        "reka-ui": "^2.2.0",
+        "tailwindcss": "^4.1.4",
+        "vue": "^3.5.13",
+        "vue-router": "^4.5.0"
+    },
+    "devDependencies": {
+        "@openapitools/openapi-generator-cli": "^2.19.1",
+        "@tsconfig/node22": "^22.0.1",
+        "@types/node": "^22.14.0",
+        "@vitejs/plugin-vue": "^5.2.3",
+        "@vue/eslint-config-prettier": "^10.2.0",
+        "@vue/eslint-config-typescript": "^14.5.0",
+        "@vue/tsconfig": "^0.7.0",
+        "eslint": "^9.22.0",
+        "eslint-plugin-vue": "~10.0.0",
+        "jiti": "^2.4.2",
+        "npm-run-all2": "^7.0.2",
+        "prettier": "3.5.3",
+        "typescript": "~5.8.0",
+        "vite": "^6.2.4",
+        "vite-plugin-vue-devtools": "^7.7.2",
+        "vue-tsc": "^2.2.8"
+    }
 }
