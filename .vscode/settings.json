@@ -6,5 +6,5 @@
     "python.testing.pytestEnabled": true,
     "javascript.format.semicolons": "insert",
     "typescript.format.semicolons": "insert",
-    "prettier.configPath": ".prettierrc.json"
+    "prettier.configPath": "webui/frontend/.prettierrc.json"
 }

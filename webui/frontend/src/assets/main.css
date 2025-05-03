@@ -1,1 +1,18 @@
 @import 'tailwindcss';
+
+@layer base {
+
+  html,
+  body,
+  #app {
+    @apply min-h-dvh;
+  }
+
+  body {
+    @apply bg-zinc-900 text-gray-200 font-semibold;
+  }
+
+  #app {
+    @apply flex flex-col;
+  }
+}
