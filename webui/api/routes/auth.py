@@ -24,6 +24,7 @@ router = APIRouter(
     },
     summary="Obtain a JWT token.",
     operation_id="getToken",
+    name="auth:obtain_token",
 )
 async def obtain_token(credentials: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response, auth_service: Annotated[AuthService, Depends(get_auth_service)]):    
     """

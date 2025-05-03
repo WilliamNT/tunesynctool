@@ -19,7 +19,8 @@ router = APIRouter(
         }
     },
     summary="Find the equivalent track on another provider",
-    operation_id="matchTrack"
+    operation_id="matchTrack",
+    name="tasks:match_track",
 )
 async def match_track(
     filter_query: Annotated[SearchParamsBase, Query()],

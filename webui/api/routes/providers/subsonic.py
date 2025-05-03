@@ -23,6 +23,7 @@ router = APIRouter(
     },
     summary="Set the Subsonic credentials",
     operation_id="setSubsonicCredentials",
+    name="subsonic:set_subsonic_credentials",
 )
 async def credentials(
     provider_service: Annotated[SubsonicService, Depends(get_subsonic_service)],
@@ -42,6 +43,7 @@ async def credentials(
     path="",
     summary="Get the Subsonic provider state",
     operation_id="getSubsonicProviderState",
+    name="subsonic:get_subsonic_provider_state",
 )
 async def state(
     credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
@@ -71,6 +73,7 @@ async def state(
     },
     summary="Unlink Subsonic",
     operation_id="unlinkSubsonicAccount",
+    name="subsonic:unlink_subsonic_account",
 )
 async def unlink(
     provider_service: Annotated[SubsonicService, Depends(get_subsonic_service)],

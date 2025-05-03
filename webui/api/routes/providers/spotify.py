@@ -23,6 +23,7 @@ router = APIRouter(
     },
     summary="Start the Spotify Authorization Code Flow",
     operation_id="signInWithSpotify",
+    name="spotify:authorize",
 )
 async def authorize(
     provider_service: Annotated[SpotifyService, Depends(get_spotify_service)],
@@ -46,6 +47,7 @@ async def authorize(
     },
     summary="Handle the Spotify Authorization Code Flow callback",
     include_in_schema=False,
+    name="spotify:callback",
 )
 async def callback(
     provider_service: Annotated[SpotifyService, Depends(get_spotify_service)],
@@ -68,6 +70,7 @@ async def callback(
     path="",
     summary="Get the Spotify provider state",
     operation_id="getSpotifyProviderState",
+    name="spotify:get_spotify_provider_state",
 )
 async def state(
     credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],

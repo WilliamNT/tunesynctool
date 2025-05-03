@@ -23,7 +23,8 @@ router = APIRouter(
         },
     },
     summary="Create a new user",
-    operation_id="createUser"
+    operation_id="createUser",
+    name="users:create_user",
 )
 async def create_user(
     user: UserCreate,
@@ -40,7 +41,8 @@ async def create_user(
 @router.get(
     path="/me",
     summary="Get information about the authenticated user",
-    operation_id="getAuthenticatedUser"
+    operation_id="getAuthenticatedUser",
+    name="users:get_authenticated_user",
 )
 async def get_authenticated_user(
     auth_service: Annotated[AuthService, Depends(get_auth_service)],

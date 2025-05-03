@@ -22,7 +22,8 @@ router = APIRouter(
         },
     },
     summary="Start the YouTube Authorization Code Flow",
-    operation_id="signInWithGoogle"
+    operation_id="signInWithGoogle",
+    name="youtube:authorize",
 )
 async def authorize(
     provider_service: Annotated[YouTubeService, Depends(get_youtube_service)],
@@ -47,6 +48,7 @@ async def authorize(
     },
     summary="Handle the YouTube Authorization Code Flow callback",
     include_in_schema=False,
+    name="youtube:callback",
 )
 async def callback(
     provider_service: Annotated[YouTubeService, Depends(get_youtube_service)],
@@ -69,6 +71,7 @@ async def callback(
     path="",
     summary="Get the YouTube provider state",
     operation_id="getYouTubeProviderState",
+    name="youtube:get_youtube_provider_state",
 )
 async def state(
     credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
@@ -98,6 +101,7 @@ async def state(
     },
     summary="Unlink YouTube",
     operation_id="unlinkYouTubeAccount",
+    name="youtube:unlink_youtube_account",
 )
 async def unlink(
     provider_service: Annotated[YouTubeService, Depends(get_youtube_service)],

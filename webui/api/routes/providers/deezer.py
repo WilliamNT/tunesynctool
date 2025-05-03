@@ -23,6 +23,7 @@ router = APIRouter(
     },
     summary="Set the Deezer ARL cookie",
     operation_id="setDeezerARL",
+    name="deezer:set_deezer_arl",
 )
 async def arl(
     provider_service: Annotated[DeezerService, Depends(get_deezer_service)],
@@ -42,6 +43,7 @@ async def arl(
     path="",
     summary="Get the Deezer provider state",
     operation_id="getDeezerProviderState",
+    name="deezer:get_deezer_provider_state",
 )
 async def state(
     credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
@@ -71,6 +73,7 @@ async def state(
     },
     summary="Unlink Deezer",
     operation_id="unlinkDeezerAccount",
+    name="deezer:unlink_deezer_account",
 )
 async def unlink(
     provider_service: Annotated[DeezerService, Depends(get_deezer_service)],

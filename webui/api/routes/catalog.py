@@ -22,6 +22,7 @@ router = APIRouter(
     },
     summary="Search for tracks",
     operation_id="searchTracks",
+    name="catalog:search_tracks",
 )
 async def search(
     filter_query: Annotated[SearchParams, Query()],
@@ -55,7 +56,8 @@ async def search(
         }
     },
     summary="Get a track by its ISRC",
-    operation_id="getTrackByISRC"
+    operation_id="getTrackByISRC",
+    name="catalog:get_track_by_isrc",
 )
 async def search_isrc(
     filter_query: Annotated[ISRCSearchParams, Depends(get_isrc_search_params)],
@@ -85,7 +87,8 @@ async def search_isrc(
         }
     },
     summary="Get a track by its ID",
-    operation_id="getTrack"
+    operation_id="getTrack",
+    name="catalog:get_track_by_id",
 )
 async def get_track(
     filter_query: Annotated[LookupByProviderIDParams, Depends(get_lookup_by_provider_id_params)],
@@ -115,7 +118,8 @@ async def get_track(
         }
     },
     summary="Get a playlist by its ID",
-    operation_id="getPlaylist"
+    operation_id="getPlaylist",
+    name="catalog:get_playlist_by_id",
 )
 async def get_playlist(
     filter_query: Annotated[LookupByProviderIDParams, Depends(get_lookup_by_provider_id_params)],
@@ -145,7 +149,8 @@ async def get_playlist(
         }
     },
     summary="Get all tracks from a playlist",
-    operation_id="getPlaylistTracks"
+    operation_id="getPlaylistTracks",
+    name="catalog:get_playlist_tracks_by_id",
 )
 async def get_playlist_tracks(
     filter_query: Annotated[LookupByProviderIDParams, Depends(get_lookup_by_provider_id_params)],
@@ -172,7 +177,8 @@ async def get_playlist_tracks(
         }
     },
     summary="Get playlists owned (and saved) by the user",
-    operation_id="getSavedPlaylists"
+    operation_id="getSavedPlaylists",
+    name="catalog:get_saved_playlists",
 )
 async def get_saved_playlists(
     filter_query: Annotated[LookupLibraryPlaylistsParams, Query()],
@@ -205,7 +211,8 @@ async def get_saved_playlists(
         }
     },
     summary="Create a new playlist",
-    operation_id="createPlaylist"
+    operation_id="createPlaylist",
+    name="catalog:create_playlist",
 )
 async def create_playlist(
     filter_query: Annotated[SearchParamsBase, Query()],
@@ -239,7 +246,8 @@ async def create_playlist(
         }
     },
     summary="Add tracks to a playlist",
-    operation_id="addTrackToPlaylist"
+    operation_id="addTrackToPlaylist",
+    name="catalog:add_track_to_playlist",
 )
 async def add_tracks_to_playlist(
     filter_query: Annotated[LookupByProviderIDParams, Depends(get_lookup_by_provider_id_params)],

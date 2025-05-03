@@ -18,6 +18,7 @@ router = APIRouter(
     path="/connected",
     summary="Get the list of all connected providers",
     operation_id="getConnectedProviders",
+    name="providers:get_connected_providers",
 )
 async def providers(
     credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
@@ -35,6 +36,7 @@ async def providers(
     path="",
     summary="Get the list of all accepted provider names",
     operation_id="getValidProviderNames",
+    name="providers:get_valid_provider_names",
 )
 async def valid_providers(
     provider_service: Annotated[ProviderService, Depends(get_provider_service)],
