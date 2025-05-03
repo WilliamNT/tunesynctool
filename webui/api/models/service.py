@@ -1,5 +1,7 @@
-from sqlmodel import SQLModel, Field, Text, Column
+from typing import Optional
+from sqlmodel import SQLModel, Field, Text
 from pydantic import BaseModel
+from enum import Enum
 
 from api.helpers.encryption import encrypt_dict, decrypt_dict
 
@@ -47,6 +49,18 @@ class ProviderState(BaseModel):
     provider_name: str = Field(description="The name of the provider.")
     is_connected: bool = Field(description="Whether the provider is connected (linked) to the authenticated user.")
 
+class ProviderLinkType(Enum):
+    """
+    Represents the type of link for a provider.
+    """
+
+    OAUTH2 = "oauth2"
+    FORM = "form"
+
+class ProviderLinkingRead(BaseModel):
+    link_type: ProviderLinkType = Field(description="The type of linking the user has to go through for the provider.")
+    target_url: str = Field(description="Relevant URL for OAuth2 flow or form submission.")
+
 class ProviderAboutRead(BaseModel):
     """
     Generic, UI display information about a provider.
@@ -63,4 +77,5 @@ class ProviderRead(BaseModel):
 
     provider_name: str = Field(description="The name of the provider.")
     is_configured: bool = Field(description="Whether the provider was configured.")
+    linking: ProviderLinkingRead = Field(description="Information about the linking process for the provider.")
     ui: ProviderAboutRead = Field(description="The UI display information about the provider.")

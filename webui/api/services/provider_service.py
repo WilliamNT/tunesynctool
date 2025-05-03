@@ -1,6 +1,6 @@
 from fastapi import Request
 
-from api.models.service import ProviderAboutRead, ProviderRead
+from api.models.service import ProviderAboutRead, ProviderRead, ProviderLinkingRead, ProviderLinkType
 from api.models.collection import Collection
 
 class ProviderService:
@@ -14,6 +14,10 @@ class ProviderService:
         spotify = ProviderRead(
             provider_name="spotify",
             is_configured=True,
+            linking=ProviderLinkingRead(
+                link_type=ProviderLinkType.OAUTH2,
+                target_url=str(request.url_for("spotify:authorize"))
+            ),
             ui=ProviderAboutRead(
                 description="Connect your Spotify account to access Spotify specific features.",
                 display_name="Spotify",
@@ -24,6 +28,10 @@ class ProviderService:
         youtube = ProviderRead(
             provider_name="youtube",
             is_configured=True,
+            linking=ProviderLinkingRead(
+                link_type=ProviderLinkType.OAUTH2,
+                target_url=str(request.url_for("youtube:authorize"))
+            ),
             ui=ProviderAboutRead(
                 description="Connect your Google account to access YouTube specific features.",
                 display_name="YouTube",
@@ -34,6 +42,10 @@ class ProviderService:
         deezer = ProviderRead(
             provider_name="deezer",
             is_configured=True,
+            linking=ProviderLinkingRead(
+                link_type=ProviderLinkType.FORM,
+                target_url=str(request.url_for("deezer:set_deezer_arl"))
+            ),
             ui=ProviderAboutRead(
                 description="Set your Deezer ARL cookie to access Deezer specific features.",
                 display_name="Deezer",
@@ -44,6 +56,10 @@ class ProviderService:
         subsonic = ProviderRead(
             provider_name="subsonic",
             is_configured=True,
+            linking=ProviderLinkingRead(
+                link_type=ProviderLinkType.FORM,
+                target_url=str(request.url_for("subsonic:set_subsonic_credentials"))
+            ),
             ui=ProviderAboutRead(
                 description="A standardized API for media streaming services. Supports any Subsonic compatible service (e.g. Subsonic, Airsonic, Navidrome).",
                 display_name="Subsonic and similar",
