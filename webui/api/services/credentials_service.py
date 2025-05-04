@@ -9,7 +9,7 @@ import json
 
 from api.core.database import get_session
 from api.models.user import User
-from api.models.service import ProviderState, ServiceCredentials, ServiceCredentialsCreate
+from api.models.service import ServiceCredentials, ServiceCredentialsCreate
 from api.helpers.database import create, update, delete
 from api.core.logging import logger
 from api.core.config import config
@@ -105,26 +105,6 @@ class CredentialsService:
             obj=new_credentials,
         )
     
-    async def get_provider_state(self, user: User, service_name: str) -> ProviderState:
-        """
-        Returns the state of the provider for the user.
-        
-        :param user: The user to get the provider state for.
-        :param service_name: The name of the service to get the provider state for.
-        :return: The provider state.
-        """
-
-        credentials = await self.get_service_credentials(
-            user=user,
-            service_name=service_name,
-        )
-
-        return ProviderState(
-            provider_name=service_name,
-            is_connected=credentials is not None,
-        )
-    
-    
     async def delete_credentials(self, user: User, service_name: str) -> None:
         """
         Permanently deletes the credentials for the user and service.
@@ -148,35 +128,6 @@ class CredentialsService:
         await delete(
             session=self.db,
             obj=credentials,
-        )
-
-    async def get_states_of_all_connected_providers(self, user: User) -> Collection[ProviderState]:
-        """
-        Returns the list of all **connected** providers for the user.
-
-        :param user: The user to get the connected providers for.
-        :return: The list of connected providers.
-        """
-
-        logger.info(f"Getting all connected providers for user {user.id}.")
-
-        result = await self.db.execute(
-            select(ServiceCredentials).where(
-                ServiceCredentials.user_id == user.id,
-            )
-        )
-
-        credentials = []
-        for row in result.scalars().all():
-            credentials.append(
-                ProviderState(
-                    provider_name=row.service_name,
-                    is_connected=True,
-                )
-            )
-
-        return Collection(
-            items=credentials,
         )
     
     async def refresh_google_credentials(self, user: User, credentials: ServiceCredentials) -> ServiceCredentials:
@@ -218,6 +169,26 @@ class CredentialsService:
         )
 
         return fresh_credentials
+    
+    async def is_linked(self, user: User, service_name: str) -> bool:
+        """
+        Checks if the user has linked their account to the service.
+
+        :param user: The user to check the credentials for.
+        :param service_name: The name of the service to check the credentials for.
+        :return: True if the user has linked their account to the service, False otherwise.
+        """
+
+        logger.info(f"Fetching existence of credentials for user {user.id} and service \"{service_name}\".")
+
+        result = await self.db.execute(
+            select(ServiceCredentials.id).where(
+                ServiceCredentials.user_id == user.id,
+                ServiceCredentials.service_name == service_name,
+            )
+        )
+
+        return result.scalar_one_or_none() is not None
 
 def get_credentials_service(db: Annotated[AsyncSession, Depends(get_session)]) -> CredentialsService:
     return CredentialsService(db)

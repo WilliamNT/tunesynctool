@@ -41,14 +41,6 @@ class ServiceCredentialsCreate(BaseModel):
     service_name: str = Field(max_length=255, nullable=False)
     credentials: dict = Field(nullable=False)
 
-class ProviderState(BaseModel):
-    """
-    Represents the state of a provider.
-    """
-
-    provider_name: str = Field(description="The name of the provider.")
-    is_connected: bool = Field(description="Whether the provider is connected (linked) to the authenticated user.")
-
 class ProviderLinkType(Enum):
     """
     Represents the type of link for a provider.
@@ -60,6 +52,7 @@ class ProviderLinkType(Enum):
 class ProviderLinkingRead(BaseModel):
     link_type: ProviderLinkType = Field(description="The type of linking the user has to go through for the provider.")
     target_url: str = Field(description="Relevant URL for OAuth2 flow or form submission.")
+    linked: bool = Field(description="Whether the provider is linked to the authenticated user.")
 
 class ProviderAboutRead(BaseModel):
     """

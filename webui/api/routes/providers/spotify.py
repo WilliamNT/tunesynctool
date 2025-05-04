@@ -5,7 +5,6 @@ from fastapi.responses import RedirectResponse, HTMLResponse
 from api.services.auth_service import AuthService, get_auth_service
 from api.core.security import oauth2_scheme
 from api.services.spotify_service import SpotifyService, get_spotify_service
-from api.models.service import ProviderState
 from api.services.credentials_service import CredentialsService, get_credentials_service
 
 router = APIRouter(
@@ -64,30 +63,6 @@ async def callback(
     return await provider_service.handle_authorization_callback(
         code=code,
         jwt=jwt,
-    )
-
-@router.get(
-    path="",
-    summary="Get the Spotify provider state",
-    operation_id="getSpotifyProviderState",
-    name="spotify:get_spotify_provider_state",
-)
-async def state(
-    credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)],
-) -> ProviderState:
-    """
-    Returns the status of the Spotify provider.
-
-    Call this endpoint to check if the user has connected their Spotify account.
-    """
-
-    user = await auth_service.resolve_user_from_jwt(jwt)
-
-    return await credentials_service.get_provider_state(
-        user=user,
-        service_name="spotify",
     )
 
 @router.delete(

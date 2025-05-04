@@ -2,7 +2,6 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 
 from api.core.security import oauth2_scheme
-from api.models.service import ProviderState
 from api.services.auth_service import AuthService, get_auth_service
 from api.services.credentials_service import CredentialsService, get_credentials_service
 from api.models.subsonic import SubsonicCredentials
@@ -37,30 +36,6 @@ async def credentials(
     return await provider_service.configure_credentials(
         credentials=credentials,
         jwt=jwt,
-    )
-
-@router.get(
-    path="",
-    summary="Get the Subsonic provider state",
-    operation_id="getSubsonicProviderState",
-    name="subsonic:get_subsonic_provider_state",
-)
-async def state(
-    credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)],
-) -> ProviderState:
-    """
-    Returns the status of the Subsonic provider.
-
-    Call this endpoint to check if the user has connected their Subsonic account.
-    """
-
-    user = await auth_service.resolve_user_from_jwt(jwt)
-
-    return await credentials_service.get_provider_state(
-        user=user,
-        service_name="subsonic",
     )
 
 @router.delete(

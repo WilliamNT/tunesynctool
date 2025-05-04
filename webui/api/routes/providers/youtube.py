@@ -4,7 +4,6 @@ from fastapi.responses import RedirectResponse, HTMLResponse
 
 from api.services.youtube_service import YouTubeService, get_youtube_service
 from api.core.security import oauth2_scheme
-from api.models.service import ProviderState
 from api.services.auth_service import AuthService, get_auth_service
 from api.services.credentials_service import CredentialsService, get_credentials_service
 
@@ -65,30 +64,6 @@ async def callback(
     return await provider_service.handle_authorization_callback(
         callback_url=str(request.url),
         jwt=jwt,
-    )
-
-@router.get(
-    path="",
-    summary="Get the YouTube provider state",
-    operation_id="getYouTubeProviderState",
-    name="youtube:get_youtube_provider_state",
-)
-async def state(
-    credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)],
-) -> ProviderState:
-    """
-    Returns the status of the YouTube provider.
-
-    Call this endpoint to check if the user has connected their YouTube account.
-    """
-
-    user = await auth_service.resolve_user_from_jwt(jwt)
-
-    return await credentials_service.get_provider_state(
-        user=user,
-        service_name="youtube",
     )
 
 @router.delete(

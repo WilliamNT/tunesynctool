@@ -1,22 +1,37 @@
-from fastapi import Request
+from typing import Annotated
+from fastapi import Depends, Request
 
 from api.models.service import ProviderAboutRead, ProviderRead, ProviderLinkingRead, ProviderLinkType
 from api.models.collection import Collection
+from api.services.credentials_service import CredentialsService, get_credentials_service
+from api.services.auth_service import AuthService, get_auth_service
 
 class ProviderService:
-    def get_supported_providers(self, request: Request) -> Collection[ProviderRead]:
+    def __init__(self, credentials_service: CredentialsService, auth_service: AuthService) -> None:
+        self.credentials_service = credentials_service
+        self.auth_service = auth_service
+
+    async def get_supported_providers(self, request: Request, jwt: str) -> Collection[ProviderRead]:
         """
         Returns a collection of supported providers.
         
+        :param request: The request object.
+        :param jwt: The JWT token for authentication.
         :return: A collection of supported providers.
         """
+
+        user = await self.auth_service.resolve_user_from_jwt(jwt)
 
         spotify = ProviderRead(
             provider_name="spotify",
             is_configured=True,
             linking=ProviderLinkingRead(
                 link_type=ProviderLinkType.OAUTH2,
-                target_url=str(request.url_for("spotify:authorize"))
+                target_url=str(request.url_for("spotify:authorize")),
+                linked=await self.credentials_service.is_linked(
+                    user=user,
+                    service_name="spotify"
+                )
             ),
             ui=ProviderAboutRead(
                 description="Connect your Spotify account to access Spotify specific features.",
@@ -30,7 +45,11 @@ class ProviderService:
             is_configured=True,
             linking=ProviderLinkingRead(
                 link_type=ProviderLinkType.OAUTH2,
-                target_url=str(request.url_for("youtube:authorize"))
+                target_url=str(request.url_for("youtube:authorize")),
+                linked=await self.credentials_service.is_linked(
+                    user=user,
+                    service_name="youtube"
+                )
             ),
             ui=ProviderAboutRead(
                 description="Connect your Google account to access YouTube specific features.",
@@ -44,7 +63,11 @@ class ProviderService:
             is_configured=True,
             linking=ProviderLinkingRead(
                 link_type=ProviderLinkType.FORM,
-                target_url=str(request.url_for("deezer:set_deezer_arl"))
+                target_url=str(request.url_for("deezer:set_deezer_arl")),
+                linked=await self.credentials_service.is_linked(
+                    user=user,
+                    service_name="deezer"
+                )
             ),
             ui=ProviderAboutRead(
                 description="Set your Deezer ARL cookie to access Deezer specific features.",
@@ -58,7 +81,11 @@ class ProviderService:
             is_configured=True,
             linking=ProviderLinkingRead(
                 link_type=ProviderLinkType.FORM,
-                target_url=str(request.url_for("subsonic:set_subsonic_credentials"))
+                target_url=str(request.url_for("subsonic:set_subsonic_credentials")),
+                linked=await self.credentials_service.is_linked(
+                    user=user,
+                    service_name="subsonic"
+                )
             ),
             ui=ProviderAboutRead(
                 description="A standardized API for media streaming services. Supports any Subsonic compatible service (e.g. Subsonic, Airsonic, Navidrome).",
@@ -77,5 +104,8 @@ class ProviderService:
             ]
         )
     
-def get_provider_service() -> ProviderService:
-    return ProviderService()
+def get_provider_service(credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)], auth_service: Annotated[AuthService, Depends(get_auth_service)]) -> ProviderService:
+    return ProviderService(
+        credentials_service=credentials_service,
+        auth_service=auth_service
+    )
