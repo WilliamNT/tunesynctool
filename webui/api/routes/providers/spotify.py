@@ -1,6 +1,6 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
 
 from api.services.auth_service import AuthService, get_auth_service
 from api.core.security import oauth2_scheme
@@ -53,7 +53,7 @@ async def callback(
     provider_service: Annotated[SpotifyService, Depends(get_spotify_service)],
     jwt: Annotated[str, Depends(oauth2_scheme)],
     code: str,
-) -> None:
+) -> HTMLResponse:
     """
     Handles the Spotify Authorization Code Flow callback.
     Do not call directly. This endpoint is called by Spotify after the user has authorized the application.

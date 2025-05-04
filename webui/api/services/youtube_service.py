@@ -1,6 +1,6 @@
 import json
 from typing import Annotated, Optional
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status
 from fastapi.responses import RedirectResponse, HTMLResponse
 from google_auth_oauthlib.flow import Flow
 from oauthlib.oauth2.rfc6749.errors import OAuth2Error
@@ -68,7 +68,7 @@ class YouTubeService:
             status_code=302,
         )
     
-    async def handle_authorization_callback(self, callback_url: str, jwt: str) -> None:
+    async def handle_authorization_callback(self, callback_url: str, jwt: str) -> HTMLResponse:
         """
         Handles the Google OAuth2 callback after the user has authorized the application.
         
@@ -99,7 +99,8 @@ class YouTubeService:
         )
 
         return HTMLResponse(
-            content=f"<h1>Authorization successful!</h1><p>This is a placeholder. Here's some of your info for verification: {credentials.credentials}</p>",
+            content="<p>Google account linked. You can close this tab now.</p>",
+            status_code=status.HTTP_200_OK,
         )
 
     async def handle_account_unlink(self, jwt: str) -> None:

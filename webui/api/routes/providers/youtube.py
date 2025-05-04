@@ -1,6 +1,6 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, Request, status
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
 
 from api.services.youtube_service import YouTubeService, get_youtube_service
 from api.core.security import oauth2_scheme
@@ -54,7 +54,7 @@ async def callback(
     provider_service: Annotated[YouTubeService, Depends(get_youtube_service)],
     jwt: Annotated[str, Depends(oauth2_scheme)],
     request: Request
-) -> None:
+) -> HTMLResponse:
     """
     Handles the Google OAuth2 callback.
     Do not call directly. This endpoint is called by Google after the user has authorized the application.

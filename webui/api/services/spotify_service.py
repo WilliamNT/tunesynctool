@@ -1,10 +1,9 @@
 from typing import Annotated, Optional
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi import Depends, HTTPException, status
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.cache_handler import CacheHandler
 from spotipy.exceptions import SpotifyOauthError
-import asyncio
 
 from api.core.config import config
 from api.services.auth_service import AuthService, get_auth_service
@@ -67,7 +66,7 @@ class SpotifyService:
             status_code=status.HTTP_302_FOUND
         )
     
-    async def handle_authorization_callback(self, code: str, jwt: str) -> None:
+    async def handle_authorization_callback(self, code: str, jwt: str) -> HTMLResponse:
         """
         Handles the callback from Spotify after the user has granted authorization.
         
@@ -99,6 +98,11 @@ class SpotifyService:
         await self.credentials_service.set_service_credentials(
             user=user,
             credentials=credentials
+        )
+
+        return HTMLResponse(
+            content="<p>Spotify account linked. You can close this tab now.</p>",
+            status_code=status.HTTP_200_OK,
         )
 
     async def handle_account_unlink(self, jwt: str) -> None:
