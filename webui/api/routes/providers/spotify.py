@@ -51,7 +51,7 @@ async def authorize(
         },
     },
     summary="Handle the Spotify Authorization Code Flow callback",
-    # include_in_schema=False,
+    include_in_schema=False,
     name="spotify:callback",
 )
 async def callback(
