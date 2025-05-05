@@ -3,17 +3,13 @@ import * as zod from 'zod';
 import { isAxiosError } from 'axios';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
-import { SubsonicApi, type ProviderRead } from '@/api';
+import { SubsonicApi } from '@/api';
 import { computed } from 'vue';
 import AppFormSpacer from '../form/AppFormSpacer.vue';
 import AppField from '../form/AppField.vue';
 import AppButton from '../button/AppButton.vue';
 import { Icon } from '@iconify/vue';
 import { get_authenticated_api_configuration } from '@/services/api';
-
-const props = defineProps<{
-  provider: ProviderRead;
-}>();
 
 const schema = zod.object({
   username: zod.string().min(1, 'Username is required'),

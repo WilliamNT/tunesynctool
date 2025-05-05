@@ -3,17 +3,13 @@ import * as zod from 'zod';
 import { isAxiosError } from 'axios';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
-import { DeezerApi, type ProviderRead } from '@/api';
+import { DeezerApi } from '@/api';
 import { computed } from 'vue';
 import AppFormSpacer from '../form/AppFormSpacer.vue';
 import AppField from '../form/AppField.vue';
 import AppButton from '../button/AppButton.vue';
 import { Icon } from '@iconify/vue';
 import { get_authenticated_api_configuration } from '@/services/api';
-
-const props = defineProps<{
-  provider: ProviderRead;
-}>();
 
 const schema = zod.object({
   arl: zod.string().min(8, 'ARL is required')

@@ -123,8 +123,8 @@ const goToOAuth2Page = async (provider: ProviderRead) => {
             </AppButton>
           </template>
           <template v-else-if="provider.linking.link_type === 'form'" #form>
-            <SubsonicLoginForm :provider v-if="provider.provider_name === 'subsonic'" @linked="loadProviders" />
-            <DeezerARLForm :provider v-else-if="provider.provider_name === 'deezer'" @linked="loadProviders" />
+            <SubsonicLoginForm v-if="provider.provider_name === 'subsonic'" @linked="loadProviders" />
+            <DeezerARLForm v-else-if="provider.provider_name === 'deezer'" @linked="loadProviders" />
           </template>
         </ServiceProvider>
       </template>
