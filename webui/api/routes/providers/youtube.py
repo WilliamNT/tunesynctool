@@ -1,11 +1,9 @@
-from typing import Annotated
-from fastapi import APIRouter, Depends, Request, status
+from typing import Annotated, Optional
+from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse, HTMLResponse
 
 from api.services.youtube_service import YouTubeService, get_youtube_service
 from api.core.security import oauth2_scheme
-from api.services.auth_service import AuthService, get_auth_service
-from api.services.credentials_service import CredentialsService, get_credentials_service
 
 router = APIRouter(
     prefix="/providers/youtube",
@@ -26,16 +24,20 @@ router = APIRouter(
 )
 async def authorize(
     provider_service: Annotated[YouTubeService, Depends(get_youtube_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)],
+    state: Annotated[str, Query()]
 ) -> RedirectResponse:
     """
     Starts the YouTube Authorization Code Flow. Redirects the user to the YouTube authorization page.
     The user will be asked to log in and authorize the application.
 
     Details: https://developers.google.com/identity/protocols/oauth2
+
+    Takes a `state` parameter that includes metadata about the client.
     """
     
-    return await provider_service.request_user_authorization(jwt)
+    return await provider_service.request_user_authorization(
+        state=state
+    )
 
 @router.get(
     path="/callback",
@@ -51,8 +53,9 @@ async def authorize(
 )
 async def callback(
     provider_service: Annotated[YouTubeService, Depends(get_youtube_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)],
-    request: Request
+    state: str,
+    code: Annotated[Optional[str], Query()] = None,
+    error: Annotated[Optional[str], Query()] = None
 ) -> HTMLResponse:
     """
     Handles the Google OAuth2 callback.
@@ -62,8 +65,9 @@ async def callback(
     """
     
     return await provider_service.handle_authorization_callback(
-        callback_url=str(request.url),
-        jwt=jwt,
+        code=code,
+        state=state,
+        error=error
     )
 
 @router.delete(
