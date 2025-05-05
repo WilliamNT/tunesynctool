@@ -11,7 +11,6 @@ import { Icon } from '@iconify/vue';
 import SubsonicLoginForm from '@/components/service/SubsonicLoginForm.vue';
 import DeezerARLForm from '@/components/service/DeezerARLForm.vue';
 import AppButton from '@/components/button/AppButton.vue';
-import { get } from 'http';
 
 const providersApi = new ProvidersApi(get_authenticated_api_configuration());
 
