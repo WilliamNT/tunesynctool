@@ -11,6 +11,7 @@ import { Icon } from '@iconify/vue';
 import SubsonicLoginForm from '@/components/service/SubsonicLoginForm.vue';
 import DeezerARLForm from '@/components/service/DeezerARLForm.vue';
 import AppButton from '@/components/button/AppButton.vue';
+import { useProviders } from '@/composables/useProviders';
 
 const providersApi = new ProvidersApi(get_authenticated_api_configuration());
 
@@ -19,26 +20,7 @@ const providers = ref<ProviderRead[]>([]);
 const router = useRouter();
 
 const loadProviders = async () => {
-  try {
-    const response = await providersApi.getValidProviderNames();
-
-    if (response.data.items) {
-      providers.value = response.data.items;
-    } else {
-      console.error('Backend returned an empty list of providers');
-    }
-  } catch (error) {
-    if (isAxiosError(error)) {
-      switch (error.response?.status) {
-        case 401:
-        case 403:
-          router.push({ name: 'login' });
-          break;
-        default:
-          console.error('Error loading providers:', error);
-      }
-    }
-  }
+  providers.value = await useProviders();
 };
 
 onMounted(async () => {
