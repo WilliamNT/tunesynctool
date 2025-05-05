@@ -15,4 +15,8 @@
   #app {
     @apply flex flex-col;
   }
+
+  #nav-items .router-link-active {
+    @apply text-lime-400 bg-lime-900/20;
+  }
 }

@@ -19,5 +19,5 @@ const me = ref<UserRead>();
 </script>
 
 <template>
-  <p>{{ me }}</p>
+  <h1>Tasks</h1>
 </template>

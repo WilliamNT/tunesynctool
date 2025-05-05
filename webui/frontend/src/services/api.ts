@@ -14,3 +14,12 @@ export function get_api_configuration(access_token?: string): Configuration {
         accessToken: access_token,
     });
 }
+
+export function get_authenticated_api_configuration(): Configuration {
+    const access_token = get_access_token();
+    if (!access_token) {
+        throw new Error('Access token is not set');
+    }
+
+    return get_api_configuration(access_token);
+}

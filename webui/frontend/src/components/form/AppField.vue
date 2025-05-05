@@ -17,7 +17,7 @@ const emit = defineEmits(['update:modelValue', 'blur']);
 </script>
 
 <template>
-  <div class="flex flex-col gap-1 max-w-md">
+  <div class="flex flex-col gap-1 w-full">
     <label :for="name" v-if="label" class="font-bold pb-1 capitalize">
       {{ label }}
     </label>
