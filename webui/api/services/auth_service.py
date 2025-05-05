@@ -1,11 +1,14 @@
+from datetime import datetime, timezone, timedelta
 from typing import Annotated
 from fastapi import Depends, HTTPException
 
-from api.core.security import create_access_token, verify_password, verify_access_token
+from api.core.security import create_access_token, verify_password, verify_access_token, verify_oauth2_state
 from api.models.token import AccessToken
 from api.services.user_service import UserService, get_user_service
 from api.models.user import User
 from api.core.logging import logger
+from api.core.security import generate_oauth2_state
+from api.models.state import OAuth2StateCreate
 
 class AuthService:
     """
@@ -80,6 +83,45 @@ class AuthService:
             self.raise_unauthorized()
 
         user = await self.user_service.get_by_id(subject)
+        if not user:
+            self.raise_unauthorized()
+
+        return user
+    
+    async def generate_oauth2_state(self, jwt: str, provider_name: str, details: OAuth2StateCreate) -> AccessToken:
+        user = await self.resolve_user_from_jwt(jwt)
+
+        logger.info(f"Generating OAuth2 state for user {user.id} and provider \"{provider_name}\".")
+
+        state = generate_oauth2_state(
+            user_id=user.id,
+            provider_name=provider_name,
+            redirect_uri=str(details.redirect_uri),
+        )
+
+        return AccessToken(
+            access_token=state,
+            token_type="state",
+            expires_in=timedelta(minutes=10).total_seconds()
+        )
+    
+    async def resolve_user_from_oauth2_state(self, state: str, provider_name: str) -> User:
+        """
+        Resolves a user from an OAuth2 state.
+        
+        :param state: The OAuth2 state.
+        :return: The user if the state is valid.
+        :raises HTTPException: 401 Unauthorized if the state is invalid.
+        """
+
+        decoded_state = verify_oauth2_state(
+            state=state,
+            provider_name=provider_name
+        )
+        if not decoded_state:
+            self.raise_unauthorized()
+
+        user = await self.user_service.get_by_id(decoded_state.user_id)
         if not user:
             self.raise_unauthorized()
 

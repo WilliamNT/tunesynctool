@@ -10,6 +10,8 @@ import base64
 
 from api.core.config import config
 from api.models.token import AccessToken
+from api.models.state import OAuth2State
+from .logging import logger
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{config.API_BASE_URL}/auth/token")
 
@@ -22,6 +24,7 @@ def create_access_token(subject: str, expires_in_days: int) -> AccessToken:
     payload = {
         "sub": subject,
         "exp": expiration,
+        "aud": "user_session"
     }
 
     encoded_jwt = jwt.encode(
@@ -43,13 +46,14 @@ def verify_access_token(token: str) -> Optional[str]:
             key=config.APP_SECRET,
             algorithms=[JWT_ALGORITHM],
             verify=True,
+            audience="user_session"
         )
 
         if "sub" not in payload:
             return None
         
         return str(payload["sub"])
-    except jwt.ExpiredSignatureError:
+    except jwt.InvalidTokenError:
         return None
 
 def hash_password(password: str) -> str:
@@ -92,3 +96,68 @@ def get_fernet() -> Fernet:
     return Fernet(
         key=base64.urlsafe_b64encode(key)
     )
+
+def generate_oauth2_state(provider_name: str, user_id: int, redirect_uri: Optional[str] = None) -> str:
+    """
+    Generate a state string for OAuth2 authorization.
+
+    :param provider_name: The name of the OAuth2 provider.
+    :param user_id: The ID of the user.
+    :param redirect_uri: The redirect URI for the the client.
+    :return: The generated state string.
+    """
+
+    expiration = datetime.now(timezone.utc) + timedelta(minutes=10)
+
+    payload = {
+        "sub": str(user_id),
+        "redirect_uri": redirect_uri,
+        "exp": expiration,
+        "aud": f"oauth2_state:{provider_name.strip().lower()}"
+    }
+
+    encoded_jwt = jwt.encode(
+        payload=payload,
+        key=config.APP_SECRET,
+        algorithm=JWT_ALGORITHM
+    )
+
+    return encoded_jwt
+
+def verify_oauth2_state(state: str, provider_name: str) -> Optional[OAuth2State]:
+    """
+    Verify the OAuth2 state string.
+    
+    :param state: The state string to verify.
+    :param provider_name: The name of the OAuth2 provider.
+    :return: The decoded OAuth2 state if valid, None otherwise.
+    """
+
+    try:
+        payload = jwt.decode(
+            jwt=state,
+            key=config.APP_SECRET,
+            algorithms=[JWT_ALGORITHM],
+            verify=True,
+            audience=f"oauth2_state:{provider_name.strip().lower()}",
+        )
+        
+        user_id = payload.get("sub")
+        if user_id is None:
+            return None
+        
+        redirect_uri = payload.get("redirect_uri")
+        if redirect_uri is None:
+            return None
+
+        return OAuth2State(
+            provider=provider_name,
+            user_id=int(user_id),
+            redirect_uri=redirect_uri,
+        )
+    except jwt.exceptions.ExpiredSignatureError:
+        logger.warning(f"OAuth2 state has expired.")
+        return None
+    except jwt.exceptions.InvalidTokenError as e:
+        logger.warning(f"Invalid OAuth2 state. This is either caused by a programming error or someone trying to tamper with the state. Details: \"{e}\"")
+        return None
