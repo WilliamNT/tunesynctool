@@ -18,6 +18,7 @@
         "@tailwindcss/vite": "^4.1.4",
         "@vee-validate/zod": "^4.15.0",
         "axios": "^1.9.0",
+        "date-fns": "^4.1.0",
         "reka-ui": "^2.2.0",
         "tailwindcss": "^4.1.4",
         "vee-validate": "^4.15.0",

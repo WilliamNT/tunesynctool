@@ -14,8 +14,8 @@ import { Icon } from '@iconify/vue';
         </RouterLink>
       </li>
       <li>
-        <RouterLink :to="{ name: 'browse' }" class="px-4 py-3 hover:text-lime-400 rounded-full transition-colors">
-          <Icon icon="material-symbols:search-rounded" class="me-2.5 inline-block text-xl"/>Browse
+        <RouterLink :to="{ name: 'search' }" class="px-4 py-3 hover:text-lime-400 rounded-full transition-colors">
+          <Icon icon="material-symbols:search-rounded" class="me-2.5 inline-block text-xl"/>Search
         </RouterLink>
       </li>
       <li>

@@ -3,7 +3,7 @@ import AppForeground from '../generic/AppForeground.vue';
 </script>
 
 <template>
-  <AppForeground class="rounded-2xl p-4">
+  <AppForeground class="rounded-2xl p-3">
     <slot />
   </AppForeground>
 </template>
