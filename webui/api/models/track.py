@@ -30,6 +30,13 @@ class TrackIdentifiersRead(EntityIdentifiersBase, TrackIdentifiersThirdPartyBase
     Represents identifiers of a track.
     """
 
+class TrackAssetsRead(BaseModel):
+    """
+    Represents assets of a track.
+    """
+
+    cover_image: Optional[str] = Field(default=None, description="Cover image URL (if available).")
+
 class TrackBase(BaseModel):
     """
     Represents common attributes of a track.
@@ -43,6 +50,7 @@ class TrackBase(BaseModel):
 
     author: EntityMultiAuthorRead = Field(description="Authors of the track.")
     identifiers: TrackIdentifiersRead = Field(description="Identifiers of the track.")
+    assets: TrackAssetsRead = Field(description="Assets of the track.")
 
 class TrackRead(TrackBase):
     """

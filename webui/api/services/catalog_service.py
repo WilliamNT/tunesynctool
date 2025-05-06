@@ -1,4 +1,7 @@
 from typing import Annotated, Optional
+import random
+import string
+import hashlib
 
 from fastapi import Depends, HTTPException
 from tunesynctool.drivers import AsyncWrappedServiceDriver
@@ -10,10 +13,12 @@ from api.core.logging import logger
 from api.models.search import SearchParams, ISRCSearchParams, LookupByProviderIDParams, LookupLibraryPlaylistsParams, SearchParamsBase
 from api.models.collection import SearchResultCollection, Collection
 from api.services.auth_service import AuthService, get_auth_service
-from api.models.track import TrackRead, TrackIdentifiersRead
+from api.models.track import TrackAssetsRead, TrackRead, TrackIdentifiersRead
 from api.models.entity import EntityMetaRead, EntityMultiAuthorRead, EntitySingleAuthorRead, EntityIdentifiersBase
 from api.services.service_driver_helper_service import ServiceDriverHelperService, get_service_driver_helper_service
 from api.models.playlist import PlaylistRead, PlaylistCreate, PlaylistMultiTrackInsert
+from api.core.config import config
+from api.models.service import ServiceCredentials
 
 class CatalogService:
     """
@@ -55,7 +60,8 @@ class CatalogService:
 
         results = await self.search(
             search_parameters=search_parameters,
-            service_driver=driver
+            service_driver=driver,
+            credentials=credentials
         )
 
         return SearchResultCollection(
@@ -63,18 +69,24 @@ class CatalogService:
             query=search_parameters.query
         )
 
-    async def search(self, search_parameters: SearchParams, service_driver: AsyncWrappedServiceDriver) -> list[TrackRead]:
+    async def search(self, search_parameters: SearchParams, service_driver: AsyncWrappedServiceDriver, credentials: ServiceCredentials) -> list[TrackRead]:
         try:
             results = await service_driver.search_tracks(
                 query=search_parameters.query,
                 limit=search_parameters.limit
             )
 
+            if len(results) > search_parameters.limit:
+                results = results[:search_parameters.limit]
+
             mapped_results = []
             for result in results:
-                mapped_results.append(self._map_track(
+                if len(mapped_results) > 1:
+                    break
+                mapped_results.append(await self._map_track(
                     track=result,
-                    provider_name=search_parameters.provider
+                    provider_name=search_parameters.provider,
+                    credentials=credentials
                 ))
 
             return mapped_results
@@ -84,13 +96,12 @@ class CatalogService:
                 e=e
             )
         except ServiceDriverException as e:
-            raise
             self.raise_service_driver_generic_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )
                 
-    def _map_track(self, track: Track, provider_name: str) -> TrackRead:
+    async def _map_track(self, track: Track, provider_name: str, credentials: ServiceCredentials) -> TrackRead:
         meta = EntityMetaRead(
             provider_name=provider_name
         )
@@ -106,6 +117,8 @@ class CatalogService:
             isrc=track.isrc
         )
 
+        assets = await self._map_track_assets(track=track, credentials=credentials)
+
         mapped = TrackRead(
             title=track.title,
             album_name=track.album_name,
@@ -115,10 +128,56 @@ class CatalogService:
             author=artists,
             meta=meta,
             identifiers=identifiers,
+            assets=assets
         )
 
         return mapped
         
+    async def _map_track_assets(self, track: Track, credentials: ServiceCredentials) -> TrackRead:
+        link = None
+        extra_data = track.service_data
+
+        match track.service_name:
+            case "spotify":
+                link = extra_data.get("album", {}).get("images", [])[0].get("url", None)
+            case "youtube":
+                link = extra_data.get("track", {}).get("videoDetails", {}).get("thumbnail", {}).get("thumbnails", [])[0].get("url", None)
+            case "deezer":
+                link = extra_data.get("album", {}).get("cover", None)
+            case "subsonic":
+                link = await self._get_subsonic_cover_art(track=track, credentials=credentials)
+
+        return TrackAssetsRead(
+            cover_image=link
+        )
+
+    async def _get_subsonic_cover_art(self, track: Track, credentials: ServiceCredentials) -> Optional[str]:
+        """
+        Get the cover art URL for a track from Subsonic.
+        """
+        if not track.service_data:
+            return None
+
+        cover_art = track.service_data.get("coverArt", None)
+        if not cover_art:
+            return None
+        
+        password = credentials.credentials.get("password")
+        if not password:
+            logger.error(f"User {credentials.user_id} does not have a password for Subsonic but still we fetched from the API successfully. This is likely a bug..")
+            return None
+        
+        username = credentials.credentials.get("username")
+        if not username:
+            logger.error(f"User {credentials.user_id} does not have a username for Subsonic but still we fetched from the API successfully. This is likely a bug..")
+            return None
+
+        salt = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+        token_input = password + salt
+        token = hashlib.md5(token_input.encode('utf-8')).hexdigest()
+
+        return f"{config.SUBSONIC_BASE_URL}:{config.SUBSONIC_PORT}/rest/getCoverArt.view?id={cover_art}&s={salt}&t={token}&u={username}&v=1.8.0&c=tunesynctool&f=json"
+
     def raise_missing_or_invalid_auth_credentials_exception(self, provider_name: str) -> None:
         """
         Raises an HTTPException with a 400 status code and a message indicating that the catalog operation failed due to user error.
