@@ -1,6 +1,6 @@
 from fastapi import Depends
 from typing import Annotated, List
-from tunesynctool.models.playlist import Playlist
+import asyncio
 
 from api.models.playlist import PlaylistRead
 from api.models.collection import Collection
@@ -10,6 +10,7 @@ from api.models.user import User
 from api.services.catalog_service import CatalogService, get_catalog_service
 from api.models.search import LookupLibraryPlaylistsParams
 from api.services.service_driver_helper_service import ServiceDriverHelperService, get_service_driver_helper_service
+from api.core.logging import logger
 
 class LibraryService:
     """
@@ -35,29 +36,45 @@ class LibraryService:
         )
     
     async def _get_playlists_for_user(self, user: User) -> List[PlaylistRead]:
-
         services = await self.credentials_service.get_linked_providers(user)
-        
-        playlists = []
-        for service in services:
-            driver = await self.service_driver_helper_service.get_initialized_driver(
-                user=user,
-                credentials=await self.credentials_service.get_service_credentials(
+
+        async def fetch_playlists_for_service(service: str) -> List[PlaylistRead] | Exception:
+            try:
+                credentials = await self.credentials_service.get_service_credentials(
                     user=user,
                     service_name=service,
-                ),
-                provider_name=service,
-            )
+                )
 
-            provider_playlists = await self.catalog_service.compile_user_playlists(
-                search_parameters=LookupLibraryPlaylistsParams(
-                    provider=service,
-                    limit=25 # TODO: add support for a negative or 0 value to get all playlists
-                ),
-                service_driver=driver
-            )
+                driver = await self.service_driver_helper_service.get_initialized_driver(
+                    user=user,
+                    credentials=credentials,
+                    provider_name=service,
+                )
 
-            playlists.extend(provider_playlists.items)
+                provider_playlists = await self.catalog_service.compile_user_playlists(
+                    search_parameters=LookupLibraryPlaylistsParams(
+                        provider=service,
+                        limit=25
+                    ),
+                    service_driver=driver,
+                )
+
+                return provider_playlists.items
+            except Exception as e:
+                logger.error(f"Failed to fetch playlists for user {user.id} from service {service}. Reason: {e}")
+                return e
+
+        results = await asyncio.gather(
+            *(fetch_playlists_for_service(service) for service in services),
+            return_exceptions=True
+        )
+
+        playlists = []
+        for result in results:
+            if isinstance(result, Exception):
+                continue
+
+            playlists.extend(result)
 
         return playlists
 
