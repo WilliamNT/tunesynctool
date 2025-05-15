@@ -35,7 +35,7 @@ onMounted(async () => {
         <SimpleSearchForm :providers="providers" @result="(r) => results = r" />
       </AppCard>
       <div class="flex flex-col gap-3" v-if="results">
-        <p class="text-xl font-black mt-5 mb-2">Found {{ results?.item_count ?? 0 }} results for "{{ results?.query }}"</p>
+        <p class="text-xl font-black mt-5 mb-2">{{ results?.item_count ?? 0 }} results for "{{ results?.query }}"</p>
         <TrackResult :track :providers="providers" v-for="track in results.items" :key="track.identifiers.provider_id" />
       </div>
     </div>
