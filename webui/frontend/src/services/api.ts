@@ -1,11 +1,21 @@
 import { Configuration } from '@/api';
 
+const ACCESS_TOKEN_KEY = 'access_token';
+
 export function get_access_token(): string | undefined {
-    return localStorage.getItem('access_token') ?? undefined;
+    return localStorage.getItem(ACCESS_TOKEN_KEY) ?? undefined;
 }
 
 export function set_access_token(access_token: string): void {
-    localStorage.setItem('access_token', access_token);
+    localStorage.setItem(ACCESS_TOKEN_KEY, access_token);
+}
+
+export function delete_access_token(): void {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+}
+
+export function is_access_token_set(): boolean {
+    return !!get_access_token();
 }
 
 export function get_api_configuration(access_token?: string): Configuration {
