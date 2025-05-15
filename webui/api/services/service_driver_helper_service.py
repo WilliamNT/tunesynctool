@@ -2,7 +2,7 @@ from typing import Annotated, Union
 from tunesynctool.drivers import AsyncWrappedServiceDriver
 from tunesynctool.models import Configuration
 from google.oauth2.credentials import Credentials as GoogleCredentials
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.cache_handler import MemoryCacheHandler
 
@@ -14,6 +14,7 @@ from api.core.config import config
 from api.services.credentials_service import get_credentials_service, CredentialsService
 from api.models.user import User
 from api.helpers.ytmusicapi import CustomYTMusicAPIOAuthCredentials
+from api.exceptions.auth import OAuthTokenRefreshError
 
 class ServiceDriverHelperService:
     """
@@ -94,10 +95,23 @@ class ServiceDriverHelperService:
         )
     
     async def _get_youtube_config(self, user: User, credentials: ServiceCredentials) -> CustomYTMusicAPIOAuthCredentials:
-        fresh_credentials = await self.credentials_service.refresh_google_credentials(
-            user=user,
-            credentials=credentials
-        )
+        try:
+            fresh_credentials = await self.credentials_service.refresh_google_credentials(
+                user=user,
+                credentials=credentials
+            )
+        except OAuthTokenRefreshError:
+            private_reason = "Credentials were invalid, have expired or the user revoked access and could not be refreshed."
+            await self.credentials_service.delete_credentials(
+                user=user,
+                service_name=credentials.service_name,
+                log_reason=private_reason
+            )
+
+            raise HTTPException(
+                status_code=403,
+                detail=private_reason + " Relinking will likely fix this issue."
+            )
 
         google_credentials = GoogleCredentials.from_authorized_user_info(
             info=fresh_credentials.credentials,

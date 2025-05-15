@@ -5,6 +5,7 @@ from sqlmodel import select
 from google.oauth2.credentials import Credentials as GoogleCredentials
 from google.auth.credentials import TokenState as GoogleTokenState
 from google.auth.transport.requests import Request as GoogleTokenRequest
+import google.auth.exceptions as google_auth_exceptions
 import json
 
 from api.core.database import get_session
@@ -13,7 +14,7 @@ from api.models.service import ServiceCredentials, ServiceCredentialsCreate
 from api.helpers.database import create, update, delete
 from api.core.logging import logger
 from api.core.config import config
-from api.models.collection import Collection
+from api.exceptions.auth import OAuthTokenRefreshError
 
 class CredentialsService:
     """
@@ -105,7 +106,7 @@ class CredentialsService:
             obj=new_credentials,
         )
     
-    async def delete_credentials(self, user: User, service_name: str) -> None:
+    async def delete_credentials(self, user: User, service_name: str, log_reason: Optional[str] = None) -> None:
         """
         Permanently deletes the credentials for the user and service.
 
@@ -123,7 +124,7 @@ class CredentialsService:
             logger.warning(f"Credentials for user {user.id} and service \"{service_name}\" don't exist but their deletion was requested anyway.")
             return
         
-        logger.info(f"Deleting credentials for user {user.id} and service \"{service_name}\".")
+        logger.info(f"Deleting credentials for user {user.id} and service \"{service_name}\".{f' Reason: {log_reason}' if log_reason else ''}")
 
         await delete(
             session=self.db,
@@ -156,8 +157,16 @@ class CredentialsService:
             logger.error(f"Google credentials for user {user.id} are not fresh and do not have a refresh token. Cannot refresh.")
             raise ValueError(f"Cannot refresh Google credentials because they are missing a refresh token. This is likely a bug with the Google library.")
         
-        logger.debug(f"Refreshing Google credentials for user {user.id}.")
-        google_credentials.refresh(GoogleTokenRequest())
+        try:
+            logger.debug(f"Refreshing Google credentials for user {user.id}.")
+            google_credentials.refresh(GoogleTokenRequest())
+        except google_auth_exceptions.GoogleAuthError as e:
+            logger.error(f"Failed to refresh Google credentials for user {user.id}. Reason: {e}")
+            raise OAuthTokenRefreshError(
+                provider_name="google",
+                user_id=user.id,
+                cause=str(e)
+            ) from e
 
         fresh_credentials = await self._update_credentials(
             user_id=user.id,
