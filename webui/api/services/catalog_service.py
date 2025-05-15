@@ -13,8 +13,8 @@ from api.core.logging import logger
 from api.models.search import SearchParams, ISRCSearchParams, LookupByProviderIDParams, LookupLibraryPlaylistsParams, SearchParamsBase
 from api.models.collection import SearchResultCollection, Collection
 from api.services.auth_service import AuthService, get_auth_service
-from api.models.track import TrackAssetsRead, TrackRead, TrackIdentifiersRead
-from api.models.entity import EntityMetaRead, EntityMultiAuthorRead, EntitySingleAuthorRead, EntityIdentifiersBase
+from api.models.track import TrackRead, TrackIdentifiersRead
+from api.models.entity import EntityMetaRead, EntityMultiAuthorRead, EntitySingleAuthorRead, EntityIdentifiersBase, EntityAssetsBase
 from api.services.service_driver_helper_service import ServiceDriverHelperService, get_service_driver_helper_service
 from api.models.playlist import PlaylistRead, PlaylistCreate, PlaylistMultiTrackInsert
 from api.core.config import config
@@ -81,8 +81,6 @@ class CatalogService:
 
             mapped_results = []
             for result in results:
-                if len(mapped_results) > 1:
-                    break
                 mapped_results.append(await self._map_track(
                     track=result,
                     provider_name=search_parameters.provider,
@@ -133,7 +131,7 @@ class CatalogService:
 
         return mapped
         
-    async def _map_track_assets(self, track: Track, credentials: ServiceCredentials) -> TrackRead:
+    async def _map_track_assets(self, track: Track, credentials: ServiceCredentials) -> EntityAssetsBase:
         link = None
         extra_data = track.service_data
 
@@ -147,7 +145,7 @@ class CatalogService:
             case "subsonic":
                 link = await self._get_subsonic_cover_art(track=track, credentials=credentials)
 
-        return TrackAssetsRead(
+        return EntityAssetsBase(
             cover_image=link
         )
 
@@ -407,6 +405,10 @@ class CatalogService:
             provider_id=str(playlist.service_id)
         )
 
+        assets = self._map_playlist_assets(
+            playlist=playlist
+        )
+
         return PlaylistRead(
             title=playlist.name,
             description=playlist.description,
@@ -414,6 +416,24 @@ class CatalogService:
             author=author,
             meta=meta,
             identifiers=identifiers,
+            assets=assets
+        )
+    
+    def _map_playlist_assets(self, playlist: Playlist) -> EntityAssetsBase:
+        link = None
+        extra_data = playlist.service_data
+
+        match playlist.service_name:
+            case "spotify":
+                link = extra_data.get("images", [])[0].get("url") if extra_data.get("images") and len(extra_data.get("images")) > 0 else None
+            case "youtube":
+                link = extra_data.get("thumbnails", {})[0].get("url") if extra_data.get("thumbnails") and len(extra_data.get("thumbnails")) > 0 else None
+            case "deezer", "subsonic":
+                # TODO: add support for Deezer and Subsonic playlist cover art
+                pass
+
+        return EntityAssetsBase(
+            cover_image=link
         )
     
     async def handle_playlist_tracks_lookup(self, search_parameters: LookupByProviderIDParams, jwt: str) -> Collection[TrackRead]:

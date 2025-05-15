@@ -1,4 +1,4 @@
-from typing import Annotated, Optional
+from typing import Annotated, List, Optional
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -198,6 +198,26 @@ class CredentialsService:
         )
 
         return result.scalar_one_or_none() is not None
+    
+    async def get_linked_providers(self, user: User) -> List[str]:
+        """
+        Returns a list of all linked providers for the user.
+        
+        :param user: The user to get the linked providers for.
+        :return: A list of linked providers for the user.
+        """
+
+        logger.info(f"Fetching linked providers for user {user.id}.")
+
+        query = await self.db.execute(
+            select(ServiceCredentials.service_name).where(
+                ServiceCredentials.user_id == user.id,
+            )
+        )
+
+        results = query.all()
+
+        return [result[0] for result in results] if results else []
 
 def get_credentials_service(db: Annotated[AsyncSession, Depends(get_session)]) -> CredentialsService:
     return CredentialsService(db)

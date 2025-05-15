@@ -1,7 +1,7 @@
 from typing import Optional, List
 from pydantic import BaseModel, Field, field_validator
 
-from .entity import EntityMetaRead, EntitySingleAuthorRead, EntityIdentifiersBase
+from .entity import EntityMetaRead, EntitySingleAuthorRead, EntityIdentifiersBase, EntityAssetsBase
 
 class PlaylistRead(BaseModel):
     """
@@ -15,6 +15,7 @@ class PlaylistRead(BaseModel):
     author: EntitySingleAuthorRead = Field(description="Author of the playlist.")
     meta: EntityMetaRead = Field(description="Meta information of the track.")
     identifiers: EntityIdentifiersBase = Field(description="Identifiers of the playlist.")
+    assets: EntityAssetsBase = Field(description="Assets of the playlist.")
 
     @field_validator("description")
     @classmethod

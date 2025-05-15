@@ -28,3 +28,10 @@ class EntityIdentifiersBase(BaseModel):
     """
 
     provider_id: str = Field(description="ID of the entity in the provider's database.")
+
+class EntityAssetsBase(BaseModel):
+    """
+    Base class for graphical assets of an entity.
+    """
+    
+    cover_image: Optional[str] = Field(default=None, description="Cover image URL (if available).")
