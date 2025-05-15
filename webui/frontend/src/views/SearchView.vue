@@ -32,11 +32,11 @@ onMounted(async () => {
     </AppPageHeader>
     <div class="flex flex-col mt-8">
       <AppCard>
-        <SimpleSearchForm :providers="providers" @result="(r) => results = r" />
+        <SimpleSearchForm :providers @result="(r) => results = r" />
       </AppCard>
       <div class="flex flex-col gap-3" v-if="results">
         <p class="text-xl font-black mt-5 mb-2">{{ results?.item_count ?? 0 }} results for "{{ results?.query }}"</p>
-        <TrackResult :track :providers="providers" v-for="track in results.items" :key="track.identifiers.provider_id" />
+        <TrackResult :track :providers v-for="track in results.items" :key="track.identifiers.provider_id" />
       </div>
     </div>
   </AppContainer>
