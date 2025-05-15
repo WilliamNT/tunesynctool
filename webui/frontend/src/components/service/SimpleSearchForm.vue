@@ -22,7 +22,7 @@ const providers = computed(() => props.providers.filter((provider) => provider.i
 const catalogApi = new CatalogApi(get_authenticated_api_configuration());
 
 const schema = zod.object({
-  searchQuery: zod.string().min(1, 'Search query is required').max(100, 'Search query must be less than 100 characters')
+  searchQuery: zod.string().min(3, 'Search query is required').max(100, 'Search query must be less than 100 characters')
 });
 
 const { defineField, handleSubmit, errors, isFieldValid } = useForm({
