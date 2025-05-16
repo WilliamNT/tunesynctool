@@ -24,7 +24,10 @@ const provider = computed(() => props.providers.find((p) => p.provider_name === 
         <h6 class="font-black truncate h-full text-normal text-white">{{ playlist.title ?? 'n/a' }}</h6>
         <p class="text-sm font-semibold text-zinc-400/85 truncate">by {{ playlist.author.primary ?? 'n/a' }}</p>
       </div>
-      <img :src="playlist.assets.cover_image" :alt="`Cover image for ${playlist.title}`" v-if="playlist.assets.cover_image" class="blur-3xl absolute object-cover -bottom-1/2 opacity-30 w-50 h-50 brightness-150">
+      <div class="absolute blur-3xl -bottom-1/2 w-50 h-50 brightness-150 -left-3">
+        <img :src="playlist.assets.cover_image" :alt="`Cover image for ${playlist.title}`" v-if="playlist.assets.cover_image" class="object-cover w-full h-full opacity-30">
+        <div class="bg-white h-full w-full opacity-20" v-else></div>
+      </div>
     </div>
   </AppCard>
 </template>
