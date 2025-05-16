@@ -46,7 +46,7 @@ const isAuthenticated = computed(() => is_access_token_set());
     <DropdownMenuRoot v-if="isAuthenticated">
       <DropdownMenuTrigger aria-label="Account options" class="ms-auto">
         <AvatarRoot class="flex items-center justify-center w-12 h-12 p-2 rounded-full bg-zinc-600/40 ring-1 ring-zinc-700 cursor-pointer">
-          <AvatarFallback class="text-zinc-200 leading-1 flex h-full w-full items-center justify-center text-sm font-black">
+          <AvatarFallback class="text-zinc-200 leading-1 flex h-full w-full items-center justify-center text-sm">
             <Icon icon="material-symbols:person-outline-rounded" class="text-2xl" />
           </AvatarFallback>
         </AvatarRoot>

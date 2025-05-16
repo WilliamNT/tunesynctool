@@ -13,7 +13,7 @@ defineProps<{
       <img :src="provider.ui.favicon" :alt="`${provider.ui.display_name} logo`" width="40" height="40">
     </div>
     <div class="flex flex-col gap-1 flex-1">
-      <h3 class="text-xl font-black">{{ provider.ui.display_name }}</h3>
+      <h3 class="text-xl">{{ provider.ui.display_name }}</h3>
       <p class="text-zinc-400 font-medium">
         {{ provider.ui.description }}
       </p>

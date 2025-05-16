@@ -15,6 +15,8 @@
         "format:check": "prettier --check ."
     },
     "dependencies": {
+        "@fontsource/manrope": "^5.2.5",
+        "@fontsource/poppins": "^5.2.6",
         "@tailwindcss/vite": "^4.1.4",
         "@vee-validate/zod": "^4.15.0",
         "axios": "^1.9.0",

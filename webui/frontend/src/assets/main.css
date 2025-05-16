@@ -1,11 +1,45 @@
 @import 'tailwindcss';
+@import '@fontsource/poppins/100.css';
+@import '@fontsource/poppins/200.css';
+@import '@fontsource/poppins/300.css';
+@import '@fontsource/poppins/400.css';
+@import '@fontsource/poppins/500.css';
+@import '@fontsource/poppins/600.css';
+@import '@fontsource/poppins/700.css';
+@import '@fontsource/poppins/800.css';
+@import '@fontsource/poppins/900.css';
+
+@import '@fontsource/manrope/200.css';
+@import '@fontsource/manrope/300.css';
+@import '@fontsource/manrope/400.css';
+@import '@fontsource/manrope/500.css';
+@import '@fontsource/manrope/600.css';
+@import '@fontsource/manrope/700.css';
+@import '@fontsource/manrope/800.css';
+
+@theme {
+  --font-heading: 'Manrope', sans-serif;
+  --font-sans: 'Poppins', sans-serif;
+}
 
 @layer base {
 
   html,
   body,
   #app {
-    @apply min-h-dvh;
+    @apply min-h-dvh backdrop-blur-3xl;
+  }
+
+  #app {
+    background-image:
+      radial-gradient(at 40% 20%, hsla(28, 100%, 74%, .1) 0px, black 100%),
+      radial-gradient(at 80% 0%, hsla(189, 100%, 56%, .1) 0px, black 100%),
+      radial-gradient(at 0% 50%, hsla(355, 100%, 93%, .1) 0px, black 100%),
+      radial-gradient(at 80% 50%, hsla(340, 100%, 76%, .1) 0px, black 100%),
+      radial-gradient(at 0% 100%, hsla(22, 100%, 77%, .1) 0px, black 100%),
+      radial-gradient(at 80% 100%, hsla(242, 100%, 70%, .1) 0px, black 100%),
+      radial-gradient(at 0% 0%, hsla(343, 100%, 76%, .1) 0px, black 100%);
+      background-size: cover;
   }
 
   body {
@@ -18,5 +52,21 @@
 
   #nav-items .router-link-active {
     @apply text-lime-400 bg-lime-900/20;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+
+  h1, h2, h3 {
+    @apply font-black;
+  }
+
+  h4, h5, h6 {
+    @apply font-bold;
+  }
+
+  button {
+    @apply font-bold;
   }
 }

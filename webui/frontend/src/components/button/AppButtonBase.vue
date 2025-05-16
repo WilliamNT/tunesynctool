@@ -9,7 +9,7 @@ withDefaults(defineProps<{
 </script>
 
 <template>
-  <button :type class="px-5 py-2.5 text-black font-black rounded-2xl transition-colors h-min-content flex items-center justify-center">
+  <button :type class="px-5 py-2.5 text-black rounded-2xl transition-colors h-min-content flex items-center justify-center">
     <slot />
   </button>
 </template>
