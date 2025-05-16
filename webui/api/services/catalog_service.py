@@ -155,8 +155,6 @@ class CatalogService:
 
         extra_data = track.service_data
 
-        print(extra_data)
-
         if track.service_data:
             match provider_name:
                 case "spotify":
@@ -461,8 +459,6 @@ class CatalogService:
         share_url = None
 
         extra_data = playlist.service_data
-
-        print(extra_data)
 
         if playlist.service_data:
             match provider_name:
