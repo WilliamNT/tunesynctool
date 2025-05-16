@@ -7,6 +7,7 @@ class EntityMetaRead(BaseModel):
     """
 
     provider_name: str = Field(description="Name of the provider.")
+    share_url: Optional[str] = Field(default=None, description="URL that points to the entity on the provider's website.")
 
 class EntitySingleAuthorRead(BaseModel):
     """

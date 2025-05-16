@@ -100,8 +100,9 @@ class CatalogService:
             )
                 
     async def _map_track(self, track: Track, provider_name: str, credentials: ServiceCredentials) -> TrackRead:
-        meta = EntityMetaRead(
-            provider_name=provider_name
+        meta = self._map_track_meta(
+            track=track,
+            provider_name=provider_name,
         )
         
         artists = EntityMultiAuthorRead(
@@ -147,6 +148,25 @@ class CatalogService:
 
         return EntityAssetsBase(
             cover_image=link
+        )
+    
+    def _map_track_meta(self, track: Track, provider_name: str) -> EntityMetaRead:
+        share_url = None
+
+        extra_data = track.service_data
+
+        print(extra_data)
+
+        if track.service_data:
+            match provider_name:
+                case "spotify":
+                    share_url = extra_data.get("external_urls", {}).get("spotify")
+                case "youtube":
+                    share_url = extra_data.get("track", {}).get("microformat", {}).get("microformatDataRenderer", {}).get("urlCanonical")
+
+        return EntityMetaRead(
+            provider_name=provider_name,
+            share_url=share_url
         )
 
     async def _get_subsonic_cover_art(self, track: Track, credentials: ServiceCredentials) -> Optional[str]:
@@ -393,7 +413,8 @@ class CatalogService:
             ) from e
         
     def _map_playlist(self, playlist: Playlist, provider_name: str) -> PlaylistRead:
-        meta = EntityMetaRead(
+        meta = self._map_playlist_meta(
+            playlist=playlist,
             provider_name=provider_name
         )
 
@@ -434,6 +455,29 @@ class CatalogService:
 
         return EntityAssetsBase(
             cover_image=link
+        )
+    
+    def _map_playlist_meta(self, playlist: Playlist, provider_name: str) -> EntityMetaRead:
+        share_url = None
+
+        extra_data = playlist.service_data
+
+        print(extra_data)
+
+        if playlist.service_data:
+            match provider_name:
+                case "spotify":
+                    share_url = extra_data.get("external_urls", {}).get("spotify")
+                case "youtube":
+                    share_url = f"https://music.youtube.com/playlist?list={playlist.service_id}" # api response does not contain a cononical URL
+                case "deezer":
+                    pass # TODO: add support for Deezer playlist share URL
+                case "subsonic":
+                    pass # TODO: find out how to get the share URL for Subsonic playlists
+
+        return EntityMetaRead(
+            provider_name=provider_name,
+            share_url=share_url
         )
     
     async def handle_playlist_tracks_lookup(self, search_parameters: LookupByProviderIDParams, jwt: str) -> Collection[TrackRead]:
