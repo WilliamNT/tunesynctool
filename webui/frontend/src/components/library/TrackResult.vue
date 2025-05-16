@@ -45,8 +45,8 @@ const duration = computed(() => {
       <img :src="track.assets.cover_image" class="w-full h-full object-cover aspect-square" v-if="track.assets.cover_image" />
       <Icon icon="material-symbols:music-note-rounded" class="w-14 h-14 text-zinc-500 block" v-else />
     </div>
-    <div class="flex flex-col gap-1">
-      <h3 class="text-lg">{{ track.title ?? 'n/a' }}</h3>
+    <div class="flex flex-col gap-0.5">
+      <h3 class="truncate font-black text-white text-lg m-0 p-0">{{ track.title ?? 'n/a' }}</h3>
       <ul class="flex gap-2 list-none p-0 m-0 text-sm font-medium text-zinc-400">
         <li class="relative pl-3.5 first:pl-0 before:content-['•'] before:absolute before:left-0 first:before:content-[''] before:text-zinc-500 truncate">
           {{ artists }}

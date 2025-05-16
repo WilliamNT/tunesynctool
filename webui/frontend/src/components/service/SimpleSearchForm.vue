@@ -87,10 +87,10 @@ watch(providers, (newProviders) => {
 
 <template>
   <form @submit.prevent="onSubmit">
-    <AppFormSpacer direction="row" class="items-center">
+    <AppFormSpacer direction="row" class="items-start">
       <AppField type="search" name="searchQuery" placeholder="Enter track title or artist name..." v-model="searchQuery" :error="errors.searchQuery" v-bind="searchQueryAttributes" :disabled="isSearching" />
       <ComboboxRoot v-model="providerName" class="relative block shrink-0" :disabled="isSearching">
-      <ComboboxAnchor class="bg-zinc-800 px-3 py-2 rounded-xl border outline-none transition-colors font-medium data-[placeholder]:text-zinc-300/30 flex items-center gap-2" :class="{
+      <ComboboxAnchor class="bg-zinc-800 px-3 py-2 rounded-xl border outline-none transition-colors data-[placeholder]:text-zinc-300/30 flex items-center gap-2" :class="{
         'border-red-400': providers.length === 0,
         'border-zinc-700': providers.length > 0,
       }">

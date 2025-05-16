@@ -12,7 +12,7 @@ defineProps<{
     <div class="flex items-center justify-center w-14 h-14 p-2 rounded-2xl bg-zinc-600/40 ring-1 ring-zinc-700">
       <img :src="provider.ui.favicon" :alt="`${provider.ui.display_name} logo`" width="40" height="40">
     </div>
-    <div class="flex flex-col gap-1 flex-1">
+    <div class="flex flex-col gap-0.5 flex-1">
       <h3 class="text-xl">{{ provider.ui.display_name }}</h3>
       <p class="text-zinc-400 font-normal">
         {{ provider.ui.description }}

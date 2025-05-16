@@ -24,7 +24,7 @@ const emit = defineEmits(['update:modelValue', 'blur']);
     <label :for="name" v-if="label" class="font-bold pb-1 capitalize">
       {{ label }}
     </label>
-    <input v-bind="attrs" @blur="$emit('blur')" v-model="model" :id="name" :name :disabled class="bg-zinc-800 px-3 py-2 rounded-xl border-1 focus:outline-0 transition-colors font-medium placeholder:text-zinc-300/30" :class="{
+    <input v-bind="attrs" @blur="$emit('blur')" v-model="model" :id="name" :name :disabled class="bg-zinc-800 px-3 py-2 rounded-xl border-1 focus:outline-0 transition-colors font-medium placeholder:text-zinc-500" :class="{
       'border-zinc-700 focus:border-lime-500': !error,
       'border-red-400 focus:border-red-400': error,
       'opacity-50': disabled,
