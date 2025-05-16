@@ -20,9 +20,9 @@ const provider = computed(() => props.providers.find((p) => p.provider_name === 
         <img :src="playlist.assets.cover_image" :alt="`Cover image for ${playlist.title}`" v-if="playlist.assets.cover_image" class="w-full h-full object-cover">
         <Icon icon="material-symbols:library-music-rounded" class="w-14 h-14 text-zinc-500 block" v-else />
       </div>
-      <div>
-        <h6 class="truncate h-full text-normal text-white">{{ playlist.title ?? 'n/a' }}</h6>
-        <p class="text-sm font-semibold text-zinc-400/85 truncate">by {{ playlist.author.primary ?? 'n/a' }}</p>
+      <div class="flex flex-col gap-0.5">
+        <h6 class="truncate h-full font-black text-white">{{ playlist.title ?? 'n/a' }}</h6>
+        <p class="text-sm font-normal text-zinc-300 truncate">By {{ playlist.author.primary ?? 'n/a' }}</p>
       </div>
       <div class="absolute blur-3xl -bottom-1/2 w-50 h-50 brightness-150 -left-3">
         <img :src="playlist.assets.cover_image" alt="" v-if="playlist.assets.cover_image" class="object-cover w-full h-full opacity-30">

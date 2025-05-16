@@ -14,7 +14,7 @@ defineProps<{
     </div>
     <div class="flex flex-col gap-1 flex-1">
       <h3 class="text-xl">{{ provider.ui.display_name }}</h3>
-      <p class="text-zinc-400 font-medium">
+      <p class="text-zinc-400 font-normal">
         {{ provider.ui.description }}
       </p>
       <div v-if="$slots.form">
