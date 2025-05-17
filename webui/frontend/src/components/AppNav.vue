@@ -18,10 +18,10 @@ const isAuthenticated = computed(() => is_access_token_set());
 <template>
   <nav
     class="py-3 px-5 border-b-1 border-zinc-800 backdrop-blur-2xl sticky top-0 z-10 bg-zinc-900/50 flex items-center">
-    <RouterLink :to="{ name: 'home' }" class="block text-2xl me-4">
+    <RouterLink :to="{ name: 'home' }" class="block text-2xl me-4 font-normal">
       tunesynctool
     </RouterLink>
-    <ul class="flex gap-1" id="nav-items">
+    <ul class="flex gap-1 font-normal" id="nav-items">
       <li>
         <RouterLink :to="{ name: 'home' }" class="px-4 py-3 hover:text-lime-400 rounded-full transition-colors">
           <Icon icon="material-symbols:library-music-outline-rounded" class="me-2.5 inline-block text-xl" />Library
