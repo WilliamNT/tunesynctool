@@ -30,7 +30,7 @@ onMounted(async () => {
         Search for any track available on your linked services. Please note that this feature only supports retrieving tracks, not albums or playlists.
       </template>
     </AppPageHeader>
-    <div class="flex flex-col mt-8">
+    <div class="flex flex-col my-8">
       <AppCard>
         <SimpleSearchForm :providers @result="(r) => results = r" />
       </AppCard>
