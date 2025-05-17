@@ -13,8 +13,8 @@ const provider = computed(() => props.providers.find((p) => p.provider_name === 
 </script>
 
 <template>
-  <a :href="playlist.meta.share_url ?? `#${playlist.meta.provider_name}-${playlist.identifiers.provider_id}`" :target="playlist.meta.share_url ? '_blank' : undefined" class="relative">
-    <AppCard class="overflow-hidden shadow">
+  <a :href="playlist.meta.share_url ?? `#${playlist.meta.provider_name}-${playlist.identifiers.provider_id}`" :target="playlist.meta.share_url ? '_blank' : undefined">
+    <AppCard class="shadow relative overflow-hidden">
       <div class="flex flex-col gap-2 max-w-40">
         <div class="flex items-center justify-center w-40 h-40 rounded-md bg-zinc-600/40 ring-1 ring-zinc-700 relative overflow-hidden">
           <img :src="provider?.ui.favicon" :alt="provider?.ui.display_name" class="absolute w-6 h-6 right-1 bottom-1" v-if="provider" />
