@@ -1,11 +1,14 @@
 from tunesynctool.models import Track
 
 from api.models.track import TrackRead, TrackIdentifiersRead
-from api.models.entity import EntityMetaRead, EntityMultiAuthorRead
+from api.models.entity import EntityMetaRead, EntityMultiAuthorRead, EntityAssetsBase
+from api.models.service import ServiceCredentials
+from api.helpers.extraction import extract_deezer_cover, extract_spotify_cover, extract_youtube_cover
 
 def map_track_between_domain_model_and_response_model(
     track: Track,
     provider_name: str,
+    assets: EntityAssetsBase
 ) -> TrackRead:
     meta = EntityMetaRead(
         provider_name=provider_name
@@ -31,6 +34,7 @@ def map_track_between_domain_model_and_response_model(
         author=artists,
         meta=meta,
         identifiers=identifiers,
+        assets=assets
     )
 
     return mapped

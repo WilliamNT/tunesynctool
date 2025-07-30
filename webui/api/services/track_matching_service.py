@@ -83,12 +83,13 @@ class TrackMatchingService:
         if not most_likely_match:
             raise HTTPException(
                 status_code=404,
-                detail="Match not found."
+                detail="Couldn't find a close enough match."
             )
 
         return map_track_between_domain_model_and_response_model(
             track=most_likely_match,
-            provider_name=search_params.provider
+            provider_name=search_params.provider,
+            assets=None
         )
     
 def get_track_matching_service(

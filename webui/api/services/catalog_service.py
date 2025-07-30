@@ -19,7 +19,10 @@ from api.services.service_driver_helper_service import ServiceDriverHelperServic
 from api.models.playlist import PlaylistRead, PlaylistCreate, PlaylistMultiTrackInsert
 from api.core.config import config
 from api.models.service import ServiceCredentials
-
+from api.helpers.mapping import map_track_between_domain_model_and_response_model
+from api.helpers.extraction import extract_cover_link_for_track_sync, extract_share_url_from_track_sync
+from api.services.asset_service import AssetService, get_asset_service
+from api.models.user import User
 class CatalogService:
     """
     Handles catalog operations.
@@ -27,10 +30,17 @@ class CatalogService:
     Provides an asynchronous abstraction for the tunesynctool package.
     """
 
-    def __init__(self, credentials_service: CredentialsService, auth_service: AuthService, service_driver_helper_service: ServiceDriverHelperService) -> None:
+    def __init__(
+        self,
+        credentials_service: CredentialsService,
+        auth_service: AuthService,
+        service_driver_helper_service: ServiceDriverHelperService,
+        asset_service: AssetService
+    ) -> None:
         self.credentials_service = credentials_service
         self.auth_service = auth_service
         self.service_driver_helper_service = service_driver_helper_service
+        self.asset_service = asset_service
         
     async def handle_search(self, search_parameters: SearchParams, jwt: str) -> SearchResultCollection[TrackRead]:
         """
@@ -61,7 +71,7 @@ class CatalogService:
         results = await self.search(
             search_parameters=search_parameters,
             service_driver=driver,
-            credentials=credentials
+            user=user
         )
 
         return SearchResultCollection(
@@ -69,7 +79,7 @@ class CatalogService:
             query=search_parameters.query
         )
 
-    async def search(self, search_parameters: SearchParams, service_driver: AsyncWrappedServiceDriver, credentials: ServiceCredentials) -> list[TrackRead]:
+    async def search(self, search_parameters: SearchParams, service_driver: AsyncWrappedServiceDriver, user: User) -> list[TrackRead]:
         try:
             results = await service_driver.search_tracks(
                 query=search_parameters.query,
@@ -81,10 +91,18 @@ class CatalogService:
 
             mapped_results = []
             for result in results:
+                assets = await self.asset_service.get_track_assets(
+                    search_parameters=LookupByProviderIDParams(
+                        provider=search_parameters.provider,
+                        provider_id=result.service_id
+                    ),
+                    user=user
+                )
+
                 mapped_results.append(await self._map_track(
                     track=result,
                     provider_name=search_parameters.provider,
-                    credentials=credentials
+                    assets=assets
                 ))
 
             return mapped_results
@@ -99,100 +117,26 @@ class CatalogService:
                 e=e
             )
                 
-    async def _map_track(self, track: Track, provider_name: str, credentials: ServiceCredentials) -> TrackRead:
-        meta = self._map_track_meta(
+    async def _map_track(self, track: Track, provider_name: str, assets: EntityAssetsBase) -> TrackRead:
+        return map_track_between_domain_model_and_response_model(
             track=track,
             provider_name=provider_name,
-        )
-        
-        artists = EntityMultiAuthorRead(
-            primary=track.primary_artist,
-            collaborating=track.additional_artists
-        )
-
-        identifiers = TrackIdentifiersRead(
-            provider_id=str(track.service_id),
-            musicbrainz=track.musicbrainz_id,
-            isrc=track.isrc
-        )
-
-        assets = await self._map_track_assets(track=track, credentials=credentials)
-
-        mapped = TrackRead(
-            title=track.title,
-            album_name=track.album_name,
-            duration=track.duration_seconds,
-            track_number=track.track_number,
-            release_year=track.release_year,
-            author=artists,
-            meta=meta,
-            identifiers=identifiers,
             assets=assets
-        )
-
-        return mapped
-        
-    async def _map_track_assets(self, track: Track, credentials: ServiceCredentials) -> EntityAssetsBase:
-        link = None
-        extra_data = track.service_data
-
-        match track.service_name:
-            case "spotify":
-                link = extra_data.get("album", {}).get("images", [])[0].get("url", None)
-            case "youtube":
-                link = extra_data.get("track", {}).get("videoDetails", {}).get("thumbnail", {}).get("thumbnails", [])[0].get("url", None)
-            case "deezer":
-                link = extra_data.get("album", {}).get("cover", None)
-            case "subsonic":
-                link = await self._get_subsonic_cover_art(track=track, credentials=credentials)
-
-        return EntityAssetsBase(
-            cover_image=link
         )
     
     def _map_track_meta(self, track: Track, provider_name: str) -> EntityMetaRead:
         share_url = None
-
         extra_data = track.service_data
-
-        if track.service_data:
-            match provider_name:
-                case "spotify":
-                    share_url = extra_data.get("external_urls", {}).get("spotify")
-                case "youtube":
-                    share_url = extra_data.get("track", {}).get("microformat", {}).get("microformatDataRenderer", {}).get("urlCanonical")
-
+        
+        sync_extractables = ["spotify", "youtube"]
+        if track.service_name in sync_extractables:
+            share_url = extract_share_url_from_track_sync(partial_data=extra_data, provider_name=provider_name)
+        else:
+            logger.debug(f"We either don't have an implementation for \"{provider_name}\" or it doesn't support it.")
         return EntityMetaRead(
             provider_name=provider_name,
             share_url=share_url
         )
-
-    async def _get_subsonic_cover_art(self, track: Track, credentials: ServiceCredentials) -> Optional[str]:
-        """
-        Get the cover art URL for a track from Subsonic.
-        """
-        if not track.service_data:
-            return None
-
-        cover_art = track.service_data.get("coverArt", None)
-        if not cover_art:
-            return None
-        
-        password = credentials.credentials.get("password")
-        if not password:
-            logger.error(f"User {credentials.user_id} does not have a password for Subsonic but still we fetched from the API successfully. This is likely a bug..")
-            return None
-        
-        username = credentials.credentials.get("username")
-        if not username:
-            logger.error(f"User {credentials.user_id} does not have a username for Subsonic but still we fetched from the API successfully. This is likely a bug..")
-            return None
-
-        salt = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
-        token_input = password + salt
-        token = hashlib.md5(token_input.encode('utf-8')).hexdigest()
-
-        return f"{config.SUBSONIC_BASE_URL}:{config.SUBSONIC_PORT}/rest/getCoverArt.view?id={cover_art}&s={salt}&t={token}&u={username}&v=1.8.0&c=tunesynctool&f=json"
 
     def raise_missing_or_invalid_auth_credentials_exception(self, provider_name: str) -> None:
         """
@@ -270,10 +214,11 @@ class CatalogService:
 
         return await self.search_isrc(
             search_parameters=search_parameters,
-            service_driver=driver
+            service_driver=driver,
+            user=user
         )
     
-    async def search_isrc(self, search_parameters: ISRCSearchParams, service_driver: AsyncWrappedServiceDriver) -> TrackRead:
+    async def search_isrc(self, search_parameters: ISRCSearchParams, service_driver: AsyncWrappedServiceDriver, user: User) -> TrackRead:
         if not service_driver.supports_direct_isrc_querying:
             self.raise_unsupported_driver_feature_exception(
                 provider_name=search_parameters.provider
@@ -284,9 +229,18 @@ class CatalogService:
                 isrc=search_parameters.isrc
             )
 
+            assets = await self.asset_service.get_track_assets(
+                search_parameters=LookupByProviderIDParams(
+                    provider=search_parameters.provider,
+                    provider_id=result.service_id
+                ),
+                user=user
+            )
+            
             return self._map_track(
                 track=result,
-                provider_name=search_parameters.provider
+                provider_name=search_parameters.provider,
+                assets=assets
             )
         except UnsupportedFeatureException as e:
             self.raise_unsupported_driver_feature_exception(
@@ -328,13 +282,22 @@ class CatalogService:
 
         return await self.track_lookup(
             search_parameters=search_parameters,
-            service_driver=driver
+            service_driver=driver,
+            user=user
         )
     
-    async def track_lookup(self, search_parameters: LookupByProviderIDParams, service_driver: AsyncWrappedServiceDriver) -> TrackRead:
+    async def track_lookup(self, search_parameters: LookupByProviderIDParams, service_driver: AsyncWrappedServiceDriver, user: User) -> TrackRead:
         try:
             result = await service_driver.get_track(
                 track_id=search_parameters.provider_id
+            )
+
+            assets = await self.asset_service.get_track_assets(
+                search_parameters=LookupByProviderIDParams(
+                    provider=search_parameters.provider,
+                    provider_id=result.service_id
+                ),
+                user=user
             )
 
             return self._map_track(
@@ -467,9 +430,11 @@ class CatalogService:
                 case "youtube":
                     share_url = f"https://music.youtube.com/playlist?list={playlist.service_id}" # api response does not contain a cononical URL
                 case "deezer":
-                    pass # TODO: add support for Deezer playlist share URL
+                    share_url = f"https://www.deezer.com/playlist/{playlist.service_id}"
                 case "subsonic":
-                    pass # TODO: find out how to get the share URL for Subsonic playlists
+                    # Not applicable for this case because the Subsonic standard does not offer this feature
+                    # however I want to leave this note for clarification
+                    share_url = None
 
         return EntityMetaRead(
             provider_name=provider_name,
@@ -500,10 +465,11 @@ class CatalogService:
 
         return await self.playlist_tracks_lookup(
             search_parameters=search_parameters,
-            service_driver=driver
+            service_driver=driver,
+            user=user
         )
 
-    async def playlist_tracks_lookup(self, search_parameters: LookupByProviderIDParams, service_driver: AsyncWrappedServiceDriver) -> Collection[TrackRead]:
+    async def playlist_tracks_lookup(self, search_parameters: LookupByProviderIDParams, service_driver: AsyncWrappedServiceDriver, user: User) -> Collection[TrackRead]:
         try:
             results = await service_driver.get_playlist_tracks(
                 playlist_id=search_parameters.provider_id,
@@ -512,9 +478,18 @@ class CatalogService:
 
             mapped_results = []
             for result in results:
+                assets = await self.asset_service.get_track_assets(
+                    search_parameters=LookupByProviderIDParams(
+                        provider=search_parameters.provider,
+                        provider_id=result.service_id
+                    ),
+                    user=user
+                )
+                    
                 mapped_results.append(self._map_track(
                     track=result,
-                    provider_name=search_parameters.provider
+                    provider_name=search_parameters.provider,
+                    assets=assets
                 ))
 
             return Collection(
@@ -703,9 +678,11 @@ def get_catalog_service(
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
     credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)],
     service_driver_helper_service: Annotated[ServiceDriverHelperService, Depends(get_service_driver_helper_service)],
+    asset_service: Annotated[AssetService, Depends(get_asset_service)]
 ) -> CatalogService:
     return CatalogService(
         auth_service=auth_service,
         credentials_service=credentials_service,
         service_driver_helper_service=service_driver_helper_service,
+        asset_service=asset_service
     )
