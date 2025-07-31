@@ -1,7 +1,4 @@
 from typing import Annotated, Optional
-import random
-import string
-import hashlib
 
 from fastapi import Depends, HTTPException
 from tunesynctool.drivers import AsyncWrappedServiceDriver
@@ -13,16 +10,18 @@ from api.core.logging import logger
 from api.models.search import SearchParams, ISRCSearchParams, LookupByProviderIDParams, LookupLibraryPlaylistsParams, SearchParamsBase
 from api.models.collection import SearchResultCollection, Collection
 from api.services.auth_service import AuthService, get_auth_service
-from api.models.track import TrackRead, TrackIdentifiersRead
-from api.models.entity import EntityMetaRead, EntityMultiAuthorRead, EntitySingleAuthorRead, EntityIdentifiersBase, EntityAssetsBase
+from api.models.track import TrackRead
+from api.models.entity import EntityMetaRead, EntitySingleAuthorRead, EntityIdentifiersBase, EntityAssetsBase
 from api.services.service_driver_helper_service import ServiceDriverHelperService, get_service_driver_helper_service
 from api.models.playlist import PlaylistRead, PlaylistCreate, PlaylistMultiTrackInsert
-from api.core.config import config
-from api.models.service import ServiceCredentials
-from api.helpers.mapping import map_track_between_domain_model_and_response_model
-from api.helpers.extraction import extract_cover_link_for_track_sync, extract_share_url_from_track_sync
+from api.helpers.mapping import map_track_between_domain_model_and_response_model, map_playlist_meta_from_domain_model_to_response_model
+from api.helpers.extraction import extract_share_url_from_track_sync
 from api.services.asset_service import AssetService, get_asset_service
 from api.models.user import User
+from api.exceptions.http.provider import raise_unsupported_provider_exception
+from api.exceptions.http.auth import raise_missing_or_invalid_auth_credentials_exception
+from api.exceptions.http.service_driver import raise_service_driver_generic_exception, raise_unsupported_driver_feature_exception
+
 class CatalogService:
     """
     Handles catalog operations.
@@ -55,7 +54,7 @@ class CatalogService:
 
         if not credentials:
             logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to search anyway.")
-            self.raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+            raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
 
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
@@ -64,7 +63,7 @@ class CatalogService:
                 user=user
             )
         except ValueError:
-            self.raise_unsupported_provider_exception(
+            raise_unsupported_provider_exception(
                 provider_name=search_parameters.provider
             )
 
@@ -99,7 +98,7 @@ class CatalogService:
                     user=user
                 )
 
-                mapped_results.append(await self._map_track(
+                mapped_results.append(map_track_between_domain_model_and_response_model(
                     track=result,
                     provider_name=search_parameters.provider,
                     assets=assets
@@ -107,22 +106,15 @@ class CatalogService:
 
             return mapped_results
         except UnsupportedFeatureException as e:
-            self.raise_unsupported_driver_feature_exception(
+            raise_unsupported_driver_feature_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )
         except ServiceDriverException as e:
-            self.raise_service_driver_generic_exception(
+            raise_service_driver_generic_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )
-                
-    async def _map_track(self, track: Track, provider_name: str, assets: EntityAssetsBase) -> TrackRead:
-        return map_track_between_domain_model_and_response_model(
-            track=track,
-            provider_name=provider_name,
-            assets=assets
-        )
     
     def _map_track_meta(self, track: Track, provider_name: str) -> EntityMetaRead:
         share_url = None
@@ -136,59 +128,7 @@ class CatalogService:
         return EntityMetaRead(
             provider_name=provider_name,
             share_url=share_url
-        )
-
-    def raise_missing_or_invalid_auth_credentials_exception(self, provider_name: str) -> None:
-        """
-        Raises an HTTPException with a 400 status code and a message indicating that the catalog operation failed due to user error.
-        """
-        
-        raise HTTPException(
-            status_code=401,
-            detail=f"Missing or invalid credentials for provider \"{provider_name}\". If \"{provider_name}\" is an OAuth provider, authorization is required. Otherwise, please set the proper credentials.",
-        )   
-
-    def raise_unsupported_driver_feature_exception(self, provider_name: str, e: Optional[Exception] = None) -> None:
-        logger.warning(f"Provider \"{provider_name}\" does not support a feature but it was called anyway{": " + str(e) if e else "."}")
-
-        msg = f"Provider \"{provider_name}\" does not support this feature."
-        code = 400
-
-        if e:
-            raise HTTPException(
-                status_code=code,
-                detail=msg,
-            ) from e
-            
-        raise HTTPException(
-            status_code=code,
-            detail=msg,
-        )
-
-    def raise_service_driver_generic_exception(self, provider_name: str, e: Optional[Exception] = None) -> None:
-        logger.error(f"Service driver error: {e}")
-
-        msg = f"Provider \"{provider_name}\" returned an error."
-        code = 400
-
-        if e:
-            raise HTTPException(
-                status_code=code,
-                detail=msg,
-            ) from e
-        
-        raise HTTPException(
-            status_code=code,
-            detail=msg,
-        )
-
-    def raise_unsupported_provider_exception(self, provider_name: str) -> None:
-        logger.warning(f"Provider \"{provider_name}\" is not supported.")
-
-        raise HTTPException(
-            status_code=400,
-            detail=f"Provider \"{provider_name}\" is not supported.",
-        )
+        ) 
 
     async def handle_isrc_search(self, search_parameters: ISRCSearchParams, jwt: str) -> TrackRead:
         user = await self.auth_service.resolve_user_from_jwt(jwt)
@@ -199,7 +139,7 @@ class CatalogService:
 
         if not credentials:
             logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to look a track up by its ISRC anyway.")
-            self.raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+            raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
 
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
@@ -208,7 +148,7 @@ class CatalogService:
                 user=user
             )
         except ValueError:
-            self.raise_unsupported_provider_exception(
+            raise_unsupported_provider_exception(
                 provider_name=search_parameters.provider
             )
 
@@ -220,7 +160,7 @@ class CatalogService:
     
     async def search_isrc(self, search_parameters: ISRCSearchParams, service_driver: AsyncWrappedServiceDriver, user: User) -> TrackRead:
         if not service_driver.supports_direct_isrc_querying:
-            self.raise_unsupported_driver_feature_exception(
+            raise_unsupported_driver_feature_exception(
                 provider_name=search_parameters.provider
             )
             
@@ -237,18 +177,18 @@ class CatalogService:
                 user=user
             )
             
-            return self._map_track(
+            return map_track_between_domain_model_and_response_model(
                 track=result,
                 provider_name=search_parameters.provider,
                 assets=assets
             )
         except UnsupportedFeatureException as e:
-            self.raise_unsupported_driver_feature_exception(
+            raise_unsupported_driver_feature_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )
         except ServiceDriverException as e:
-            self.raise_service_driver_generic_exception(
+            raise_service_driver_generic_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )
@@ -267,7 +207,7 @@ class CatalogService:
 
         if not credentials:
             logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to look a track up by its ID anyway.")
-            self.raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+            raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
 
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
@@ -276,7 +216,7 @@ class CatalogService:
                 user=user
             )
         except ValueError:
-            self.raise_unsupported_provider_exception(
+            raise_unsupported_provider_exception(
                 provider_name=search_parameters.provider
             )
 
@@ -300,17 +240,18 @@ class CatalogService:
                 user=user
             )
 
-            return self._map_track(
+            return map_track_between_domain_model_and_response_model(
                 track=result,
-                provider_name=search_parameters.provider
+                provider_name=search_parameters.provider,
+                assets=assets
             )
         except UnsupportedFeatureException as e:
-            self.raise_unsupported_driver_feature_exception(
+            raise_unsupported_driver_feature_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )
         except ServiceDriverException as e:
-            self.raise_service_driver_generic_exception(
+            raise_service_driver_generic_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )
@@ -329,7 +270,7 @@ class CatalogService:
 
         if not credentials:
             logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to look a playlist up by its ID anyway.")
-            self.raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+            raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
 
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
@@ -338,7 +279,7 @@ class CatalogService:
                 user=user
             )
         except ValueError:
-            self.raise_unsupported_provider_exception(
+            raise_unsupported_provider_exception(
                 provider_name=search_parameters.provider
             )
 
@@ -358,12 +299,12 @@ class CatalogService:
                 provider_name=search_parameters.provider
             )
         except UnsupportedFeatureException as e:
-            self.raise_unsupported_driver_feature_exception(
+            raise_unsupported_driver_feature_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )
         except ServiceDriverException as e:
-            self.raise_service_driver_generic_exception(
+            raise_service_driver_generic_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )
@@ -374,7 +315,7 @@ class CatalogService:
             ) from e
         
     def _map_playlist(self, playlist: Playlist, provider_name: str) -> PlaylistRead:
-        meta = self._map_playlist_meta(
+        meta = map_playlist_meta_from_domain_model_to_response_model(
             playlist=playlist,
             provider_name=provider_name
         )
@@ -418,29 +359,6 @@ class CatalogService:
             cover_image=link
         )
     
-    def _map_playlist_meta(self, playlist: Playlist, provider_name: str) -> EntityMetaRead:
-        share_url = None
-
-        extra_data = playlist.service_data
-
-        if playlist.service_data:
-            match provider_name:
-                case "spotify":
-                    share_url = extra_data.get("external_urls", {}).get("spotify")
-                case "youtube":
-                    share_url = f"https://music.youtube.com/playlist?list={playlist.service_id}" # api response does not contain a cononical URL
-                case "deezer":
-                    share_url = f"https://www.deezer.com/playlist/{playlist.service_id}"
-                case "subsonic":
-                    # Not applicable for this case because the Subsonic standard does not offer this feature
-                    # however I want to leave this note for clarification
-                    share_url = None
-
-        return EntityMetaRead(
-            provider_name=provider_name,
-            share_url=share_url
-        )
-    
     async def handle_playlist_tracks_lookup(self, search_parameters: LookupByProviderIDParams, jwt: str) -> Collection[TrackRead]:
         user = await self.auth_service.resolve_user_from_jwt(jwt)
         credentials = await self.credentials_service.get_service_credentials(
@@ -450,7 +368,7 @@ class CatalogService:
 
         if not credentials:
             logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to look a playlist's tracks up by its ID anyway.")
-            self.raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+            raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
 
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
@@ -459,7 +377,7 @@ class CatalogService:
                 user=user
             )
         except ValueError:
-            self.raise_unsupported_provider_exception(
+            raise_unsupported_provider_exception(
                 provider_name=search_parameters.provider
             )
 
@@ -486,7 +404,7 @@ class CatalogService:
                     user=user
                 )
                     
-                mapped_results.append(self._map_track(
+                mapped_results.append(map_track_between_domain_model_and_response_model(
                     track=result,
                     provider_name=search_parameters.provider,
                     assets=assets
@@ -496,12 +414,12 @@ class CatalogService:
                 items=mapped_results
             )
         except UnsupportedFeatureException as e:
-            self.raise_unsupported_driver_feature_exception(
+            raise_unsupported_driver_feature_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )
         except ServiceDriverException as e:
-            self.raise_service_driver_generic_exception(
+            raise_service_driver_generic_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )
@@ -520,7 +438,7 @@ class CatalogService:
 
         if not credentials:
             logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to look up their playlists at the provider anyway.")
-            self.raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+            raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
 
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
@@ -529,7 +447,7 @@ class CatalogService:
                 user=user
             )
         except ValueError:
-            self.raise_unsupported_provider_exception(
+            raise_unsupported_provider_exception(
                 provider_name=search_parameters.provider
             )
 
@@ -555,12 +473,12 @@ class CatalogService:
                 items=mapped_results
             )
         except UnsupportedFeatureException as e:
-            self.raise_unsupported_driver_feature_exception(
+            raise_unsupported_driver_feature_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )
         except ServiceDriverException as e:
-            self.raise_service_driver_generic_exception(
+            raise_service_driver_generic_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )
@@ -574,7 +492,7 @@ class CatalogService:
 
         if not credentials:
             logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to create a playlist anyway.")
-            self.raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+            raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
 
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
@@ -583,7 +501,7 @@ class CatalogService:
                 user=user
             )
         except ValueError:
-            self.raise_unsupported_provider_exception(
+            raise_unsupported_provider_exception(
                 provider_name=search_parameters.provider
             )
 
@@ -604,12 +522,12 @@ class CatalogService:
                 provider_name=search_parameters.provider
             )
         except UnsupportedFeatureException as e:
-            self.raise_unsupported_driver_feature_exception(
+            raise_unsupported_driver_feature_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )
         except ServiceDriverException as e:
-            self.raise_service_driver_generic_exception(
+            raise_service_driver_generic_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )
@@ -623,7 +541,7 @@ class CatalogService:
 
         if not credentials:
             logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to add one or more tracks to a playlist anyway.")
-            self.raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+            raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
 
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
@@ -632,7 +550,7 @@ class CatalogService:
                 user=user
             )
         except ValueError:
-            self.raise_unsupported_provider_exception(
+            raise_unsupported_provider_exception(
                 provider_name=search_parameters.provider
             )
 
@@ -654,12 +572,12 @@ class CatalogService:
                 service_driver=service_driver
             )
         except UnsupportedFeatureException as e:
-            self.raise_unsupported_driver_feature_exception(
+            raise_unsupported_driver_feature_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )
         except ServiceDriverException as e:
-            self.raise_service_driver_generic_exception(
+            raise_service_driver_generic_exception(
                 provider_name=search_parameters.provider,
                 e=e
             )

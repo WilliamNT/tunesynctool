@@ -2,8 +2,7 @@ from tunesynctool.models import Track
 
 from api.models.track import TrackRead, TrackIdentifiersRead
 from api.models.entity import EntityMetaRead, EntityMultiAuthorRead, EntityAssetsBase
-from api.models.service import ServiceCredentials
-from api.helpers.extraction import extract_deezer_cover, extract_spotify_cover, extract_youtube_cover
+from tunesynctool.models.playlist import Playlist
 
 def map_track_between_domain_model_and_response_model(
     track: Track,
@@ -38,3 +37,26 @@ def map_track_between_domain_model_and_response_model(
     )
 
     return mapped
+
+def map_playlist_meta_from_domain_model_to_response_model(playlist: Playlist, provider_name: str) -> EntityMetaRead:
+    share_url = None
+
+    extra_data = playlist.service_data
+
+    if playlist.service_data:
+        match provider_name:
+            case "spotify":
+                share_url = extra_data.get("external_urls", {}).get("spotify")
+            case "youtube":
+                share_url = f"https://music.youtube.com/playlist?list={playlist.service_id}" # api response does not contain a cononical URL
+            case "deezer":
+                share_url = f"https://www.deezer.com/playlist/{playlist.service_id}"
+            case "subsonic":
+                # Not applicable for this case because the Subsonic standard does not offer this feature
+                # however I want to leave this note for clarification
+                share_url = None
+
+    return EntityMetaRead(
+        provider_name=provider_name,
+        share_url=share_url
+    )
