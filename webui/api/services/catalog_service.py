@@ -1,9 +1,8 @@
-from typing import Annotated, Optional
+from typing import Annotated
 
 from fastapi import Depends, HTTPException
 from tunesynctool.drivers import AsyncWrappedServiceDriver
 from tunesynctool.exceptions import ServiceDriverException, UnsupportedFeatureException, TrackNotFoundException, PlaylistNotFoundException
-from tunesynctool.models import Track, Playlist
 
 from api.services.credentials_service import CredentialsService, get_credentials_service
 from api.core.logging import logger
@@ -11,16 +10,15 @@ from api.models.search import SearchParams, ISRCSearchParams, LookupByProviderID
 from api.models.collection import SearchResultCollection, Collection
 from api.services.auth_service import AuthService, get_auth_service
 from api.models.track import TrackRead
-from api.models.entity import EntityMetaRead, EntitySingleAuthorRead, EntityIdentifiersBase, EntityAssetsBase
 from api.services.service_driver_helper_service import ServiceDriverHelperService, get_service_driver_helper_service
 from api.models.playlist import PlaylistRead, PlaylistCreate, PlaylistMultiTrackInsert
-from api.helpers.mapping import map_track_between_domain_model_and_response_model, map_playlist_meta_from_domain_model_to_response_model
-from api.helpers.extraction import extract_share_url_from_track_sync
+from api.helpers.mapping import map_track_between_domain_model_and_response_model, map_playlist_between_domain_model_to_response_model 
 from api.services.asset_service import AssetService, get_asset_service
 from api.models.user import User
 from api.exceptions.http.provider import raise_unsupported_provider_exception
 from api.exceptions.http.auth import raise_missing_or_invalid_auth_credentials_exception
 from api.exceptions.http.service_driver import raise_service_driver_generic_exception, raise_unsupported_driver_feature_exception
+from api.models.service import ServiceCredentials
 
 class CatalogService:
     """
@@ -46,15 +44,7 @@ class CatalogService:
         Handle search using the specified provider.
         """
 
-        user = await self.auth_service.resolve_user_from_jwt(jwt)
-        credentials = await self.credentials_service.get_service_credentials(
-            user=user,
-            service_name=search_parameters.provider,
-        )
-
-        if not credentials:
-            logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to search anyway.")
-            raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+        user, credentials = await self.verify_user_and_credentials(jwt, search_parameters.provider, "search")
 
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
@@ -84,7 +74,7 @@ class CatalogService:
                 query=search_parameters.query,
                 limit=search_parameters.limit
             )
-
+            
             if len(results) > search_parameters.limit:
                 results = results[:search_parameters.limit]
 
@@ -115,32 +105,10 @@ class CatalogService:
                 provider_name=search_parameters.provider,
                 e=e
             )
-    
-    def _map_track_meta(self, track: Track, provider_name: str) -> EntityMetaRead:
-        share_url = None
-        extra_data = track.service_data
-        
-        sync_extractables = ["spotify", "youtube"]
-        if track.service_name in sync_extractables:
-            share_url = extract_share_url_from_track_sync(partial_data=extra_data, provider_name=provider_name)
-        else:
-            logger.debug(f"We either don't have an implementation for \"{provider_name}\" or it doesn't support it.")
-        return EntityMetaRead(
-            provider_name=provider_name,
-            share_url=share_url
-        ) 
 
     async def handle_isrc_search(self, search_parameters: ISRCSearchParams, jwt: str) -> TrackRead:
-        user = await self.auth_service.resolve_user_from_jwt(jwt)
-        credentials = await self.credentials_service.get_service_credentials(
-            user=user,
-            service_name=search_parameters.provider,
-        )
-
-        if not credentials:
-            logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to look a track up by its ISRC anyway.")
-            raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
-
+        user, credentials = await self.verify_user_and_credentials(jwt, search_parameters.provider, "look a track up by its ISRC")
+        
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
                 credentials=credentials,
@@ -199,15 +167,7 @@ class CatalogService:
             ) from e
 
     async def handle_track_lookup(self, search_parameters: LookupByProviderIDParams, jwt: str) -> TrackRead:
-        user = await self.auth_service.resolve_user_from_jwt(jwt)
-        credentials = await self.credentials_service.get_service_credentials(
-            user=user,
-            service_name=search_parameters.provider,
-        )
-
-        if not credentials:
-            logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to look a track up by its ID anyway.")
-            raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+        user, credentials = await self.verify_user_and_credentials(jwt, search_parameters.provider, "look a track up by its ID")
 
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
@@ -262,15 +222,7 @@ class CatalogService:
             ) from e
 
     async def handle_playlist_lookup(self, search_parameters: LookupByProviderIDParams, jwt: str) -> PlaylistRead:
-        user = await self.auth_service.resolve_user_from_jwt(jwt)
-        credentials = await self.credentials_service.get_service_credentials(
-            user=user,
-            service_name=search_parameters.provider,
-        )
-
-        if not credentials:
-            logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to look a playlist up by its ID anyway.")
-            raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+        user, credentials = await self.verify_user_and_credentials(jwt, search_parameters.provider, "look a playlist up by its ID")
 
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
@@ -294,7 +246,7 @@ class CatalogService:
                 playlist_id=search_parameters.provider_id
             )
 
-            return self._map_playlist(
+            return map_playlist_between_domain_model_to_response_model(
                 playlist=result,
                 provider_name=search_parameters.provider
             )
@@ -313,62 +265,9 @@ class CatalogService:
                 status_code=404,
                 detail=f"Playlist not found.",
             ) from e
-        
-    def _map_playlist(self, playlist: Playlist, provider_name: str) -> PlaylistRead:
-        meta = map_playlist_meta_from_domain_model_to_response_model(
-            playlist=playlist,
-            provider_name=provider_name
-        )
-
-        author = EntitySingleAuthorRead(
-            primary=playlist.author_name
-        )
-
-        identifiers = EntityIdentifiersBase(
-            provider_id=str(playlist.service_id)
-        )
-
-        assets = self._map_playlist_assets(
-            playlist=playlist
-        )
-
-        return PlaylistRead(
-            title=playlist.name,
-            description=playlist.description,
-            is_public=playlist.is_public,
-            author=author,
-            meta=meta,
-            identifiers=identifiers,
-            assets=assets
-        )
-    
-    def _map_playlist_assets(self, playlist: Playlist) -> EntityAssetsBase:
-        link = None
-        extra_data = playlist.service_data
-
-        match playlist.service_name:
-            case "spotify":
-                link = extra_data.get("images", [])[0].get("url") if extra_data.get("images") and len(extra_data.get("images")) > 0 else None
-            case "youtube":
-                link = extra_data.get("thumbnails", {})[0].get("url") if extra_data.get("thumbnails") and len(extra_data.get("thumbnails")) > 0 else None
-            case "deezer", "subsonic":
-                # TODO: add support for Deezer and Subsonic playlist cover art
-                pass
-
-        return EntityAssetsBase(
-            cover_image=link
-        )
     
     async def handle_playlist_tracks_lookup(self, search_parameters: LookupByProviderIDParams, jwt: str) -> Collection[TrackRead]:
-        user = await self.auth_service.resolve_user_from_jwt(jwt)
-        credentials = await self.credentials_service.get_service_credentials(
-            user=user,
-            service_name=search_parameters.provider,
-        )
-
-        if not credentials:
-            logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to look a playlist's tracks up by its ID anyway.")
-            raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+        user, credentials = await self.verify_user_and_credentials(jwt, search_parameters.provider, "look a playlist's tracks up by its ID")
 
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
@@ -430,15 +329,7 @@ class CatalogService:
             ) from e
         
     async def handle_compilation_of_user_playlists(self, search_parameters: LookupLibraryPlaylistsParams, jwt: str) -> Collection[PlaylistRead]:
-        user = await self.auth_service.resolve_user_from_jwt(jwt)
-        credentials = await self.credentials_service.get_service_credentials(
-            user=user,
-            service_name=search_parameters.provider
-        )
-
-        if not credentials:
-            logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to look up their playlists at the provider anyway.")
-            raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+        user, credentials = await self.verify_user_and_credentials(jwt, search_parameters.provider, "look up their playlists at the provider")
 
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
@@ -464,7 +355,7 @@ class CatalogService:
 
             mapped_results = []
             for result in results:
-                mapped_results.append(self._map_playlist(
+                mapped_results.append(map_playlist_between_domain_model_to_response_model(
                     playlist=result,
                     provider_name=search_parameters.provider
                 ))
@@ -484,16 +375,8 @@ class CatalogService:
             )
 
     async def handle_playlist_creation(self, search_parameters: SearchParamsBase, playlist_details: PlaylistCreate, jwt: str) -> PlaylistRead:
-        user = await self.auth_service.resolve_user_from_jwt(jwt)
-        credentials = await self.credentials_service.get_service_credentials(
-            user=user,
-            service_name=search_parameters.provider
-        )
-
-        if not credentials:
-            logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to create a playlist anyway.")
-            raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
-
+        user, credentials = await self.verify_user_and_credentials(jwt, search_parameters.provider, "create a playlist")
+        
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
                 credentials=credentials,
@@ -517,7 +400,7 @@ class CatalogService:
                 name=playlist_details.title,
             )
 
-            return self._map_playlist(
+            return map_playlist_between_domain_model_to_response_model(
                 playlist=result,
                 provider_name=search_parameters.provider
             )
@@ -533,15 +416,7 @@ class CatalogService:
             )
 
     async def handle_adding_track_to_playlist(self, search_parameters: LookupByProviderIDParams, track_details: PlaylistMultiTrackInsert, jwt: str) -> Collection[TrackRead]:
-        user = await self.auth_service.resolve_user_from_jwt(jwt)
-        credentials = await self.credentials_service.get_service_credentials(
-            user=user,
-            service_name=search_parameters.provider
-        )
-
-        if not credentials:
-            logger.warning(f"User {user.id} does not have credentials for provider \"{search_parameters.provider}\" but wanted to add one or more tracks to a playlist anyway.")
-            raise_missing_or_invalid_auth_credentials_exception(search_parameters.provider)
+        user, credentials = await self.verify_user_and_credentials(jwt, search_parameters.provider, "add one or more tracks to a playlist")
 
         try:
             driver = await self.service_driver_helper_service.get_initialized_driver(
@@ -591,6 +466,19 @@ class CatalogService:
                 status_code=404,
                 detail=f"Track not found.",
             ) from e
+
+    async def verify_user_and_credentials(self, jwt, provider_name: str, fail_action_msg: str) -> tuple[User, ServiceCredentials]:
+        user = await self.auth_service.resolve_user_from_jwt(jwt)
+        credentials = await self.credentials_service.get_service_credentials(
+            user=user,
+            service_name=provider_name,
+        )
+
+        if not credentials:
+            logger.warning(f"User {user.id} does not have credentials for provider \"{provider_name}\" but wanted to {fail_action_msg} anyway.")
+            raise_missing_or_invalid_auth_credentials_exception(provider_name)
+
+        return (user, credentials)
 
 def get_catalog_service(
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
