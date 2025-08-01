@@ -1,6 +1,6 @@
 from typing import Annotated
-
 from fastapi import Depends
+
 from api.services.providers.base_provider import BaseProvider
 from api.services.credentials_service import CredentialsService, get_credentials_service
 

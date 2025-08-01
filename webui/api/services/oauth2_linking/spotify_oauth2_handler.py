@@ -1,4 +1,4 @@
-from typing import Annotated, Any
+from typing import Annotated
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.cache_handler import CacheHandler
 from spotipy.exceptions import SpotifyOauthError

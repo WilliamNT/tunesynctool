@@ -4,16 +4,16 @@ from fastapi import Depends
 from api.services.providers.base_provider import BaseProvider
 from api.services.credentials_service import CredentialsService, get_credentials_service
 
-class YouTubeProvider(BaseProvider):
+class DeezerProvider(BaseProvider):
     def __init__(self, credentials_service):
         super().__init__(
             credentials_service=credentials_service,
-            provider_name="youtube"
+            provider_name="deezer"
         )
     
-def get_youtube_provider(
+def get_deezer_provider(
     credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)]
-) -> YouTubeProvider:
-    return YouTubeProvider(
+) -> DeezerProvider:
+    return DeezerProvider(
         credentials_service=credentials_service
     )

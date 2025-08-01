@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from api.services.auth_service import AuthService, get_auth_service
@@ -26,7 +26,7 @@ router = APIRouter(
     operation_id="getToken",
     name="auth:obtain_token",
 )
-async def obtain_token(credentials: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response, auth_service: Annotated[AuthService, Depends(get_auth_service)]):    
+async def obtain_token(credentials: Annotated[OAuth2PasswordRequestForm, Depends()], auth_service: Annotated[AuthService, Depends(get_auth_service)]):    
     """
     Generates a bearer JWT for the user.
 

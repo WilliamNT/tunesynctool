@@ -1,5 +1,5 @@
 from typing import Annotated, Optional
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import RedirectResponse, HTMLResponse
 
 from api.services.youtube_service import YouTubeService, get_youtube_service

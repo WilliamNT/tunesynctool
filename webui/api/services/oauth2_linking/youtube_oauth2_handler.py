@@ -1,5 +1,5 @@
 import json
-from typing import Annotated, Any
+from typing import Annotated
 from google_auth_oauthlib.flow import Flow
 from oauthlib.oauth2.rfc6749.errors import OAuth2Error
 

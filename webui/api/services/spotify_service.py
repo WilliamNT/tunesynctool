@@ -1,19 +1,9 @@
-from typing import Annotated, Optional
-from fastapi.responses import RedirectResponse, HTMLResponse
-from fastapi import Depends, HTTPException, Response, status
-from spotipy.oauth2 import SpotifyOAuth
-from spotipy.cache_handler import CacheHandler
-from spotipy.exceptions import SpotifyOauthError
+from typing import Annotated
+from fastapi import Depends
 
-from api.core.config import config
 from api.services.credentials_service import CredentialsService, get_credentials_service
-from api.models.service import ServiceCredentialsCreate
-from api.models.user import User
 from api.core.logging import logger
-from api.core.security import generate_oauth2_state, verify_oauth2_state
-from api.services.user_service import UserService, get_user_service
 from api.services.auth_service import AuthService, get_auth_service
-from api.models.state import OAuth2State
 
 class SpotifyService:
     """

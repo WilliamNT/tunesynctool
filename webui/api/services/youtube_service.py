@@ -1,18 +1,9 @@
-import json
-from typing import Annotated, Optional
-from fastapi import Depends, HTTPException, status
-from fastapi.responses import RedirectResponse, HTMLResponse
-from google_auth_oauthlib.flow import Flow
-from oauthlib.oauth2.rfc6749.errors import OAuth2Error
+from typing import Annotated
+from fastapi import Depends
 
 from api.services.auth_service import AuthService, get_auth_service
 from api.services.credentials_service import CredentialsService, get_credentials_service
-from api.core.config import config
 from api.core.logging import logger
-from api.models.service import ServiceCredentialsCreate
-from api.core.security import verify_oauth2_state
-from api.models.state import OAuth2State
-from api.models.user import User
 
 """
 To implement the Google OAuth process, I referenced this guide:

@@ -2,8 +2,6 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 
 from api.core.security import oauth2_scheme
-from api.services.auth_service import AuthService, get_auth_service
-from api.services.credentials_service import CredentialsService, get_credentials_service
 from api.models.deezer_arl import ARLCreate
 from api.services.deezer_service import DeezerService, get_deezer_service
 

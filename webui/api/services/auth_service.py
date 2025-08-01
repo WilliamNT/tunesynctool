@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, timedelta
+from datetime import timedelta
 from typing import Annotated
 from fastapi import Depends, HTTPException
 
@@ -80,10 +80,12 @@ class AuthService:
         
         subject = verify_access_token(jwt)
         if not subject:
+            logger.warning("JWT signature is valid, however it is missing the subject field. This was likely caused by a bug. Rejecting request.")
             self.raise_unauthorized()
 
         user = await self.user_service.get_by_id(subject)
         if not user:
+            logger.warning("JWT signature is valid, however the user it supposedly belongs to does not exist. Rejecting request.")
             self.raise_unauthorized()
 
         return user

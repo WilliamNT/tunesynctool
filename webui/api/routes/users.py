@@ -3,8 +3,7 @@ from fastapi import APIRouter, Depends, status
 
 from api.models.user import UserRead, UserCreate
 from api.services.user_service import UserService, get_user_service
-from api.core.security import oauth2_scheme
-from api.services.auth_service import AuthService, get_auth_service
+from api.core.context import RequestContext, get_request_context
 
 router = APIRouter(
     prefix="/users",
@@ -45,11 +44,10 @@ async def create_user(
     name="users:get_authenticated_user",
 )
 async def get_authenticated_user(
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)]
+    request_context: Annotated[RequestContext, Depends(get_request_context)]
 ) -> UserRead:
     """
     Get the authenticated user.
     """
 
-    return await auth_service.resolve_user_from_jwt(jwt)
+    return request_context.user

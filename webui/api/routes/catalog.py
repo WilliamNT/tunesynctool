@@ -1,13 +1,14 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, Query, status, Body
 
-from api.services.catalog_service import CatalogService, get_catalog_service
 from api.models.search import SearchParams, ISRCSearchParams, LookupByProviderIDParams, LookupLibraryPlaylistsParams, SearchParamsBase
 from api.models.collection import SearchResultCollection, Collection
 from api.models.track import TrackRead
-from api.core.security import oauth2_scheme
 from api.models.playlist import PlaylistCreate, PlaylistRead, PlaylistMultiTrackInsert
 from api.helpers.route_level_dependencies import get_lookup_by_provider_id_params, get_isrc_search_params
+from api.services.providers.provider_factory import get_provider_in_route
+from api.core.context import RequestContext, get_request_context
+from api.services.providers.base_provider import BaseProvider
 
 router = APIRouter(
     tags=["Catalog"],
@@ -26,8 +27,8 @@ router = APIRouter(
 )
 async def search(
     filter_query: Annotated[SearchParams, Query()],
-    catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)]
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    provider: Annotated[BaseProvider, Depends(get_provider_in_route)]
 ) -> SearchResultCollection[TrackRead]:
     """
     Search using the specified provider. This is basically a proxy.
@@ -40,9 +41,9 @@ async def search(
     - YouTube results may include results from "Topic" channels, which are not actual artist channels.
     """
 
-    return await catalog_service.handle_search(
+    return await provider.handle_track_search(
         search_parameters=filter_query,
-        jwt=jwt
+        user=request_context.user
     )
 
 @router.get(
@@ -61,8 +62,8 @@ async def search(
 )
 async def search_isrc(
     filter_query: Annotated[ISRCSearchParams, Depends(get_isrc_search_params)],
-    catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)]
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    provider: Annotated[BaseProvider, Depends(get_provider_in_route)]
 ) -> TrackRead:
     """
     Search using the specified provider by a specific ISRC identifier. This is basically a proxy.
@@ -71,9 +72,9 @@ async def search_isrc(
     - Not all providers support direct ISRC search. If this is the case, an error will be returned.
     """
 
-    return await catalog_service.handle_isrc_search(
+    return await provider.handle_isrc_search(
         search_parameters=filter_query,
-        jwt=jwt
+        user=request_context.user
     )
 
 @router.get(
@@ -92,8 +93,8 @@ async def search_isrc(
 )
 async def get_track(
     filter_query: Annotated[LookupByProviderIDParams, Depends(get_lookup_by_provider_id_params)],
-    catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)]
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    provider: Annotated[BaseProvider, Depends(get_provider_in_route)]
 ) -> TrackRead:
     """
     Retrieve a track by its ID from the specified provider. This is basically a proxy.
@@ -102,9 +103,9 @@ async def get_track(
     - Some providers (like Spotify) may support multiple ID formats. In these cases, all formats are supported.
     """
 
-    return await catalog_service.handle_track_lookup(
-        search_parameters=filter_query,
-        jwt=jwt
+    return await provider.handle_track_lookup(
+        search_paremeters=filter_query,
+        user=request_context.user
     )
 
 @router.get(
@@ -123,8 +124,8 @@ async def get_track(
 )
 async def get_playlist(
     filter_query: Annotated[LookupByProviderIDParams, Depends(get_lookup_by_provider_id_params)],
-    catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)]
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    provider: Annotated[BaseProvider, Depends(get_provider_in_route)]
 ) -> PlaylistRead:
     """
     Retrieve a playlist by its ID from the specified provider. This is basically a proxy.
@@ -133,9 +134,9 @@ async def get_playlist(
     - Some providers (like Spotify) may support multiple ID formats. In these cases, all formats are supported.
     """
 
-    return await catalog_service.handle_playlist_lookup(
+    return await provider.handle_playlist_lookup(
         search_parameters=filter_query,
-        jwt=jwt
+        user=request_context.user
     )
 
 @router.get(
@@ -154,8 +155,8 @@ async def get_playlist(
 )
 async def get_playlist_tracks(
     filter_query: Annotated[LookupByProviderIDParams, Depends(get_lookup_by_provider_id_params)],
-    catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)]
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    provider: Annotated[BaseProvider, Depends(get_provider_in_route)]
 ) -> Collection[TrackRead]:
     """
     Retrieve a playlist by its ID from the specified provider. This is basically a proxy.
@@ -164,9 +165,9 @@ async def get_playlist_tracks(
     - Some providers (like Spotify) may support multiple ID formats. In these cases, all formats are supported.
     """
 
-    return await catalog_service.handle_playlist_tracks_lookup(
+    return await provider.handle_playlist_tracks_lookup(
         search_parameters=filter_query,
-        jwt=jwt
+        user=request_context.user
     )
 
 @router.get(
@@ -182,8 +183,8 @@ async def get_playlist_tracks(
 )
 async def get_saved_playlists(
     filter_query: Annotated[LookupLibraryPlaylistsParams, Query()],
-    catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)]
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    provider: Annotated[BaseProvider, Depends(get_provider_in_route)]
 ) -> Collection[PlaylistRead]:
     """
     Returns all playlists the user owns or has saved to their library on the specified provider.
@@ -195,9 +196,9 @@ async def get_saved_playlists(
     - YouTube results are not filtered to only contain music related playlists (e.g. any owned playlist will be returned).
     """
 
-    return await catalog_service.handle_compilation_of_user_playlists(
+    return await provider.handle_user_playlists_listing(
         search_parameters=filter_query,
-        jwt=jwt
+        user=request_context.user
     )
 
 @router.post(
@@ -217,8 +218,8 @@ async def get_saved_playlists(
 async def create_playlist(
     filter_query: Annotated[SearchParamsBase, Query()],
     playlist_details: Annotated[PlaylistCreate, Body()],
-    catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)]
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    provider: Annotated[BaseProvider, Depends(get_provider_in_route)]
 ) -> PlaylistRead:
     """
     Create a new playlist on the specified provider.
@@ -226,10 +227,10 @@ async def create_playlist(
     To keep things uniform, you cannot add initial tracks to the playlist because not all providers support this.
     """
 
-    return await catalog_service.handle_playlist_creation(
-        playlist_details=playlist_details,
+    return await provider.handle_playlist_creation(
         search_parameters=filter_query,
-        jwt=jwt
+        playlist_details=playlist_details,
+        user=request_context.user
     )
 
 @router.post(
@@ -242,7 +243,10 @@ async def create_playlist(
             "description": "Track added successfully."
         },
         status.HTTP_404_NOT_FOUND: {
-            "description": "The provider didn't return a match for the given playlist ID or one or more of the supplied track IDs are invalid.",
+            "description": "The provider didn't return a match for the given playlist ID.",
+        },
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "One or more of the supplied track IDs are invalid."
         }
     },
     summary="Add tracks to a playlist",
@@ -252,15 +256,15 @@ async def create_playlist(
 async def add_tracks_to_playlist(
     filter_query: Annotated[LookupByProviderIDParams, Depends(get_lookup_by_provider_id_params)],
     track_details: Annotated[PlaylistMultiTrackInsert, Body()],
-    catalog_service: Annotated[CatalogService, Depends(get_catalog_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)]
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    provider: Annotated[BaseProvider, Depends(get_provider_in_route)]
 ) -> Collection[TrackRead]:
     """
     Add a track to a playlist on the specified provider.
     """
 
-    return await catalog_service.handle_adding_track_to_playlist(
-        track_details=track_details,
+    return await provider.handle_adding_tracks_to_a_playlist(
         search_parameters=filter_query,
-        jwt=jwt
+        track_details=track_details,
+        user=request_context.user
     )
