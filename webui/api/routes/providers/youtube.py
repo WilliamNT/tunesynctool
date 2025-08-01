@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import RedirectResponse, HTMLResponse
 
 from api.services.youtube_service import YouTubeService, get_youtube_service
+from api.services.oauth2_linking.youtube_oauth2_handler import YouTubeOAuth2Handler, get_youtube_oauth2_handler
 from api.core.security import oauth2_scheme
 
 router = APIRouter(
@@ -23,7 +24,7 @@ router = APIRouter(
     name="youtube:authorize",
 )
 async def authorize(
-    provider_service: Annotated[YouTubeService, Depends(get_youtube_service)],
+    oauth2_handler: Annotated[YouTubeOAuth2Handler, Depends(get_youtube_oauth2_handler)],
     state: Annotated[str, Query()]
 ) -> RedirectResponse:
     """
@@ -35,7 +36,7 @@ async def authorize(
     Takes a `state` parameter that includes metadata about the client.
     """
     
-    return await provider_service.request_user_authorization(
+    return await oauth2_handler.request_user_authorization(
         state=state
     )
 
@@ -52,7 +53,7 @@ async def authorize(
     name="youtube:callback",
 )
 async def callback(
-    provider_service: Annotated[YouTubeService, Depends(get_youtube_service)],
+    oauth2_handler: Annotated[YouTubeOAuth2Handler, Depends(get_youtube_oauth2_handler)],
     state: str,
     code: Annotated[Optional[str], Query()] = None,
     error: Annotated[Optional[str], Query()] = None
@@ -64,9 +65,9 @@ async def callback(
     Details: https://developers.google.com/youtube/v3/quickstart/python
     """
     
-    return await provider_service.handle_authorization_callback(
-        code=code,
+    return await oauth2_handler.handle_authorization_callback(
         state=state,
+        code=code,
         error=error
     )
 

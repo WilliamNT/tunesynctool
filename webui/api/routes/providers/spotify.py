@@ -4,6 +4,7 @@ from fastapi.responses import RedirectResponse, Response
 
 from api.core.security import oauth2_scheme
 from api.services.spotify_service import SpotifyService, get_spotify_service
+from api.services.oauth2_linking.spotify_oauth2_handler import SpotifyOAuth2Handler, get_spotify_oauth2_handler
 
 router = APIRouter(
     prefix="/providers/spotify",
@@ -23,7 +24,7 @@ router = APIRouter(
     name="spotify:authorize",
 )
 async def authorize(
-    provider_service: Annotated[SpotifyService, Depends(get_spotify_service)],
+    oauth2_handler: Annotated[SpotifyOAuth2Handler, Depends(get_spotify_oauth2_handler)],
     state: Annotated[str, Query()]
 ) -> RedirectResponse:
     """
@@ -35,7 +36,7 @@ async def authorize(
     Takes a `state` parameter that includes metadata about the client.
     """
 
-    return await provider_service.request_user_authorization(
+    return await oauth2_handler.request_user_authorization(
         state=state
     )
 
@@ -55,7 +56,7 @@ async def authorize(
     name="spotify:callback",
 )
 async def callback(
-    provider_service: Annotated[SpotifyService, Depends(get_spotify_service)],
+    oauth2_handler: Annotated[SpotifyOAuth2Handler, Depends(get_spotify_oauth2_handler)],
     state: str,
     code: Annotated[Optional[str], Query()] = None,
     error: Annotated[Optional[str], Query()] = None
@@ -70,9 +71,9 @@ async def callback(
     Details: https://developer.spotify.com/documentation/web-api/tutorials/code-flow
     """
 
-    return await provider_service.handle_authorization_callback(
-        code=code,
+    return await oauth2_handler.handle_authorization_callback(
         state=state,
+        code=code,
         error=error
     )
 
