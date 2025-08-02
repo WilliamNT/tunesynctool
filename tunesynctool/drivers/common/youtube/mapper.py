@@ -59,3 +59,38 @@ class YouTubeMapper(ServiceMapper):
                 'search': additional_data
             }
         )
+    
+    def map_liked_track(self, data: dict) -> Track:
+        album: dict = data.get('album', {}) or {}
+
+        _raw_artists: List[dict] = data.get('artists', [])
+        _artist_names = [artist.get('name', None) for artist in _raw_artists]
+        
+        service_id = data.get('videoId', None)
+        title = data.get('title', None)
+
+        album_name = album.get('name', None)
+        primary_artist = _artist_names[0] if len(_artist_names) > 0 else None
+        duration_seconds = int(data.get('duration_seconds', None)) if data.get('duration_seconds', None) else None
+        release_year = int(data.get('year')) if data.get('year', None) else None
+        
+        track_number = None # Youtube does not provide track numbers as far as I know
+        isrc = None # Youtube does not provide ISRCs as far as I know
+        
+        additional_artists = []
+        if len(_artist_names) > 1:
+            additional_artists = [artist for artist in _artist_names[1:]]
+
+        return Track(
+            title=title,
+            album_name=album_name,
+            primary_artist=primary_artist,
+            additional_artists=additional_artists,
+            duration_seconds=duration_seconds,
+            track_number=track_number,
+            release_year=release_year,
+            isrc=isrc,
+            service_id=service_id,
+            service_name='youtube',
+            service_data=data
+        )

@@ -285,3 +285,27 @@ class BaseProvider:
             user=user,
             log_reason="Integration unlinked by user."
         )
+
+    async def handle_saved_tracks_lookup(self, search_parameters: LookupLibraryPlaylistsParams, user: User) -> Collection[TrackRead]:
+        """
+        Lists the tracks in the user's "liked music" playlist, if the provider supports it.
+        """
+
+        driver = await self._get_driver(user)
+        results = await self._exec_service_driver_method(lambda: driver.get_saved_tracks(limit=search_parameters.limit))
+
+        if len(results) > search_parameters.limit:
+            results = results[:search_parameters.limit]
+
+        assets_list = await asyncio.gather(*[self._get_track_assets(result, user) for result in results])
+        mapped_results = [
+            map_track_between_domain_model_and_response_model(
+                track=result,
+                provider_name=self.provider_name,
+                assets=assets
+            ) for result, assets in zip(results, assets_list)
+        ]
+
+        return Collection(
+            items=mapped_results
+        )

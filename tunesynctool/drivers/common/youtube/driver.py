@@ -206,3 +206,14 @@ class YouTubeDriver(ServiceDriver):
             raise TrackNotFoundException(f'No track found with ISRC {isrc}')
         
         return results[0]
+    
+    def get_saved_tracks(self, limit: int = 10) -> List[Track]:
+        try:
+            response: dict = self.__youtube.get_liked_songs(
+                limit=limit
+            )
+
+            tracks = response.get('tracks', [])
+            return [self._mapper.map_liked_track(data=track) for track in tracks]
+        except Exception as e:
+            raise ServiceDriverException(e)

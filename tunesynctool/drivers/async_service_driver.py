@@ -89,3 +89,9 @@ class AsyncWrappedServiceDriver:
             self.sync_driver.get_track_by_isrc,
             isrc=isrc
         )
+    
+    async def get_saved_tracks(self, limit: int = 10) -> List[Track]:
+        return await self._wrap_sync(
+            self.sync_driver.get_saved_tracks,
+            limit=limit
+        )

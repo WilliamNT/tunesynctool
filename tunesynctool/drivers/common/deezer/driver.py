@@ -72,3 +72,6 @@ class DeezerDriver(ServiceDriver):
         return asyncio.run(self._async_driver.get_track_by_isrc(
             isrc=isrc
         ))
+    
+    def get_saved_tracks(self, limit: int = 10) -> List[Track]:
+        raise UnsupportedFeatureException('Retrieving saved tracks on Deezer is not currently supported.')

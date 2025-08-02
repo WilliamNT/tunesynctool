@@ -197,3 +197,21 @@ class SpotifyDriver(ServiceDriver):
             raise TrackNotFoundException(f'No track found with ISRC {isrc}')
         
         return results[0]
+    
+    def get_saved_tracks(self, limit: int = 10) -> List[Track]:
+        try:
+            response = self.__spotify.current_user_saved_tracks(
+                limit=limit
+            )
+
+            fetched_tracks = [item["track"] for item in response['items']]
+            mapped_tracks = [self._mapper.map_track(track) for track in fetched_tracks]
+
+            for track in mapped_tracks:
+                track.service_name = self.service_name
+
+            return mapped_tracks
+        except SpotifyException as e:
+            raise PlaylistNotFoundException(e)
+        except Exception as e:
+            raise ServiceDriver(e)

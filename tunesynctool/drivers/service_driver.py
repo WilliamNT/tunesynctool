@@ -157,3 +157,16 @@ class ServiceDriver(ABC):
         """
 
         raise NotImplementedError()
+    
+    @abstractmethod
+    def get_saved_tracks(self, limit: int = 10) -> List[Track]:
+        """
+        Fetch the user's saved/liked tracks from the service.
+        Basically retrieves the user's liked songs playlist's contents.
+
+        :param limit: The maximum number of tracks to fetch.
+        :return: A list of Track objects.
+        :raises: ServiceDriverException if an unknown error occurs while fetching the tracks.
+        """
+
+        raise NotImplementedError()

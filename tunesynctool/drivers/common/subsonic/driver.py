@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from tunesynctool.exceptions import PlaylistNotFoundException, ServiceDriverException, TrackNotFoundException
+from tunesynctool.exceptions import PlaylistNotFoundException, ServiceDriverException, TrackNotFoundException, UnsupportedFeatureException
 from tunesynctool.models import Playlist, Configuration, Track
 from tunesynctool.drivers import ServiceDriver
 from .mapper import SubsonicMapper
@@ -166,3 +166,6 @@ class SubsonicDriver(ServiceDriver):
         
     def get_track_by_isrc(self, isrc: str) -> Track:
         raise NotImplementedError('Subsonic does not support fetching tracks by ISRC.')
+    
+    def get_saved_tracks(self, limit: int = 10) -> List[Track]:
+        raise UnsupportedFeatureException('Retrieving saved tracks on Subsonic is not currently supported.')

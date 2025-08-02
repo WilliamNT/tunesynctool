@@ -152,3 +152,6 @@ class AsyncDeezerDriver(ServiceDriver, AsyncWrappedServiceDriver):
             raise TrackNotFoundException(e)
         except Exception as e:
             raise ServiceDriverException(e)
+        
+    async def get_saved_tracks(self, limit: int = 10) -> List[Track]:
+        raise UnsupportedFeatureException('Retrieving saved tracks on Deezer is not currently supported.')

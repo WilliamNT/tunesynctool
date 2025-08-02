@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, Query, status, Body
+from fastapi import APIRouter, Depends, status, Body
 
 from api.models.search import SearchParams, ISRCSearchParams, LookupByProviderIDParams, LookupLibraryPlaylistsParams, SearchParamsBase
 from api.models.collection import SearchResultCollection, Collection
@@ -26,7 +26,7 @@ router = APIRouter(
     name="catalog:search_tracks",
 )
 async def search(
-    filter_query: Annotated[SearchParams, Query()],
+    filter_query: Annotated[SearchParams, Depends()],
     request_context: Annotated[RequestContext, Depends(get_request_context)],
     provider: Annotated[BaseProvider, Depends(get_provider_in_route)]
 ) -> SearchResultCollection[TrackRead]:
@@ -163,6 +163,7 @@ async def get_playlist_tracks(
     
     Notes:
     - Some providers (like Spotify) may support multiple ID formats. In these cases, all formats are supported.
+    - This endpoint is not suitable to retrieve the user's saved tracks. Use the appropriate endpoint for that.
     """
 
     return await provider.handle_playlist_tracks_lookup(
@@ -182,7 +183,7 @@ async def get_playlist_tracks(
     name="catalog:get_saved_playlists",
 )
 async def get_saved_playlists(
-    filter_query: Annotated[LookupLibraryPlaylistsParams, Query()],
+    filter_query: Annotated[LookupLibraryPlaylistsParams, Depends()],
     request_context: Annotated[RequestContext, Depends(get_request_context)],
     provider: Annotated[BaseProvider, Depends(get_provider_in_route)]
 ) -> Collection[PlaylistRead]:
@@ -194,6 +195,7 @@ async def get_saved_playlists(
     Notes:
     - YouTube does not support retrieving playlists that are saved but **not owned** by the linked account.
     - YouTube results are not filtered to only contain music related playlists (e.g. any owned playlist will be returned).
+    - This endpoint doesn't return the "liked music" playlist for all providers. Use the appropriate endpoint for that.
     """
 
     return await provider.handle_user_playlists_listing(
@@ -216,7 +218,7 @@ async def get_saved_playlists(
     name="catalog:create_playlist",
 )
 async def create_playlist(
-    filter_query: Annotated[SearchParamsBase, Query()],
+    filter_query: Annotated[SearchParamsBase, Depends()],
     playlist_details: Annotated[PlaylistCreate, Body()],
     request_context: Annotated[RequestContext, Depends(get_request_context)],
     provider: Annotated[BaseProvider, Depends(get_provider_in_route)]
@@ -254,7 +256,7 @@ async def create_playlist(
     name="catalog:add_track_to_playlist",
 )
 async def add_tracks_to_playlist(
-    filter_query: Annotated[LookupByProviderIDParams, Depends(get_lookup_by_provider_id_params)],
+    filter_query: Annotated[LookupByProviderIDParams, Depends()],
     track_details: Annotated[PlaylistMultiTrackInsert, Body()],
     request_context: Annotated[RequestContext, Depends(get_request_context)],
     provider: Annotated[BaseProvider, Depends(get_provider_in_route)]
@@ -266,5 +268,25 @@ async def add_tracks_to_playlist(
     return await provider.handle_adding_tracks_to_a_playlist(
         search_parameters=filter_query,
         track_details=track_details,
+        user=request_context.user
+    )
+
+@router.get(
+    path="/tracks",
+    summary="Get the user's saved (liked) tracks at a provider",
+    operation_id="getSavedTracks",
+    name="library:get_saved_tracks"
+)
+async def get_saved_tracks(
+    filter_query: Annotated[LookupLibraryPlaylistsParams, Depends()],
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    provider: Annotated[BaseProvider, Depends(get_provider_in_route)]
+) -> Collection[TrackRead]:
+    """
+    Returns the user's saved tracks (aka. liked music) on the specified provider.
+    """
+
+    return await provider.handle_saved_tracks_lookup(
+        search_parameters=filter_query,
         user=request_context.user
     )
