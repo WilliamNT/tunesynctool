@@ -11,6 +11,11 @@ from api.services.providers.youtube_provider import YouTubeProvider, get_youtube
 from api.core.config import config
 from api.core.logging import logger
 
+"""
+To implement the Google OAuth process, I referenced this guide:
+https://developers.google.com/youtube/v3/guides/auth/server-side-web-apps
+"""
+
 class YouTubeOAuth2Handler(BaseOAuth2Handler):
     def __init__(self, provider, auth_service):
         super().__init__(
