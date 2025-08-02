@@ -58,15 +58,17 @@ class BaseProvider:
             credentials=credentials
         )
     
-    async def delete_credentials(self, provider_name: str, user: User, log_reason: Optional[str] = None) -> None:
+    async def _delete_credentials(self, user: User, log_reason: Optional[str] = None) -> None:
         """
         Deletes the credentials for the given user and provider.
         Can be safely called even if the credentials don't exist.
+
+        Note: This is meant for internal use. To properly unlink a provider's credentials, user the `handle_account_unlink()` method instead.
         """
         
         await self.credentials_service.delete_credentials(
             user=user,
-            service_name=provider_name,
+            service_name=self.provider_name,
             log_reason=log_reason
         )
 
@@ -277,3 +279,9 @@ class BaseProvider:
                 provider_name=self.provider_name,
                 e=e
             )
+
+    async def handle_account_unlink(self, user: User) -> None:
+        await self._delete_credentials(
+            user=user,
+            log_reason="Integration unlinked by user."
+        )

@@ -4,6 +4,9 @@ from fastapi import APIRouter, Depends, status
 from api.core.security import oauth2_scheme
 from api.models.subsonic import SubsonicCredentials
 from api.services.subsonic_service import SubsonicService, get_subsonic_service
+from api.core.context import RequestContext, get_request_context
+from api.services.providers.base_provider import BaseProvider
+from api.services.providers.provider_factory import get_provider_in_route
 
 router = APIRouter(
     prefix="/providers/subsonic",
@@ -49,11 +52,13 @@ async def credentials(
     name="subsonic:unlink_subsonic_account",
 )
 async def unlink(
-    provider_service: Annotated[SubsonicService, Depends(get_subsonic_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)],
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    provider: Annotated[BaseProvider, Depends(get_provider_in_route)]
 ) -> None:
     """
     Unlinks the Subsonic account associated with the user.
     """
 
-    return await provider_service.handle_account_unlink(jwt)
+    return await provider.handle_account_unlink(
+        user=request_context.user
+    )

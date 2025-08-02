@@ -61,20 +61,6 @@ class DeezerService:
         """
         
         return arl_dict.get("arl")
-    
-    async def handle_account_unlink(self, jwt: str) -> None:
-        """
-        Unlinks the Deezer account from the user.
-        """
-
-        user = await self.auth_service.resolve_user_from_jwt(jwt)
-
-        logger.info(f"Unlinking Deezer account for user {user.id}.")
-
-        await self.credentials_service.delete_credentials(
-            user=user,
-            service_name="deezer"
-        )
 
 def get_deezer_service(auth_service: Annotated[AuthService, Depends(get_auth_service)], credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)]) -> DeezerService:
     return DeezerService(

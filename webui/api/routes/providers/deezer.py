@@ -4,6 +4,9 @@ from fastapi import APIRouter, Depends, status
 from api.core.security import oauth2_scheme
 from api.models.deezer_arl import ARLCreate
 from api.services.deezer_service import DeezerService, get_deezer_service
+from api.core.context import RequestContext, get_request_context
+from api.services.providers.base_provider import BaseProvider
+from api.services.providers.provider_factory import get_provider_in_route
 
 router = APIRouter(
     prefix="/providers/deezer",
@@ -49,11 +52,13 @@ async def arl(
     name="deezer:unlink_deezer_account",
 )
 async def unlink(
-    provider_service: Annotated[DeezerService, Depends(get_deezer_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)],
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    provider: Annotated[BaseProvider, Depends(get_provider_in_route)]
 ) -> None:
     """
     Unlinks the Deezer account associated with the user.
     """
 
-    return await provider_service.handle_account_unlink(jwt)
+    return await provider.handle_account_unlink(
+        user=request_context.user
+    )

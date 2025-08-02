@@ -2,9 +2,10 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import RedirectResponse, Response
 
-from api.core.security import oauth2_scheme
-from api.services.spotify_service import SpotifyService, get_spotify_service
 from api.services.oauth2_linking.spotify_oauth2_handler import SpotifyOAuth2Handler, get_spotify_oauth2_handler
+from api.core.context import RequestContext, get_request_context
+from api.services.providers.base_provider import BaseProvider
+from api.services.providers.provider_factory import get_provider_in_route
 
 router = APIRouter(
     prefix="/providers/spotify",
@@ -89,11 +90,13 @@ async def callback(
     operation_id="unlinkSpotifyAccount",
 )
 async def unlink(
-    provider_service: Annotated[SpotifyService, Depends(get_spotify_service)],
-    jwt: Annotated[str, Depends(oauth2_scheme)],
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    provider: Annotated[BaseProvider, Depends(get_provider_in_route)]
 ) -> None:
     """
     Unlinks the Spotify account associated with the user.
     """
 
-    return await provider_service.handle_account_unlink(jwt)
+    return await provider.handle_account_unlink(
+        user=request_context.user
+    )

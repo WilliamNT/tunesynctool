@@ -61,20 +61,6 @@ class SubsonicService:
             password=cred_dict["password"]
         )
 
-    async def handle_account_unlink(self, jwt: str) -> None:
-        """
-        Unlinks the Subsonic account from the user.
-        """
-
-        user = await self.auth_service.resolve_user_from_jwt(jwt)
-
-        logger.info(f"Unlinking Subsonic account for user {user.id}.")
-
-        await self.credentials_service.delete_credentials(
-            user=user,
-            service_name="subsonic"
-        )
-
 def get_subsonic_service(auth_service: Annotated[AuthService, Depends(get_auth_service)], credentials_service: Annotated[CredentialsService, Depends(get_credentials_service)]) -> SubsonicService:    
     return SubsonicService(
         auth_service=auth_service,
