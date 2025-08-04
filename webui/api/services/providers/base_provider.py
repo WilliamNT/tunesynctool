@@ -83,7 +83,7 @@ class BaseProvider:
         if len(results) > search_parameters.limit:
             results = results[:search_parameters.limit]
 
-        assets_list = await asyncio.gather(*[self._get_track_assets(result, user) for result in results])
+        assets_list = await asyncio.gather(*[self.get_track_assets(result, user) for result in results])
         mapped_results = [
             map_track_between_domain_model_and_response_model(
                 track=result,
@@ -97,7 +97,7 @@ class BaseProvider:
             query=search_parameters.query
         )
 
-    async def _get_track_assets(self, track: Track, user: User) -> EntityAssetsBase:
+    async def get_track_assets(self, track: Track, user: User) -> EntityAssetsBase:
         """
         Retrieves (or extracts) the track assets from the track object.
 
@@ -126,7 +126,7 @@ class BaseProvider:
 
         try:
             result = await self._exec_service_driver_method(lambda: driver.get_track_by_isrc(isrc=search_parameters.isrc))
-            assets = await self._get_track_assets(result, user)
+            assets = await self.get_track_assets(result, user)
 
             return map_track_between_domain_model_and_response_model(
                 track=result,
@@ -147,7 +147,7 @@ class BaseProvider:
         try:
             driver = await self._get_driver(user)
             result = await self._exec_service_driver_method(lambda: driver.get_track(track_id=search_paremeters.provider_id))
-            assets = await self._get_track_assets(result, user)
+            assets = await self.get_track_assets(result, user)
 
             return map_track_between_domain_model_and_response_model(
                 track=result,
@@ -188,7 +188,7 @@ class BaseProvider:
             driver = await self._get_driver(user)
             results = await self._exec_service_driver_method(lambda: driver.get_playlist_tracks(playlist_id=search_parameters.provider_id, limit=0))
 
-            assets_list = await asyncio.gather(*[self._get_track_assets(result, user) for result in results])
+            assets_list = await asyncio.gather(*[self.get_track_assets(result, user) for result in results])
             mapped_results = [
                 map_track_between_domain_model_and_response_model(
                     track=result,
@@ -297,7 +297,7 @@ class BaseProvider:
         if len(results) > search_parameters.limit:
             results = results[:search_parameters.limit]
 
-        assets_list = await asyncio.gather(*[self._get_track_assets(result, user) for result in results])
+        assets_list = await asyncio.gather(*[self.get_track_assets(result, user) for result in results])
         mapped_results = [
             map_track_between_domain_model_and_response_model(
                 track=result,

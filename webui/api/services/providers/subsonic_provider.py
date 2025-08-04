@@ -17,7 +17,7 @@ class SubsonicProvider(BaseProvider):
             provider_name="subsonic"
         )
 
-    async def _get_track_assets(self, track, user): 
+    async def get_track_assets(self, track, user): 
         if not track.service_data:
             return None
 
