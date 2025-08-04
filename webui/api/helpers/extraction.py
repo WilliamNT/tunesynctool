@@ -31,14 +31,26 @@ def extract_cover_link_for_track_sync(partial_data: dict, provider_name: str) ->
     )
 
 def extract_spotify_share_url(data: dict) -> Optional[str]:
-    return data.get("external_urls", {}).get("spotify")
+    url = data.get("external_urls", {}).get("spotify")
+
+    _id = data.get("id")
+    if not url and _id:
+        url = f"https://open.spotify.com/playlist/{_id}"
+
+    return url
 
 def extract_youtube_share_url(data: dict) -> Optional[str]:
-    return data.get("track", {}).get("microformat", {}).get("microformatDataRenderer", {}).get("urlCanonical")
+    url = data.get("track", {}).get("microformat", {}).get("microformatDataRenderer", {}).get("urlCanonical")
+    
+    _id = data.get("videoId")
+    if not url and _id:
+        url = f"https://music.youtube.com/watch?v={_id}"
+
+    return url
 
 _SYNC_TRACK_SHARE_URL_EXTRACTORS = {
-    "spotify": extract_spotify_cover,
-    "youtube": extract_youtube_cover,
+    "spotify": extract_spotify_share_url,
+    "youtube": extract_youtube_share_url,
 }
 
 def extract_share_url_from_track_sync(partial_data: dict, provider_name: str) -> Optional[str]:

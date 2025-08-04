@@ -12,7 +12,8 @@ def map_track_between_domain_model_and_response_model(
     provider_name: str,
     assets: EntityAssetsBase
 ) -> TrackRead:
-    meta = EntityMetaRead(
+    meta = map_track_meta_from_domain_model_to_response_model(
+        track=track,
         provider_name=provider_name
     )
         
