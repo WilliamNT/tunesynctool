@@ -27,10 +27,11 @@
   html,
   body,
   #app {
-    @apply min-h-dvh backdrop-blur-3xl;
+    @apply min-h-dvh;
   }
 
-  #app {
+  #main-region {
+    @apply backdrop-blur-3xl;
     background-image:
       radial-gradient(at 40% 20%, hsla(28, 100%, 74%, .1) 0px, black 100%),
       radial-gradient(at 80% 0%, hsla(189, 100%, 56%, .1) 0px, black 100%),
