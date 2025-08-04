@@ -4,6 +4,7 @@ import { computed } from 'vue';
 import AppCard from '../card/AppCard.vue';
 import { Icon } from '@iconify/vue/dist/iconify.js';
 import { formatDuration, intervalToDuration } from 'date-fns';
+import TrackCover from '../image/TrackCover.vue';
 
 const props = defineProps<{
   track: TrackRead;
@@ -41,11 +42,7 @@ const duration = computed(() => {
 <template>
   <a :href="track.meta.share_url ?? `#${track.meta.provider_name}-${track.identifiers.provider_id}`" :target="track.meta.share_url ? '_blank' : undefined">
     <AppCard class="rounded-2xl flex gap-4 relative overflow-hidden">
-      <div class="flex items-center justify-center w-16 h-16 rounded-md bg-zinc-600/40 ring-1 ring-zinc-700 relative overflow-hidden">
-        <img :src="provider?.ui.favicon" :alt="provider?.ui.display_name" class="absolute w-5 h-5 right-0.5 bottom-0.5" v-if="provider" />
-        <img :src="track.assets.cover_image" class="w-full h-full object-cover aspect-square" v-if="track.assets.cover_image" />
-        <Icon icon="material-symbols:music-note-rounded" class="w-14 h-14 text-zinc-500 block" v-else />
-      </div>
+      <TrackCover :track :provider />
       <div class="flex flex-col gap-0.5">
         <h3 class="truncate font-black text-white text-lg m-0 p-0">{{ track.title ?? 'n/a' }}</h3>
         <ul class="flex gap-2 list-none p-0 m-0 text-sm font-medium text-zinc-400">
