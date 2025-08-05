@@ -21,7 +21,7 @@ router = APIRouter(
         status.HTTP_404_NOT_FOUND: {
             "description": "Couldn't find a close enough match based on the provided metadata.",
         }
-    },
+    }, 
     summary="Find the equivalent track on another provider",
     operation_id="matchTrack",
     name="tasks:match_track",
@@ -81,7 +81,7 @@ async def transfer_playlist(
         user=request_context.user
     )
 
-@router.post(
+@router.get(
     path="",
     summary="List all tasks",
     operation_id="getTasks",
