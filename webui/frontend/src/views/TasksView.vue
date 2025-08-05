@@ -6,6 +6,8 @@ import AppContainer from '@/components/generic/AppContainer.vue';
 import AppLoaderScreen from '@/components/generic/AppLoaderScreen.vue';
 import AppPageHeader from '@/components/generic/AppPageHeader.vue';
 import Task from '@/components/library/Task.vue';
+import PlaylistTaskForm from '@/components/service/PlaylistTaskForm.vue';
+import AppCard from '@/components/card/AppCard.vue';
 
 const config = get_api_configuration(
   get_access_token()
@@ -39,7 +41,10 @@ const fetchTasks = async () => {
 
 const startPolling = () => {
   intervalId = setTimeout(async () => {
-      await fetchTasks();
+      if (document.visibilityState === 'visible') {
+        await fetchTasks();
+      }
+
       startPolling();
   }, 3000);
 }
@@ -75,7 +80,10 @@ onUnmounted(() => {
         </template>
       </AppPageHeader>
       <div class="flex flex-col gap-3 mt-8">
-        <div class="flex items-center gap-3 w-full mb-3">
+        <AppCard>
+          <PlaylistTaskForm :providers />
+        </AppCard>
+        <div class="flex items-center gap-3 w-full mb-3 mt-8">
           <h2 class="text-2xl">Running now</h2>
           <hr class="flex-1 border-zinc-700 border-0.5 ms-5" />
         </div>

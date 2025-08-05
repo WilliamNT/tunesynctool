@@ -6,6 +6,7 @@ import { ref } from 'vue';
 import { get_access_token, get_api_configuration } from '@/services/api';
 import { Icon } from '@iconify/vue/dist/iconify.js';
 import TaskCover from '../image/TaskCover.vue';
+import { intervalToDuration, formatDuration } from 'date-fns';
 
 const props = defineProps<{
   task: PlaylistTaskStatus;
@@ -14,8 +15,17 @@ const props = defineProps<{
 
 const source_provider = computed(() => props.providers.find((p) => p.provider_name === props.task.arguments.from_provider));
 const target_provider = computed(() => props.providers.find((p) => p.provider_name === props.task.arguments.to_provider));
-
 const playlist = ref<PlaylistRead>();
+
+const taskDuration = computed(() => {
+  const start = new Date(props.task.queued_at * 1000);
+  const end = new Date(props.task.done_at ? (props.task.done_at * 1000) : Date.now());
+  const duration = intervalToDuration({ start, end });
+  const formattedDifference = formatDuration(duration, {
+    delimiter: ', '
+  });
+  return formattedDifference;
+});
 
 const config = get_api_configuration(
   get_access_token()
@@ -77,6 +87,9 @@ onMounted(async () => {
         </li>
         <li class="relative pl-3.5 first:pl-0 before:content-['•'] before:absolute before:left-0 first:before:content-[''] before:text-zinc-500 truncate">
           {{ task.progress.handled }} items processed<template v-if="task.status === TaskStatus.Running">, {{ task.progress.in_queue }} in queue</template>
+        </li>
+        <li class="relative pl-3.5 first:pl-0 before:content-['•'] before:absolute before:left-0 first:before:content-[''] before:text-zinc-500 truncate">
+          Duration: {{ taskDuration }}
         </li>
         <li class="relative pl-3.5 first:pl-0 before:content-['•'] before:absolute before:left-0 first:before:content-[''] before:text-zinc-500 truncate">
           Playlist ID: {{ task.arguments.from_playlist }}
