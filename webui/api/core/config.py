@@ -29,6 +29,9 @@ class Config(BaseSettings):
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
 
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+
     @computed_field
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> MySQLDsn:

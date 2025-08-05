@@ -1,6 +1,14 @@
-from pydantic import BaseModel, Field, field_validator, ValidationError
+from pydantic import BaseModel, Field, field_validator
 
 from api.helpers.service_driver import is_valid_provider, SUPPORTED_PROVIDERS
+
+def validate_provider(p: str) -> str:
+    p = p.lower()
+
+    if not is_valid_provider(p):
+        raise ValueError(f"provider must be one of: {", ".join(SUPPORTED_PROVIDERS)}")
+        
+    return p
 
 class SearchParamsBase(BaseModel):
     """
@@ -11,13 +19,8 @@ class SearchParamsBase(BaseModel):
 
     @field_validator("provider")
     def normalize_and_validate(cls, v: str) -> str:
-        v = v.lower()
-
-        if not is_valid_provider(v):
-            raise ValueError(f"provider must be one of: {", ".join(SUPPORTED_PROVIDERS)}")
-        
-        return v
-
+        return validate_provider(v)
+    
 class SearchParams(SearchParamsBase):
     """
     Search parameters.

@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Optional, Self
+import base64
+import json
 
 from tunesynctool.models.track import Track
 
@@ -39,3 +41,38 @@ class Playlist:
     
     def __hash__(self):
         return hash((self.service_id, self.service_name))
+    
+    def serialize(self) -> dict:
+        """
+        Maps the object to a dict.
+        """
+
+        service_data = base64.b64encode(json.dumps(self.service_data).encode("utf-8"))
+
+        return {
+            "name": self.name,
+            "author_name": self.author_name,
+            "description": self.description,
+            "is_public": self.is_public,
+            "service_id": self.service_id,
+            "service_name": self.service_name,
+            "service_data": service_data.decode("utf-8")
+        }
+    
+    @staticmethod
+    def deserialize(raw_json: dict) -> Self:
+        decoded_service_data = None
+        if raw_json.get("service_data"):
+            decoded_service_data = base64.b64decode(raw_json.get("service_data"))
+            decoded_service_data = decoded_service_data.decode("utf-8")
+            decoded_service_data = json.loads(decoded_service_data)
+
+        return Playlist(
+            name=raw_json.get("name"),
+            author_name=raw_json.get("author_name"),
+            description=raw_json.get("description"),
+            is_public=bool(raw_json.get("is_public", False)),
+            service_id=raw_json.get("service_id"),
+            service_name=raw_json.get("service_name"),
+            service_data=decoded_service_data
+        )

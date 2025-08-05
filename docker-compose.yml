@@ -1,6 +1,20 @@
+version: "3"
 services:
   redis:
     image: redis:latest
     container_name: tunesynctool-redis
     ports:
       - "6379:6379"
+    networks:
+      - redisnet
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redisinsight
+    ports:
+      - "5540:5540"  # You access the GUI via localhost:5540
+    networks:
+      - redisnet
+
+networks:
+  redisnet:

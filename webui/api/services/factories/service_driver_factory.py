@@ -15,6 +15,7 @@ from api.services.credentials_service import CredentialsService
 from api.models.user import User
 from api.helpers.ytmusicapi import CustomYTMusicAPIOAuthCredentials
 from api.exceptions.auth import OAuthTokenRefreshError
+from api.drivers.cached.async_cached_driver import AsyncCachedDriver
 
 class ServiceDriverFactory:
     """
@@ -45,23 +46,23 @@ class ServiceDriverFactory:
             raise
 
         driver: AsyncWrappedServiceDriver = get_driver_by_name(self.provider_name)
-
+        
         match self.provider_name:
             case "youtube":
-                return driver(
+                return AsyncCachedDriver(driver(
                     config=Configuration(),
                     oauth_credentials=config,
                     auth_dict=config.custom_get_auth_dict()
-                )
+                ))
             case "spotify":
-                return driver(
+                return AsyncCachedDriver(driver(
                     config=Configuration(),
                     auth_manager=config
-                )
+                ))
             case _:
-                return driver(
+                return AsyncCachedDriver(driver(
                     config=config
-                )
+                ))
 
     async def _get_config(self, user: User, credentials: ServiceCredentials) -> Configuration:
         match self.provider_name:

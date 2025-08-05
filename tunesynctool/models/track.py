@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Optional, Self
+import base64
+import json
 
 from tunesynctool.utilities import clean_str, calculate_str_similarity, calculate_int_closeness
 
@@ -112,3 +114,48 @@ class Track:
         similarity_ratio = round(sum(variables) / sum(weights.values()), 2)
 
         return similarity_ratio
+    
+    def serialize(self) -> dict:
+        """
+        Maps the object to a dict.
+        """
+
+        service_data = base64.b64encode(json.dumps(self.service_data).encode("utf-8"))
+
+        return {
+            "title": self.title,
+            "album_name": self.album_name,
+            "primary_artist": self.primary_artist,
+            "additional_artists": self.additional_artists,
+            "duration_seconds": self.duration_seconds,
+            "track_number": self.track_number,
+            "release_year": self.release_year,
+            "isrc": self.isrc,
+            "musicbrainz_id": self.musicbrainz_id,
+            "service_id": self.service_id,
+            "service_name": self.service_name,
+            "service_data": service_data.decode("utf-8")
+        }
+    
+    @staticmethod
+    def deserialize(raw_json: dict) -> Self:
+        decoded_service_data = None
+        if raw_json.get("service_data"):
+            decoded_service_data = base64.b64decode(raw_json.get("service_data"))
+            decoded_service_data = decoded_service_data.decode("utf-8")
+            decoded_service_data = json.loads(decoded_service_data)
+
+        return Track(
+            title=raw_json.get("title"),
+            album_name=raw_json.get("album_name"),
+            primary_artist=raw_json.get("primary_artist"),
+            additional_artists=raw_json.get("additional_artists", []),
+            duration_seconds=int(raw_json.get("duration_seconds")) if raw_json.get("duration_seconds") else None,
+            track_number=int(raw_json.get("track_number")) if raw_json.get("track_number") else None,
+            release_year=int(raw_json.get("release_year")) if raw_json.get("release_year") else None,
+            isrc=raw_json.get("isrc"),
+            musicbrainz_id=raw_json.get("musicbrainz_id"),
+            service_id=raw_json.get("service_id"),
+            service_name=raw_json.get("service_name"),
+            service_data=decoded_service_data
+        )
