@@ -107,7 +107,7 @@ class AsyncCachedDriver(AsyncWrappedServiceDriver):
             track_id=track_id,
         )
         
-        await self.redis.set(key, self._serialize_track(result), ex=43200) # 12 hours
+        await self.redis.set(key, self._serialize_track(result))
         return result
     
     async def search_tracks(self, query: str, limit: int = 10) -> List[Track]:
@@ -121,7 +121,7 @@ class AsyncCachedDriver(AsyncWrappedServiceDriver):
             limit=limit
         )
         
-        await self.redis.set(key, self._serialize_track_array(results), ex=600) # 10 minutes
+        await self.redis.set(key, self._serialize_track_array(results), ex=3600) # 1 hour
         return results
 
     async def get_track_by_isrc(self, isrc: str) -> Track:
@@ -134,5 +134,5 @@ class AsyncCachedDriver(AsyncWrappedServiceDriver):
             isrc=isrc,
         )
         
-        await self.redis.set(key, self._serialize_track(result), ex=43200) # 12 hours
+        await self.redis.set(key, self._serialize_track(result))
         return result
