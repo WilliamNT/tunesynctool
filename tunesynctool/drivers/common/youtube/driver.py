@@ -8,6 +8,7 @@ from .mapper import YouTubeMapper
 from ytmusicapi import YTMusic, OAuthCredentials
 from ytmusicapi.exceptions import YTMusicServerError, YTMusicError
 import ytmusicapi
+import time
 
 class YouTubeDriver(ServiceDriver):
     """
@@ -108,9 +109,15 @@ class YouTubeDriver(ServiceDriver):
                 description=''
             )
 
-            return self.get_playlist(
-                playlist_id=response
-            )
+            for attempt in range(5):
+                try:
+                    return self.get_playlist(
+                        playlist_id=response
+                    )
+                except PlaylistNotFoundException:
+                    time.sleep(1)
+
+            raise ServiceDriverException("Freshly created playlist couldn't be retrieved even after several retries.")
         except YTMusicError as e:
             raise ServiceDriverException(e)
 
