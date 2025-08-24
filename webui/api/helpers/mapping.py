@@ -1,5 +1,6 @@
 from tunesynctool.models import Track
 from tunesynctool.models.playlist import Playlist
+import re
 
 from api.models.track import TrackRead, TrackIdentifiersRead
 from api.models.entity import EntityIdentifiersBase, EntityMetaRead, EntityMultiAuthorRead, EntityAssetsBase, EntitySingleAuthorRead
@@ -88,6 +89,9 @@ def map_playlist_assets_between_domain_model_to_response_model(playlist: Playlis
             link = extra_data.get("images", [])[0].get("url") if extra_data.get("images") and len(extra_data.get("images")) > 0 else None
         case "youtube":
             link = extra_data.get("thumbnails", {})[0].get("url") if extra_data.get("thumbnails") and len(extra_data.get("thumbnails")) > 0 else None
+            pattern = re.compile(r'^(?:https?://)?(?:www\.)?gstatic\.com/youtube/media/ytm/images/pbg/playlist-empty-state-@\d+\.[a-z]+$', re.IGNORECASE)
+            if link and bool(pattern.match(link)):
+                link = None
         case "deezer", "subsonic":
             # TODO: add support for Deezer and Subsonic playlist cover art
             pass
