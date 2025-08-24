@@ -61,28 +61,12 @@ class AsyncCachedDriver(AsyncWrappedServiceDriver):
             playlist.serialize() for playlist in playlists
         ])
     
-    import re
-
     def normalize_query(self, query: str) -> str:
         query = query.strip().lower()
         query = re.sub(r"\s+", "_", query)
         query = re.sub(r"[^\w_]", "", query)
 
         return query
-
-    async def get_playlist_tracks(self, playlist_id: str, limit: int = 100) -> List[Track]:
-        key = f"provider_cache:{self.base.service_name}:playlist_tracks:playlist_id#{(playlist_id)}:limit#{limit}"
-        cached = await self.redis.get(key)
-        if cached:
-            return self._deserialize_track_array(cached)
-        
-        results = await self.base.get_playlist_tracks(
-            playlist_id=playlist_id,
-            limit=limit
-        )
-        
-        await self.redis.set(key, self._serialize_track_array(results), ex=300) # 5 minutes
-        return results
     
     async def get_playlist(self, playlist_id: str) -> Playlist:
         key = f"provider_cache:{self.base.service_name}:playlists:playlist_id#{(playlist_id)}"
