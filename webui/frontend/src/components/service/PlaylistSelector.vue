@@ -3,6 +3,7 @@ import type { PlaylistRead } from '@/api';
 import { ComboboxAnchor, ComboboxContent, ComboboxItem, ComboboxRoot, ComboboxTrigger, ComboboxViewport } from 'reka-ui';
 import { Icon } from '@iconify/vue';
 import { computed } from 'vue';
+import PlaylistSelectorCover from '../image/PlaylistSelectorCover.vue';
 
 const props = withDefaults(defineProps<{
   playlists?: PlaylistRead[];
@@ -48,7 +49,7 @@ const selectedPlaylist = computed(() => {
       <ComboboxViewport class="p-[5px]">
         <ComboboxItem v-for="playlist in playlists" :key="playlist.identifiers.provider_id" :value="playlist.identifiers.provider_id">
           <div class="flex gap-3 items-center hover:bg-zinc-700/50 cursor-pointer transition-all rounded-lg py-1 px-2">
-            <img :src="playlist.assets.cover_image" alt="" v-if="playlist.assets.cover_image" class="h-8 object-cover rounded-sm" />
+            <PlaylistSelectorCover :playlist />
             <div class="flex flex-col">
               <span class="truncate text-md text-zinc-300/90">{{ playlist.title }}</span>
               <span class="truncate text-sm text-zinc-500">By {{ playlist.author.primary ?? 'an unknown user' }}</span>

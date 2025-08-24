@@ -10,17 +10,23 @@ defineProps<{
 
 const coverImage = ref<HTMLImageElement | null>(null);
 const loadingError = ref(false);
+const isLoading = ref(false);
 
 const onCoverImageError = () => {
   if (coverImage.value) {
     coverImage.value.classList.add('opacity-0');
     loadingError.value = true;
+    isLoading.value = false;
   }
 };
 
 onMounted(() => {
   if (coverImage.value) {
+    isLoading.value = true;
     coverImage.value.addEventListener('error', onCoverImageError);
+    coverImage.value.addEventListener('load', () => {
+      isLoading.value = false;
+    });
   }
 });
 </script>
@@ -33,6 +39,6 @@ onMounted(() => {
       <Icon icon="material-symbols-light:sentiment-sad-rounded" class="w-14 h-14 text-zinc-500 block" v-if="loadingError" />
       <img :src="track.assets.cover_image" class="w-full h-full object-cover aspect-square" ref="coverImage" v-else />
     </template>
-    <Icon icon="material-symbols:music-note-rounded" class="w-14 h-14 text-zinc-500 block" v-else />
+    <Icon icon="material-symbols:music-note-rounded" class="w-14 h-14 text-zinc-500 block" :class="{ 'animate-pulse': isLoading }" v-else />
   </div>
 </template>
