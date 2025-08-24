@@ -92,7 +92,7 @@ class YouTubeDriver(ServiceDriver):
         try:
             response: dict = self.__youtube.get_playlist(
                 playlistId=playlist_id,
-                limit=limit,
+                limit=limit if limit > 0 else None,
             )
 
             tracks = response.get('tracks', [])
