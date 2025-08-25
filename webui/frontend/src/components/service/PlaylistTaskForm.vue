@@ -2,11 +2,12 @@
 import { CatalogApi, TasksApi, type PlaylistRead, type ProviderRead } from '@/api';
 import AppButton from '../button/AppButton.vue';
 import AppFormSpacer from '../form/AppFormSpacer.vue';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Icon } from '@iconify/vue';
 import ProviderSelector from '@/components/service/ProviderSelector.vue'
 import { get_access_token, get_api_configuration } from '@/services/api';
 import PlaylistSelector from './PlaylistSelector.vue';
+import { useRouteQuery } from '@vueuse/router';
 
 const props = defineProps<{
   providers: ProviderRead[];
@@ -22,12 +23,12 @@ const disallowSubmit = computed(() => {
   return !sourceProviderChoice.value || !targetProviderChoice.value || !selectedPlaylist.value;
 });
 
-const sourceProviderName = ref<string>();
+const sourceProviderName = useRouteQuery<string>('from_provider');
 const sourceProviderChoice = computed(() => {
   return providers.value.find((provider) => provider.provider_name === sourceProviderName.value);
 });
 
-const targetProviderName = ref<string>();
+const targetProviderName = useRouteQuery<string>('to_provider');
 const targetProviderChoice = computed(() => {
   return providers.value.find((provider) => provider.provider_name === targetProviderName.value);
 });
@@ -46,7 +47,7 @@ const fetchPlaylistsFromSourceProvider = async () => {
   }
 };
 
-const selectedPlaylistId = ref<string>();
+const selectedPlaylistId = useRouteQuery<string | undefined>('from_playlist');
 const selectedPlaylist = computed(() => {
   return transferablePlaylists.value.find((playlist) => playlist.identifiers.provider_id === selectedPlaylistId.value);
 });
@@ -66,6 +67,12 @@ watch(providers, (newProviders) => {
 watch(sourceProviderChoice, fetchPlaylistsFromSourceProvider, {
   immediate: true
 });
+
+watch(sourceProviderChoice, (newValue, oldValue) => {
+  if (newValue !== oldValue && selectedPlaylist.value?.meta.provider_name !== newValue) {
+    selectedPlaylistId.value = undefined;
+  }
+})
 
 const onSubmit = async () => {
   if (!sourceProviderChoice.value || !targetProviderChoice.value || !selectedPlaylist.value) {

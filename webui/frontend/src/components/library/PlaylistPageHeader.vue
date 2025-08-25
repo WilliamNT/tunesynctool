@@ -35,7 +35,7 @@ const transferArguments = computed(() => {
         }">
           Open On {{ provider?.ui.display_name ?? 'provider' }}
         </a>
-        <RouterLink :to="{ name: 'tasks', query: transferArguments }" class="px-7 py-2 mt-3 rounded-2xl transition-colors block text-center border-1 text-black border-white bg-white hover:bg-slate-200 hover:border-slate-200" target="_blank" :class="{
+        <RouterLink :to="{ name: 'tasks', query: transferArguments }" class="px-7 py-2 mt-3 rounded-2xl transition-colors block text-center border-1 text-black border-white bg-white hover:bg-slate-200 hover:border-slate-200" :class="{
           'opacity-45 cursor-not-allowed': !playlist
         }">
           Transfer
