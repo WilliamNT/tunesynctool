@@ -1,17 +1,22 @@
 import { Configuration } from '@/api';
+import { useLocalStorage } from '@vueuse/core';
+import { computed } from 'vue';
 
 const ACCESS_TOKEN_KEY = 'access_token';
 
+export const accessToken = useLocalStorage<string | undefined>(ACCESS_TOKEN_KEY, undefined);
+export const isAuthenticated = computed(() => !!accessToken.value);
+
 export function get_access_token(): string | undefined {
-    return localStorage.getItem(ACCESS_TOKEN_KEY) ?? undefined;
+    return accessToken.value;
 }
 
 export function set_access_token(access_token: string): void {
-    localStorage.setItem(ACCESS_TOKEN_KEY, access_token);
+    accessToken.value = access_token;
 }
 
 export function delete_access_token(): void {
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    accessToken.value = undefined;
 }
 
 export function is_access_token_set(): boolean {

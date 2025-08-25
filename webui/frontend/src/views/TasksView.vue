@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-use-v-if-with-v-for -->
 <script setup lang="ts">
 import { get_access_token, get_api_configuration } from '@/services/api';
 import { ProvidersApi, TasksApi, TaskStatus, type PlaylistTaskStatus, type ProviderRead } from '@/api';

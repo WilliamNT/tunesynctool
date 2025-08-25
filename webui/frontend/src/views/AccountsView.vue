@@ -3,7 +3,7 @@ import AppPageHeader from '@/components/generic/AppPageHeader.vue';
 import AppContainer from '@/components/generic/AppContainer.vue';
 import { type ProviderRead, ProvidersApi, YouTubeApi, DeezerApi, SubsonicApi, SpotifyApi } from '@/api';
 import { get_authenticated_api_configuration } from '@/services/api';
-import { onMounted, provide, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { isAxiosError } from 'axios';
 import { useRouter } from 'vue-router';
 import ServiceProvider from '@/components/library/ServiceProvider.vue';
@@ -31,16 +31,16 @@ const unlinkProvider = async (provider: ProviderRead) => {
   try {
     switch (provider.provider_name) {
       case 'youtube':
-        await new YouTubeApi(get_authenticated_api_configuration()).unlinkYouTubeAccount();
+        await new YouTubeApi(get_authenticated_api_configuration()).unlinkYouTubeAccount(provider.provider_name);
         break;
       case 'deezer':
-        await new DeezerApi(get_authenticated_api_configuration()).unlinkDeezerAccount();
+        await new DeezerApi(get_authenticated_api_configuration()).unlinkDeezerAccount(provider.provider_name);
         break;
       case 'subsonic':
-        await new SubsonicApi(get_authenticated_api_configuration()).unlinkSubsonicAccount();
+        await new SubsonicApi(get_authenticated_api_configuration()).unlinkSubsonicAccount(provider.provider_name);
         break;
       case 'spotify':
-        await new SpotifyApi(get_authenticated_api_configuration()).unlinkSpotifyAccount();
+        await new SpotifyApi(get_authenticated_api_configuration()).unlinkSpotifyAccount(provider.provider_name);
         break;
       default:
         console.error('Unknown provider:', provider.provider_name);

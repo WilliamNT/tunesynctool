@@ -1,3 +1,4 @@
+import { is_access_token_set } from '@/services/api';
 import { createRouter, createWebHistory } from 'vue-router';
 
 const router = createRouter({
@@ -27,8 +28,31 @@ const router = createRouter({
           path: '/accounts',
           name: 'accounts',
           component: () => import('../views/AccountsView.vue'),
+        },
+        {
+          path: '/login',
+          name: 'login',
+          component: () => import('../views/LoginView.vue'),
+        },
+        {
+          path: '/register',
+          name: 'register',
+          component: () => import('../views/RegistrationView.vue'),
         }
     ],
+});
+
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = is_access_token_set();
+  const unauthenticatedRoutes = ['login', 'register'];
+
+  if (to.name && unauthenticatedRoutes.includes(to.name as string) && isAuthenticated) {
+    next({ name: 'home' });
+  } else if (!isAuthenticated && !unauthenticatedRoutes.includes(to.name as string)) {
+    next({ name: 'login' });
+  } else {
+    next();
+  }
 });
 
 export default router;

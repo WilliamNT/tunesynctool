@@ -4,7 +4,7 @@ import AppCard from '@/components/card/AppCard.vue';
 import AppField from '@/components/form/AppField.vue';
 import AppFormSpacer from '@/components/form/AppFormSpacer.vue';
 import AppH1 from '@/components/text/AppH1.vue';
-import { AuthenticationApi } from '@/api';
+import { AuthenticationApi, UsersApi } from '@/api';
 import { set_access_token, get_api_configuration } from '@/services/api';
 import { useForm, useIsFormValid } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
@@ -46,20 +46,16 @@ const onSubmit = handleSubmit(async (values) => {
   const { username, password } = values;
 
   const config = get_api_configuration();
-  const authApi = new AuthenticationApi(config);
+  const usersApi = new UsersApi(config);
 
   try {
-    const response = await authApi.getToken(username, password);
-
-    const token = response.data.access_token;
-    set_access_token(token);
-
-    router.push({ name: 'home' });
+    await usersApi.createUser({ username, password });
+    router.push({ name: 'login' });
   } catch (e) {
     if (isAxiosError(e)) {
       switch (e.response?.status) {
-        case 401:
-          setErrorForAllFields('Invalid username or password');
+        case 400:
+          setErrorForAllFields(e.response.data.detail || 'Something went wrong');
           break;
         case 422:
           console.error('Invalid request payload (got a 422)', e.response.data);
@@ -87,7 +83,7 @@ const isFormInvalid = computed(() => {
     <AppCard class="max-w-md m-auto p-5">
       <form @submit.prevent="onSubmit" novalidate>
         <h1 class="text-4xl text-white text-center font-normal">
-          Sign In
+          Sign Up
         </h1>
         <hr class="border-zinc-700 border-0.5 mb-5 mt-6">
         <AppFormSpacer>
@@ -95,10 +91,10 @@ const isFormInvalid = computed(() => {
             v-bind="usernameAttributes" :error="errors.username" />
           <AppField placeholder="Password" label="Password" name="password" type="password" v-model="password"
             v-bind="passwordAttributes" :error="errors.password" />
-          <AppButton type="submit" :disabled="isFormInvalid">Sign In</AppButton>
+          <AppButton type="submit" :disabled="isFormInvalid">Sign Up</AppButton>
           <p class="font-normal text-md text-center">
             or
-            <RouterLink :to="{ name: 'register' }" class="text-lime-400 hover:text-lime-500">sign up</RouterLink>
+            <RouterLink :to="{ name: 'login' }" class="text-lime-400 hover:text-lime-500">sign in</RouterLink>
           </p>
         </AppFormSpacer>
       </form>
