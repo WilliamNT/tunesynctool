@@ -1,18 +1,15 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
-import { AvatarFallback, AvatarRoot, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuRoot, DropdownMenuTrigger, } from 'reka-ui';
-import { delete_access_token, is_access_token_set } from '@/services/api';
+import { accessToken } from '@/services/api';
 import { useRouter } from 'vue-router';
-import { computed, toRef } from 'vue';
+import { computed } from 'vue';
 
 const router = useRouter();
 
 const handleSignOut = () => {
-  delete_access_token();
+  accessToken.value = undefined;
   router.push({ name: 'login' });
 }
-
-const isAuthenticated = computed(() => is_access_token_set());
 
 const currentRoute = computed(() => router.currentRoute.value.name);
 </script>
@@ -69,6 +66,17 @@ const currentRoute = computed(() => router.currentRoute.value.name);
         </RouterLink>
       </li>
     </ul>
+    <div class="mt-auto">
+      <hr class="mb-3 border-zinc-800" />
+      <button @click="handleSignOut" class="flex items-center px-4 py-3 w-full hover:text-red-400 rounded-full transition-colors font-normal cursor-pointer">
+        <div class="me-2.5 inline-block text-xl">
+          <transition name="bounce" mode="out-in">
+            <Icon icon="material-symbols-light:logout-rounded" />
+          </transition>
+        </div>
+        <span>Sign Out</span>
+      </button>
+    </div>
   </nav>
 </template>
 
