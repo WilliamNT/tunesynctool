@@ -33,7 +33,7 @@ onMounted(() => {
 
 <template>
   <div
-    class="flex items-center justify-center w-16 h-16 rounded-md bg-zinc-600/40 ring-1 ring-zinc-700 relative overflow-hidden">
+    class="flex items-center justify-center shrink-0 w-16 h-16 rounded-md bg-zinc-600/40 ring-1 ring-zinc-700 relative overflow-hidden">
     <img :src="provider?.ui.favicon" :alt="provider?.ui.display_name" class="absolute w-5 h-5 right-0.5 bottom-0.5" v-if="provider" />
     <template v-if="track.assets.cover_image">
       <Icon icon="material-symbols-light:sentiment-sad-rounded" class="w-14 h-14 text-zinc-500 block" v-if="loadingError" />
