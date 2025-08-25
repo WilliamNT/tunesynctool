@@ -3,6 +3,7 @@ import type { PlaylistRead, ProviderRead } from '@/api';
 import AppCard from '../card/AppCard.vue';
 import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
+import { encode_entity_id } from '@/utils/id';
 
 const props = defineProps<{
   playlist: PlaylistRead;
@@ -10,10 +11,11 @@ const props = defineProps<{
 }>();
 
 const provider = computed(() => props.providers.find((p) => p.provider_name === props.playlist.meta.provider_name));
+const playlistId = computed(() => encode_entity_id(props.playlist.meta.provider_name, props.playlist.identifiers.provider_id));
 </script>
 
 <template>
-  <a :href="playlist.meta.share_url ?? `#${playlist.meta.provider_name}-${playlist.identifiers.provider_id}`" :target="playlist.meta.share_url ? '_blank' : undefined">
+  <RouterLink :to="{ name: 'playlist', params: { id: playlistId } }">
     <AppCard class="shadow relative overflow-hidden">
       <div class="flex flex-col gap-2 max-w-40">
         <div class="flex items-center justify-center w-40 h-40 rounded-md bg-zinc-600/40 ring-1 ring-zinc-700 relative overflow-hidden">
@@ -31,5 +33,5 @@ const provider = computed(() => props.providers.find((p) => p.provider_name === 
         </div>
       </div>
     </AppCard>
-  </a>
+  </RouterLink>
 </template>

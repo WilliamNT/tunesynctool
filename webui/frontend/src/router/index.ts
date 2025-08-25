@@ -38,6 +38,15 @@ const router = createRouter({
           path: '/register',
           name: 'register',
           component: () => import('../views/RegistrationView.vue'),
+        },
+        {
+          path: '/playlists',
+          redirect: '/'
+        },
+        {
+          path: '/playlists/:id',
+          name: 'playlist',
+          component: () => import('../views/PlaylistView.vue'),
         }
     ],
 });
