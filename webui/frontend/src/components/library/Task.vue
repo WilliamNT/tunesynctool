@@ -7,6 +7,7 @@ import { get_access_token, get_api_configuration } from '@/services/api';
 import { Icon } from '@iconify/vue/dist/iconify.js';
 import TaskCover from '../image/TaskCover.vue';
 import { intervalToDuration, formatDuration } from 'date-fns';
+import { encode_entity_id } from '@/utils/id';
 
 const props = defineProps<{
   task: PlaylistTaskStatus;
@@ -41,7 +42,10 @@ onMounted(async () => {
 
 <template>
   <AppCard class="rounded-2xl flex gap-4 relative overflow-hidden">
-    <TaskCover :provider="source_provider" :track="task.progress.track" :playlist class="my-auto" />
+    <RouterLink v-if="playlist?.meta.provider_name && playlist?.identifiers.provider_id" :to="{ name: 'playlist', params: { id: encode_entity_id(playlist.meta.provider_name, playlist.identifiers.provider_id) } }">
+      <TaskCover :provider="source_provider" :track="task.progress.track" :playlist class="my-auto" />
+    </RouterLink>
+    <TaskCover :provider="source_provider" :track="task.progress.track" :playlist class="my-auto" v-else />
     <div class="flex flex-col gap-0.5">
       <h3 class="truncate font-black text-white text-lg m-0 p-0">{{ playlist?.title ?? 'Loading...' }}</h3>
       <div class="text-xs mb-1 text-zinc-400" v-if="task.progress.track">

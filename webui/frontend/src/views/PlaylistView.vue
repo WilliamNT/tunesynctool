@@ -4,12 +4,13 @@ import AppContainer from '@/components/generic/AppContainer.vue';
 import { get_authenticated_api_configuration } from '@/services/api';
 import { decode_entity_id } from '@/utils/id';
 import { useRouteParams } from '@vueuse/router';
-import { computed, onBeforeMount, onMounted, ref } from 'vue';
+import { computed, onBeforeMount, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { isAxiosError } from 'axios';
 import PlaylistPageHeader from '@/components/library/PlaylistPageHeader.vue';
 import AppLoaderScreen from '@/components/generic/AppLoaderScreen.vue';
 import TrackResult from '@/components/library/TrackResult.vue';
+import ColorThief from 'colorthief';
 
 const router = useRouter();
 
@@ -117,10 +118,30 @@ onMounted(async () => {
   await fetchProviders();
   isLoading.value = false;
 });
+
+const colorThief = new ColorThief();
+const tint = ref<string>();
+
+watch(() => playlist.value?.assets.cover_image, (newSrc) => {
+  if (!newSrc) {
+    tint.value = undefined;
+    return;
+  }
+
+  const img = document.createElement('img');
+  img.crossOrigin = 'anonymous'; // important for CORS
+  img.src = newSrc;
+
+  img.onload = () => {
+    const dominantColor = colorThief.getColor(img);
+    tint.value = `rgb(${dominantColor.join(',')})`;
+  };
+});
+
 </script>
 
 <template>
-  <AppContainer is="main">
+  <AppContainer is="main" :tint>
     <AppLoaderScreen v-if="isLoading" />
     <template v-else>
       <PlaylistPageHeader :playlist :provider="playlistsProvider" />
