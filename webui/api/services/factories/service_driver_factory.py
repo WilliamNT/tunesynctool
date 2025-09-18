@@ -16,6 +16,7 @@ from api.models.user import User
 from api.helpers.ytmusicapi import CustomYTMusicAPIOAuthCredentials
 from api.exceptions.auth import OAuthTokenRefreshError
 from api.drivers.cached.async_cached_driver import AsyncCachedDriver
+from api.core.config import config
 
 class ServiceDriverFactory:
     """
@@ -26,10 +27,26 @@ class ServiceDriverFactory:
         self.provider_name = provider_name
         self.credentials_service = credentials_service
 
+    def check_if_provider_disabled(self) -> bool:
+        match self.provider_name:
+            case "spotify":
+                return config.DISABLE_SPOTIFY_PROVIDER
+            case "youtube":
+                return config.DISABLE_GOOGLE_PROVIDER
+            case "subsonic":
+                return config.DISABLE_SUBSONIC_PROVIDER
+            case _:
+                return False
+
     async def create(self, user: User) -> AsyncWrappedServiceDriver:
         """
         Returns a ready to use AsyncWrappedServiceDriver implementation for the specified provider.
         """
+
+        if self.check_if_provider_disabled():
+            error_message = f"Can't instantiate service driver for provider \"{self.provider_name}\" because it is either partially or entirely unconfigured. Please verify your configuration file."
+            logger.warning(error_message)
+            raise ValueError(f"User error: {error_message}")
 
         credentials = await self.credentials_service.get_service_credentials(
             user=user,

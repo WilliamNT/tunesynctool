@@ -32,6 +32,9 @@ class SpotifyOAuth2Handler(BaseOAuth2Handler):
             auth_service=auth_service
         )
 
+    async def is_provider_available(self) -> bool:
+        return not config.DISABLE_SPOTIFY_PROVIDER
+
     def _get_flow(self, state: str) -> SpotifyOAuth:
         return SpotifyOAuth(
             client_id=config.SPOTIFY_CLIENT_ID,

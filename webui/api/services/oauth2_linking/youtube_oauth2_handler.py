@@ -23,6 +23,9 @@ class YouTubeOAuth2Handler(BaseOAuth2Handler):
             auth_service=auth_service
         )
 
+    async def is_provider_available(self) -> bool:
+        return not config.DISABLE_GOOGLE_PROVIDER
+
     def _get_flow(self, state: str) -> Flow:
         flow = Flow.from_client_config(
             client_config={

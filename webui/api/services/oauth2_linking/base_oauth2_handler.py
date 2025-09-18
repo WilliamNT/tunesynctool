@@ -25,6 +25,14 @@ class BaseOAuth2Handler(ABC):
 
         pass
 
+    @abstractmethod
+    async def is_provider_available(self) -> bool:
+        """
+        Abstract method to perform pre-checks before contacting the third-party provider.
+        """
+        
+        pass
+
     async def request_user_authorization(self, state: str) -> RedirectResponse:
         """
         Initiates the authorization process.
@@ -32,6 +40,9 @@ class BaseOAuth2Handler(ABC):
         Redirects the user to the authorization page.
         The user will be asked to log in and authorize the application.
         """
+
+        if not (await self.is_provider_available()):
+            self._raise_flow_exception("Provider unavailable")
 
         user = await self.auth_service.resolve_user_from_oauth2_state(
             state=state,
@@ -107,7 +118,7 @@ class BaseOAuth2Handler(ABC):
     
     def _raise_flow_exception(self, message: Optional[str] = None) -> None:
         """
-        Raises an HTTPException with a 400 status code and a message indicating that the Google authorization flow failed.
+        Raises an HTTPException with a 400 status code and a message indicating that the OAuth2 authorization flow failed.
         """
         
         raise HTTPException(
@@ -117,7 +128,7 @@ class BaseOAuth2Handler(ABC):
     
     def _handle_callback_error(self, error: Optional[str], decoded_state: OAuth2State) -> Optional[RedirectResponse]:
         if error:
-            logger.warning(f"Google authorization flow failed. Google said: \"{error}\".")
+            logger.warning(f"OAuth2 authorization flow failed. Provider said: \"{error}\".")
 
             return RedirectResponse(
                 url=decoded_state.redirect_uri,

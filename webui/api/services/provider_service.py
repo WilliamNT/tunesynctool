@@ -5,6 +5,7 @@ from api.models.service import ProviderAboutRead, ProviderRead, ProviderLinkingR
 from api.models.collection import Collection
 from api.services.credentials_service import CredentialsService, get_credentials_service
 from api.services.auth_service import AuthService, get_auth_service
+from api.core.config import config
 
 class ProviderService:
     def __init__(self, credentials_service: CredentialsService, auth_service: AuthService) -> None:
@@ -24,7 +25,7 @@ class ProviderService:
 
         spotify = ProviderRead(
             provider_name="spotify",
-            is_configured=True,
+            is_configured=not config.DISABLE_SPOTIFY_PROVIDER,
             linking=ProviderLinkingRead(
                 link_type=ProviderLinkType.OAUTH2,
                 target_url=str(request.url_for("spotify:authorize")),
@@ -42,7 +43,7 @@ class ProviderService:
 
         youtube = ProviderRead(
             provider_name="youtube",
-            is_configured=True,
+            is_configured=not config.DISABLE_GOOGLE_PROVIDER,
             linking=ProviderLinkingRead(
                 link_type=ProviderLinkType.OAUTH2,
                 target_url=str(request.url_for("youtube:authorize")),
@@ -78,7 +79,7 @@ class ProviderService:
 
         subsonic = ProviderRead(
             provider_name="subsonic",
-            is_configured=True,
+            is_configured=not config.DISABLE_SUBSONIC_PROVIDER,
             linking=ProviderLinkingRead(
                 link_type=ProviderLinkType.FORM,
                 target_url=str(request.url_for("subsonic:set_subsonic_credentials")),
