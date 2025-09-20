@@ -1,5 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator
+from sqlmodel import SQLModel, Field as DBField, JSON, Column
+import json
 
 from .entity import EntityMetaRead, EntityMultiAuthorRead, EntityIdentifiersBase, EntityAssetsBase
     
@@ -58,3 +60,61 @@ class TrackMatchCreate(TrackBase):
     """
 
     identifiers: TrackIdentifiersThirdPartyBase = Field(description="Identifiers of the track.")
+
+class CachedTrack(SQLModel, table=True):
+    """
+    Represents a cached track.
+    """
+
+    __tablename__ = "tracks"
+    
+    id: Optional[int] = DBField(default=None, primary_key=True)
+    title: str = DBField()
+    album_name: Optional[str] = DBField()
+    duration: Optional[int] = DBField(default=None)
+    track_number: Optional[int] = DBField(default=None)
+    release_year: Optional[int] = DBField(default=None)
+    author: Optional[str] = DBField(default=None)
+
+    collaborators_json: Optional[dict] = DBField(sa_column=Column(JSON))
+    """
+    Should be treated as a JSON list. Do not use directly. Use `collaborators` instead.
+    """
+    
+    @property
+    def collaborators(self) -> list:
+        """
+        Deserializes the `collaborators_json` JSON into a Python list.
+
+        If something went wrong, an empty list is returned.
+        """
+
+        try:
+            deserialized = json.loads(self.collaborators_json)
+            if isinstance(deserialized, list):
+                if all(isinstance(item, str) for item in deserialized):
+                    return deserialized
+                else:
+                    return []
+            else:
+                return []
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    @collaborators.setter
+    def collaborators(self, value: Optional[list]):
+        """
+        Sets and serializes the new value to JSON.
+        """
+
+        if value is None:
+            self.collaborators_json = json.dumps([])
+        elif isinstance(value, list):
+            if not all(isinstance(item, str) for item in value):
+                raise ValueError("collaborators can only be a list of strings")
+            
+            self.collaborators_json = json.dumps(value)
+        else:
+            raise ValueError("collaborators can only be a list or None")
+
+
