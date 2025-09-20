@@ -53,6 +53,9 @@ class ServiceDriverFactory:
             service_name=self.provider_name
         )
 
+        if not credentials:
+            raise ValueError(f"CredentialsService.get_service_credentials() returned None (user does not have credentials for this provider)")
+
         try:
             config: Union[Configuration | GoogleCredentials | SpotifyOAuth | CustomYTMusicAPIOAuthCredentials] = await self._get_config(
                 credentials=credentials,
