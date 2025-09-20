@@ -3,7 +3,7 @@ import AppPageHeader from '@/components/generic/AppPageHeader.vue';
 import AppContainer from '@/components/generic/AppContainer.vue';
 import { type ProviderRead, ProvidersApi, YouTubeApi, DeezerApi, SubsonicApi, SpotifyApi } from '@/api';
 import { get_authenticated_api_configuration } from '@/services/api';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { isAxiosError } from 'axios';
 import { useRouter } from 'vue-router';
 import ServiceProvider from '@/components/library/ServiceProvider.vue';
@@ -18,6 +18,8 @@ const providersApi = new ProvidersApi(get_authenticated_api_configuration());
 const providers = ref<ProviderRead[]>([]);
 
 const router = useRouter();
+
+const unconfiguredProviderCount = computed(() => providers.value.filter((p) => p.is_configured === false).length)
 
 const loadProviders = async () => {
   providers.value = await useProviders();
@@ -109,28 +111,30 @@ const goToOAuth2Page = async (provider: ProviderRead) => {
     </AppPageHeader>
     <div class="flex flex-col gap-4 mt-8">
       <template v-for="provider in providers" :key="provider.provider_name">
-        <ServiceProvider :provider v-if="provider.linking.linked" :id="provider.provider_name">
-          <template #linking>
-            <AppButton type="button" tone="negative" @click="unlinkProvider(provider)">
-              <Icon icon="material-symbols:link-off-rounded" class="inline-block text-2xl me-3" />UNLINK ACCOUNT
-            </AppButton>
-          </template>
-        </ServiceProvider>
-        <ServiceProvider :provider v-else :id="provider.provider_name">
-          <template v-if="provider.linking.link_type === 'oauth2'" #linking>
-            <AppButton type="button" @click="goToOAuth2Page(provider)">
-              <Icon icon="material-symbols:add-link-rounded" class="inline-block text-2xl me-3" />LINK ACCOUNT
-            </AppButton>
-          </template>
-          <template v-else-if="provider.linking.link_type === 'form'" #form>
-            <SubsonicLoginForm v-if="provider.provider_name === 'subsonic'" @linked="loadProviders" />
-            <DeezerARLForm v-else-if="provider.provider_name === 'deezer'" @linked="loadProviders" />
-          </template>
-        </ServiceProvider>
+        <template v-if="provider.is_configured">
+          <ServiceProvider :provider v-if="provider.linking.linked" :id="provider.provider_name">
+            <template #linking>
+              <AppButton type="button" tone="negative" @click="unlinkProvider(provider)">
+                <Icon icon="material-symbols:link-off-rounded" class="inline-block text-2xl me-3" />UNLINK ACCOUNT
+              </AppButton>
+            </template>
+          </ServiceProvider>
+          <ServiceProvider :provider v-else :id="provider.provider_name">
+            <template v-if="provider.linking.link_type === 'oauth2'" #linking>
+              <AppButton type="button" @click="goToOAuth2Page(provider)">
+                <Icon icon="material-symbols:add-link-rounded" class="inline-block text-2xl me-3" />LINK ACCOUNT
+              </AppButton>
+            </template>
+            <template v-else-if="provider.linking.link_type === 'form'" #form>
+              <SubsonicLoginForm v-if="provider.provider_name === 'subsonic'" @linked="loadProviders" />
+              <DeezerARLForm v-else-if="provider.provider_name === 'deezer'" @linked="loadProviders" />
+            </template>
+          </ServiceProvider>
+        </template>
       </template>
     </div>
     <div class="text-sm text-zinc-700 py-5 flex flex-col gap-2 font-medium">
-      <p>If you run into trouble, make sure you have properly configured all providers you wish to use.</p>
+      <p><b v-if="unconfiguredProviderCount">{{ unconfiguredProviderCount }} provider{{ unconfiguredProviderCount === 1 ? ' is' : 's are' }} hidden because {{ unconfiguredProviderCount === 1 ? 'it is' : 'they are' }} not configured.</b> If you run into trouble, make sure you have properly configured all providers you wish to use.</p>
       <p>Services listed on this page are not affiliated with the tunesynctool project in any way. Tunesynctool cannot
         guarantee that the accounts you link won't get suspended or limited in any way. Use tunesynctool at your own
         risk.

@@ -23,16 +23,37 @@ const providers = ref<ProviderRead[]>([]);
 const tasks = ref<PlaylistTaskStatus[]>([]);
 let intervalId: number | undefined = undefined;
 
+function isProviderAvailable(providerName: string): boolean {
+  return providers.value.some(p => p.provider_name === providerName && p.is_configured);
+}
+
 const historyTasks = computed(() => {
   return tasks.value.filter(task => task.status !== TaskStatus.Running && task.status !== TaskStatus.OnHold && task.status !== TaskStatus.Queued);
+});
+
+const hiddenHistoryTasks = computed(() => {
+  return historyTasks.value.filter(task => providers.value.some(p => p.provider_name === task.arguments.from_provider));
+});
+
+const hiddenHistoryTasksCount = computed(() => {
+  return hiddenHistoryTasks.value.length;
+
 });
 
 const runningTasks = computed(() => {
   return tasks.value.filter(task => task.status === TaskStatus.Running || task.status === TaskStatus.OnHold);
 });
 
+const hiddenRunningTasksCount = computed(() => {
+  return runningTasks.value.filter(task => providers.value.some(p => p.provider_name === task.arguments.from_provider)).length;
+});
+
 const queuedTasks = computed(() => {
   return tasks.value.filter(task => task.status === TaskStatus.Queued);
+});
+
+const hiddenQueuedTasksCount = computed(() => {
+  return queuedTasks.value.filter(task => providers.value.some(p => p.provider_name === task.arguments.from_provider)).length;
 });
 
 const fetchTasks = async () => {
@@ -86,25 +107,34 @@ onUnmounted(() => {
         </AppCard>
         <div class="flex items-center gap-3 w-full mb-3 mt-8">
           <h2 class="text-2xl">Running now</h2>
+          <p class="text-sm text-zinc-400 font-normal" v-if="hiddenRunningTasksCount > 0">({{ hiddenRunningTasksCount }} hidden)</p>
           <hr class="flex-1 border-zinc-700 border-0.5 ms-5" />
         </div>
-        <Task :providers :task v-for="task in runningTasks" :key="task.task_id" v-if="runningTasks.length > 0" />
+        <template v-for="task in runningTasks" :key="task.task_id" v-if="runningTasks.length > 0" >
+          <Task :providers :task v-if="isProviderAvailable(task.arguments.from_provider)" />
+        </template>
         <p class="text-sm text-zinc-400 font-normal" v-else>You have no running tasks.</p>
       </div>
       <div class="flex flex-col gap-3 mt-8">
         <div class="flex items-center gap-3 w-full mb-3">
           <h2 class="text-2xl">In queue</h2>
+          <div class="text-sm text-zinc-400 font-normal" v-if="hiddenQueuedTasksCount > 0">({{ hiddenQueuedTasksCount }} hidden)</div>
           <hr class="flex-1 border-zinc-700 border-0.5 ms-5" />
         </div>
-        <Task :providers :task v-for="task in queuedTasks" :key="task.task_id" v-if="queuedTasks.length > 0" />
+        <template v-for="task in queuedTasks" :key="task.task_id" v-if="queuedTasks.length > 0">
+          <Task :providers :task v-if="isProviderAvailable(task.arguments.from_provider)" />
+        </template>
         <p class="text-sm text-zinc-400 font-normal" v-else>You have no tasks waiting in queue.</p>
       </div>
       <div class="flex flex-col gap-3 mt-8">
         <div class="flex items-center gap-3 w-full mb-3">
           <h2 class="text-2xl">History</h2>
+          <div class="text-xs text-zinc-400 font-normal" v-if="hiddenHistoryTasksCount > 0">({{ hiddenHistoryTasksCount }} hidden)</div>
           <hr class="flex-1 border-zinc-700 border-0.5 ms-5" />
         </div>
-        <Task :providers :task v-for="task in historyTasks" :key="task.task_id" v-if="historyTasks.length > 0" />
+        <template v-for="task in historyTasks" :key="task.task_id" v-if="historyTasks.length > 0">
+          <Task :providers :task v-if="isProviderAvailable(task.arguments.from_provider)" />
+        </template>
         <p class="text-sm text-zinc-400 font-normal" v-else>You don't have any finished tasks yet.</p>
       </div>
     </template>
