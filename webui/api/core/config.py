@@ -27,7 +27,7 @@ class Config(BaseSettings):
     @property
     def DISABLE_SPOTIFY_PROVIDER(self) -> bool:
         try:
-            return self.validate_dependant_fields(
+            return not self.validate_dependant_fields(
                 fields=[self.SPOTIFY_CLIENT_ID, self.SPOTIFY_CLIENT_SECRET],
                 group_name="Spotify"
             )
@@ -42,7 +42,7 @@ class Config(BaseSettings):
     @property
     def DISABLE_SUBSONIC_PROVIDER(self) -> bool:
         try:
-            return self.validate_dependant_fields(
+            return not self.validate_dependant_fields(
                 fields=[self.SUBSONIC_BASE_URL, self.SUBSONIC_PORT],
                 group_name="Subsonic"
             )
@@ -56,7 +56,7 @@ class Config(BaseSettings):
     @property
     def DISABLE_GOOGLE_PROVIDER(self) -> bool:
         try:
-            return self.validate_dependant_fields(
+            return not self.validate_dependant_fields(
                 fields=[self.GOOGLE_CLIENT_ID, self.GOOGLE_CLIENT_SECRET],
                 group_name="Google OAuth2 credentials"
             )
