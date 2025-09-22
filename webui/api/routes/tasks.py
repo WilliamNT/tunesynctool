@@ -1,9 +1,10 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, Query, Body, status
+from uuid import UUID
+from fastapi import APIRouter, Depends, Path, Query, Body, status
 
 from api.models.track import TrackRead, TrackMatchCreate
 from api.models.search import SearchParamsBase
-from api.models.task import PlaylistTransferCreate, PlaylistTaskStatus
+from api.models.task import PlaylistTaskCreate, PlaylistTaskStatus
 from api.core.security import oauth2_scheme
 from api.services.track_matching_service import TrackMatchingService, get_track_matching_service
 from api.core.context import RequestContext, get_request_context
@@ -66,7 +67,7 @@ async def match_track(
 )
 async def transfer_playlist(
     request_context: Annotated[RequestContext, Depends(get_request_context)],
-    body: Annotated[PlaylistTransferCreate, Body()],
+    body: Annotated[PlaylistTaskCreate, Body()],
     service: Annotated[TaskService, Depends(get_task_service)],
 ) -> PlaylistTaskStatus:
     """
@@ -97,5 +98,36 @@ async def all_tasks(
     """
 
     return await service.handle_compiling_tasks_for_user(
+        user=request_context.user
+    )
+
+@router.delete(
+    path="/{task_id}",
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "description": "The task does not exist."
+        },
+        status.HTTP_200_OK: {
+            "description": "Deletion successful."
+        }
+    },
+    summary="Manually cancel a task",
+    operation_id="cancelTask",
+    name="tasks:cancel_task",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+async def cancel_task(
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    task_id: Annotated[UUID, Path()],
+    service: Annotated[TaskService, Depends(get_task_service)],
+) -> None:
+    """
+    Cancels the specified task. Users can only cancel their own tasks.
+
+    It may take a few seconds for the background workers to honor this request.
+    """
+
+    return await service.dispatch_task_cancellation(
+        task_id=task_id,
         user=request_context.user
     )

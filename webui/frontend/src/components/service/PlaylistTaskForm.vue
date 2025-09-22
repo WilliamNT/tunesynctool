@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CatalogApi, TasksApi, type PlaylistRead, type ProviderRead } from '@/api';
+import { CatalogApi, TaskKind, TasksApi, type PlaylistRead, type ProviderRead } from '@/api';
 import AppButton from '../button/AppButton.vue';
 import AppFormSpacer from '../form/AppFormSpacer.vue';
 import { computed, ref, watch } from 'vue';
@@ -85,6 +85,7 @@ const onSubmit = async () => {
     from_provider: sourceProviderChoice.value.provider_name,
     to_provider: targetProviderChoice.value.provider_name,
     from_playlist: selectedPlaylist.value?.identifiers.provider_id,
+    kind: TaskKind.PlaylistTransfer, // hardcoded for now, but will need to be dynamic later
   })
 
   selectedPlaylistId.value = undefined;

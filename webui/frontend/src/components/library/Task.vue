@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CatalogApi, type PlaylistRead, type PlaylistTaskStatus, type ProviderRead, TaskStatus } from '@/api';
+import { CatalogApi, type PlaylistRead, type PlaylistTaskStatus, type ProviderRead, TasksApi, TaskStatus } from '@/api';
 import { computed, onMounted } from 'vue';
 import AppCard from '../card/AppCard.vue';
 import { ref } from 'vue';
@@ -8,11 +8,14 @@ import { Icon } from '@iconify/vue/dist/iconify.js';
 import TaskCover from '../image/TaskCover.vue';
 import { intervalToDuration, formatDuration } from 'date-fns';
 import { encode_entity_id } from '@/utils/id';
+import { isAxiosError } from 'axios';
 
 const props = defineProps<{
   task: PlaylistTaskStatus;
   providers: ProviderRead[];
 }>();
+
+const emit = defineEmits(['cancel']);
 
 const source_provider = computed(() => props.providers.find((p) => p.provider_name === props.task.arguments.from_provider));
 const target_provider = computed(() => props.providers.find((p) => p.provider_name === props.task.arguments.to_provider));
@@ -33,15 +36,49 @@ const config = get_api_configuration(
 );
 
 const catalogApi = new CatalogApi(config);
+const tasksApi = new TasksApi(config);
 
 onMounted(async () => {
-  const playlistResponse = await catalogApi.getPlaylist(props.task.arguments.from_playlist, props.task.arguments.from_provider);
-  playlist.value = playlistResponse.data;
+  try {
+    const playlistResponse = await catalogApi.getPlaylist(props.task.arguments.from_playlist, props.task.arguments.from_provider);
+    playlist.value = playlistResponse.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error(`Failed to fetch playlist details (playlist: ${props.task.arguments.from_playlist}, provider: ${props.task.arguments.from_provider}):`, error.response?.data ?? error.message);
+    } else {
+      console.error(`Failed to fetch playlist details (playlist: ${props.task.arguments.from_playlist}, provider: ${props.task.arguments.from_provider}):`, error);
+    }
+  }
+});
+
+const cancelTask = async () => {
+  try {
+    await tasksApi.cancelTask(props.task.task_id);
+    emit('cancel');
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error('Failed to cancel task:', error.response?.data ?? error.message);
+    } else {
+      console.error('Failed to cancel task:', error);
+    }
+  }
+}
+
+const showCancelIcon = computed(() => {
+  return ![
+    TaskStatus.Canceled.toString(),
+    TaskStatus.Failed.toString(),
+    TaskStatus.Finished.toString()
+  ].includes(props.task.status);
 });
 </script>
 
 <template>
   <AppCard class="rounded-2xl flex gap-4 relative overflow-hidden">
+    <button @click="cancelTask" class="absolute top-2 right-2 text-zinc-400 w-6 h-6 flex items-center justify-center hover:text-red-200 transition-all z-10 cursor-pointer bg-zinc-400/10 hover:bg-red-100/10 rounded-full" title="Cancel or delete task">
+      <Icon icon="material-symbols-light:close-small-outline-rounded" class="text-2xl" v-if="showCancelIcon" />
+      <Icon icon="material-symbols-light:delete-outline-rounded" class="text-xl" v-else />
+    </button>
     <RouterLink v-if="playlist?.meta.provider_name && playlist?.identifiers.provider_id" :to="{ name: 'playlist', params: { id: encode_entity_id(playlist.meta.provider_name, playlist.identifiers.provider_id) } }">
       <TaskCover :provider="source_provider" :track="task.progress.track" :playlist class="my-auto" />
     </RouterLink>

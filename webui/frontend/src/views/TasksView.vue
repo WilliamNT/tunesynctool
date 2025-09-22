@@ -111,7 +111,7 @@ onUnmounted(() => {
           <hr class="flex-1 border-zinc-700 border-0.5 ms-5" />
         </div>
         <template v-for="task in runningTasks" :key="task.task_id" v-if="runningTasks.length > 0" >
-          <Task :providers :task v-if="isProviderAvailable(task.arguments.from_provider)" />
+          <Task :providers :task @cancel="fetchTasks" v-if="isProviderAvailable(task.arguments.from_provider)" />
         </template>
         <p class="text-sm text-zinc-400 font-normal" v-else>You have no running tasks.</p>
       </div>

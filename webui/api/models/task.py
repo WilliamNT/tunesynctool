@@ -1,12 +1,16 @@
 from typing import Optional
 from uuid import UUID
 from pydantic import BaseModel, Field, field_validator
-from enum import Enum
+from enum import StrEnum
 
 from api.models.search import validate_provider
 from api.models.track import TrackRead
 
-class TaskStatus(str, Enum):
+class TaskStatus(StrEnum):
+    """
+    Describes the current status of the task.
+    """
+
     RUNNING = "running"
     FINISHED = "finished"
     FAILED = "failed"
@@ -14,15 +18,22 @@ class TaskStatus(str, Enum):
     CANCELED = "canceled"
     ON_HOLD = "on_hold"
 
-class PlaylistTransferCreate(BaseModel):
+class TaskKind(StrEnum):
     """
-    Playlist transfer parameters.
+    Describes the type of the task.
+    """
+
+    USER_INITIATED_PLAYLIST_TRANSFER = "playlist_transfer"
+
+class GenericTaskCreateBase(BaseModel):
+    """
+    Generic parameters for tasks.
     """
 
     from_provider: str = Field(description="Origin provider for the playlist.")
-    from_playlist: str = Field(description="Source playlist you wish to replicate.")
     to_provider: str = Field(description="Target provider to replicate the playlist on.")
-    
+    kind: TaskKind = Field(description="The type of the task.")
+
     @field_validator("from_provider")
     def validate_from_provider(cls, v: str) -> str:
         return validate_provider(v)
@@ -30,6 +41,13 @@ class PlaylistTransferCreate(BaseModel):
     @field_validator("to_provider")
     def validate_to_provider(cls, v: str) -> str:
         return validate_provider(v)
+
+class PlaylistTaskCreate(GenericTaskCreateBase):
+    """
+    Playlist transfer parameters.
+    """
+
+    from_playlist: str = Field(description="Source playlist you wish to replicate.")
     
 class TaskResponseBase(BaseModel):
     """
@@ -56,5 +74,5 @@ class PlaylistTaskStatus(TaskResponseBase):
     Status of the playlist transfer.
     """
 
-    arguments: PlaylistTransferCreate = Field(description="Original request parameters.")
+    arguments: PlaylistTaskCreate = Field(description="Original request parameters.")
     progress: PlaylistTaskProgress = Field(description="Details about the progress of the task.")
