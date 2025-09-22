@@ -21,7 +21,7 @@ def raise_unsupported_driver_feature_exception(provider_name: str, e: Optional[E
         )
 
 def raise_service_driver_generic_exception(provider_name: str, e: Optional[Exception] = None) -> None:
-    logger.error(f"Service driver error: {e}")
+    logger.error(f"Service driver error: {e}", exc_info=True)
 
     msg = f"Provider \"{provider_name}\" returned an error."
     code = 400
