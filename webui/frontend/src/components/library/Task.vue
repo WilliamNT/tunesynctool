@@ -20,6 +20,7 @@ const emit = defineEmits(['cancel']);
 const source_provider = computed(() => props.providers.find((p) => p.provider_name === props.task.arguments.from_provider));
 const target_provider = computed(() => props.providers.find((p) => p.provider_name === props.task.arguments.to_provider));
 const playlist = ref<PlaylistRead>();
+const isCancellationLoading = ref(false);
 
 const taskDuration = computed(() => {
   const start = new Date(props.task.queued_at * 1000);
@@ -52,7 +53,9 @@ onMounted(async () => {
 });
 
 const cancelTask = async () => {
+
   try {
+    isCancellationLoading.value = true;
     await tasksApi.cancelTask(props.task.task_id);
     emit('cancel');
   } catch (error) {
@@ -63,21 +66,13 @@ const cancelTask = async () => {
     }
   }
 }
-
-const showCancelIcon = computed(() => {
-  return ![
-    TaskStatus.Canceled.toString(),
-    TaskStatus.Failed.toString(),
-    TaskStatus.Finished.toString()
-  ].includes(props.task.status);
-});
 </script>
 
 <template>
   <AppCard class="rounded-2xl flex gap-4 relative overflow-hidden">
-    <button @click="cancelTask" class="absolute top-2 right-2 text-zinc-400 w-6 h-6 flex items-center justify-center hover:text-red-200 transition-all z-10 cursor-pointer bg-zinc-400/10 hover:bg-red-100/10 rounded-full" title="Cancel or delete task">
-      <Icon icon="material-symbols-light:close-small-outline-rounded" class="text-2xl" v-if="showCancelIcon" />
-      <Icon icon="material-symbols-light:delete-outline-rounded" class="text-xl" v-else />
+    <button @click="cancelTask" :disabled="isCancellationLoading" class="absolute top-2 right-2 text-zinc-400 w-6 h-6 flex items-center justify-center hover:text-red-200 transition-all z-10 cursor-pointer bg-zinc-400/10 hover:bg-red-100/10 rounded-full" title="Cancel or delete task">
+      <Icon icon="svg-spinners:90-ring" v-if="isCancellationLoading" />
+      <Icon icon="material-symbols-light:close-small-outline-rounded" class="text-2xl" v-else />
     </button>
     <RouterLink v-if="playlist?.meta.provider_name && playlist?.identifiers.provider_id" :to="{ name: 'playlist', params: { id: encode_entity_id(playlist.meta.provider_name, playlist.identifiers.provider_id) } }">
       <TaskCover :provider="source_provider" :track="task.progress.track" :playlist class="my-auto" />
