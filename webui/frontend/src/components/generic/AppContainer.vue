@@ -26,7 +26,7 @@ const backdropStyling = computed(() => {
 
 <template>
   <component :is class="w-full bg-cover transition-colors duration-500 ease-in-out" :style="{ backgroundImage: backdropStyling }">
-    <div class="md:w-7xl mx-auto mb-5 flex flex-col h-full">
+    <div class="md:w-6xl mx-auto mb-5 flex flex-col h-full">
       <slot />
     </div>
   </component>
