@@ -3,8 +3,9 @@ from redis.asyncio import Redis
 from tunesynctool.exceptions import PlaylistNotFoundException
 from tunesynctool.features import AsyncTrackMatcher
 from tunesynctool.models.track import Track
+from tunesynctool.utilities.collections import batch
+from tunesynctool.drivers.async_service_driver import AsyncWrappedServiceDriver
 import asyncio
-import time
 
 from api.models.task import PlaylistTaskStatus
 from api.core.logging import logger
@@ -185,10 +186,13 @@ async def handle_playlist_transfer(task: PlaylistTaskStatus, task_id: str, user:
 
         return
         
-    try:        
-        await target_driver.add_tracks_to_playlist(
+    try:
+        await insert_tracks_into_playlist(
             playlist_id=target_playlist.service_id,
-            track_ids=[track.service_id for track in matches]
+            tracks=matches,
+            driver=target_driver,
+            task=task,
+            redis=redis
         )
         
         logger.info(f"Successfuly finished transfer of playlist from {source_provider.provider_name} to {target_provider.provider_name}.")
@@ -204,3 +208,21 @@ async def handle_playlist_transfer(task: PlaylistTaskStatus, task_id: str, user:
             task=task,
             task_id=task_id
         )
+
+async def insert_tracks_into_playlist(playlist_id: str, tracks: list[Track], driver: AsyncWrappedServiceDriver, task: PlaylistTaskStatus, redis: Redis) -> None:
+    for chunked_ids in batch([track.service_id for track in tracks], 25):
+        if await check_if_task_was_deleted(task.task_id, redis):
+            return
+
+        await driver.add_tracks_to_playlist(
+            playlist_id=playlist_id,
+            track_ids=chunked_ids
+        )
+
+        await report_task_on_hold(
+            redis=redis,
+            task=task,
+            task_id=task.task_id,
+            reason="Pausing to avoid a rate limit."
+        )   
+        await asyncio.sleep(3)
