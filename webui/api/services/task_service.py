@@ -43,7 +43,7 @@ class TaskService:
             value=job.model_dump_json()
         )
 
-        await self.redis.rpush("playlist_tasks_queue", redis_key)
+        await self.redis.rpush("user_tasks_queue", redis_key)
 
         return job
 
