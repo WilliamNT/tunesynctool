@@ -28,7 +28,3 @@ coverage
 *.sw?
 
 *.tsbuildinfo
-
-# Generated code
-src/api/*
-!src/api/README.md
