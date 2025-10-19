@@ -20,8 +20,8 @@ class Config(BaseSettings):
     ENCRYPTION_KEY: str
     ENCRYPTION_SALT: str
 
-    SPOTIFY_CLIENT_ID: Optional[str]
-    SPOTIFY_CLIENT_SECRET: Optional[str]
+    SPOTIFY_CLIENT_ID: Optional[str] = None
+    SPOTIFY_CLIENT_SECRET: Optional[str] = None
 
     @computed_field
     @property
@@ -34,8 +34,8 @@ class Config(BaseSettings):
         except ValueError:
             return True
         
-    SUBSONIC_BASE_URL: Optional[str]
-    SUBSONIC_PORT: Optional[int]
+    SUBSONIC_BASE_URL: Optional[str] = None
+    SUBSONIC_PORT: Optional[int] = None
     SUBSONIC_LEGACY_AUTH: bool = False
 
     @computed_field
@@ -49,8 +49,8 @@ class Config(BaseSettings):
         except ValueError:
             return True
 
-    GOOGLE_CLIENT_ID: Optional[str]
-    GOOGLE_CLIENT_SECRET: Optional[str]
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
 
     @computed_field
     @property
@@ -108,7 +108,7 @@ class Config(BaseSettings):
         if 0 < len(filled) < len(fields):
             raise ValueError(f"{group_name} was/were only partially configured. Not all required configuration values for it/them were set up properly. Related features may be disabled.")
 
-        return True
+        return len(filled) != 0
 
     @model_validator(mode="after")
     def verify_spotify_fields(self) -> Self:
