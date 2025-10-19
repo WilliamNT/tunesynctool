@@ -117,7 +117,7 @@ async def handle_playlist_transfer(task: PlaylistTaskStatus, task_id: str, user:
             redis=redis,
             task=task,
             task_id=task_id,
-            reason="No items to process."
+            reason="Playlist is empty."
         )
 
         return
