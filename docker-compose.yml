@@ -33,21 +33,23 @@ services:
       APP_SECRET: your_app_secret
       APP_HOST: your_app_host
       ADMIN_PASSWORD: changeme
+      ENCRYPTION_KEY: your_encryption_key
+      ENCRYPTION_SALT: your_encryiption_salt
 
-      # Spotify OAuth - only set these if you plan to use the Spotify integration
-      SPOTIFY_CLIENT_ID:
-      SPOTIFY_CLIENT_SECRET:
+      # Warning! You have to configure at least one music service for the app to run!
 
-      # Subsonic - only set these if you plan to use the Subsonic integration
-      ENCRYPTION_KEY:
-      ENCRYPTION_SALT:
-      SUBSONIC_BASE_URL:
-      SUBSONIC_PORT:
-      SUBSONIC_LEGACY_AUTH:
+      # Spotify OAuth - uncomment and set these if you plan to use the Spotify integration
+      # SPOTIFY_CLIENT_ID:
+      # SPOTIFY_CLIENT_SECRET:
 
-      # Google OAuth - only set these if you plan to use the YouTube Music integration
-      GOOGLE_CLIENT_ID:
-      GOOGLE_CLIENT_SECRET:
+      # Subsonic - uncomment and set these if you plan to use the Subsonic integration
+      # SUBSONIC_BASE_URL:
+      # SUBSONIC_PORT:
+      # SUBSONIC_LEGACY_AUTH: false
+
+      # Google OAuth - uncomment and set these if you plan to use the YouTube Music integration
+      # GOOGLE_CLIENT_ID:
+      # GOOGLE_CLIENT_SECRET:
 
       # Redis - do not modify unless you know what you're doing
       REDIS_HOST: redis
