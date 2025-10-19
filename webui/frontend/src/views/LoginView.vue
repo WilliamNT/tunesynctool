@@ -3,17 +3,16 @@ import AppButton from '@/components/button/AppButton.vue';
 import AppCard from '@/components/card/AppCard.vue';
 import AppField from '@/components/form/AppField.vue';
 import AppFormSpacer from '@/components/form/AppFormSpacer.vue';
-import AppH1 from '@/components/text/AppH1.vue';
 import { AuthenticationApi } from '@/api';
 import { set_access_token, get_api_configuration } from '@/services/api';
-import { useForm, useIsFormValid } from 'vee-validate';
+import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import * as zod from 'zod';
 import { isAxiosError } from 'axios';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import AppContainer from '@/components/generic/AppContainer.vue';
-import AppPageHeader from '@/components/generic/AppPageHeader.vue';
+import AppWarningBar from '@/components/generic/AppWarningBar.vue';
 
 const schema = zod.object({
   username: zod.string({
@@ -84,6 +83,7 @@ const isFormInvalid = computed(() => {
 
 <template>
   <AppContainer is="main">
+    <AppWarningBar message="This app is still under heavy development. Please treat this as a preview/alpha version. GitHub issues are welcome." />
     <AppCard class="max-w-md m-auto p-5">
       <form @submit.prevent="onSubmit" novalidate>
         <h1 class="text-4xl text-white text-center font-normal">

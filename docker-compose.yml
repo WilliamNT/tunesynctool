@@ -1,20 +1,115 @@
-version: "3"
 services:
+  # Frontend app serving the web UI
+  frontend:
+    container_name: tunesynctool-frontend
+    build:
+      context: ./webui/frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    networks:
+      - frontend
+
+  api:
+    container_name: tunesynctool-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # Database - do not modify unless you know what you're doing
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: tunesynctool
+      DB_USER: tunesynctool
+      DB_PASSWORD: tunesynctool
+
+      # Application configuration - you should change these
+      APP_SECRET: your_app_secret
+      APP_HOST: your_app_host
+      ADMIN_PASSWORD: changeme
+
+      # Spotify OAuth - only set these if you plan to use the Spotify integration
+      SPOTIFY_CLIENT_ID:
+      SPOTIFY_CLIENT_SECRET:
+
+      # Subsonic - only set these if you plan to use the Subsonic integration
+      ENCRYPTION_KEY:
+      ENCRYPTION_SALT:
+      SUBSONIC_BASE_URL:
+      SUBSONIC_PORT:
+      SUBSONIC_LEGACY_AUTH:
+
+      # Google OAuth - only set these if you plan to use the YouTube Music integration
+      GOOGLE_CLIENT_ID:
+      GOOGLE_CLIENT_SECRET:
+
+      # Redis - do not modify unless you know what you're doing
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - frontend
+      - backend
+
+  # MySQL Database for storing basically everything persistent
+  mysql:
+    image: mysql:latest
+    container_name: tunesynctool-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: tunesynctool
+      MYSQL_DATABASE: tunesynctool
+      MYSQL_USER: tunesynctool
+      MYSQL_PASSWORD: tunesynctool
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  # Redis for caching and background tasks
   redis:
     image: redis:latest
     container_name: tunesynctool-redis
-    ports:
-      - "6379:6379"
     networks:
-      - redisnet
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
-  redisinsight:
-    image: redis/redisinsight:latest
-    container_name: redisinsight
-    ports:
-      - "5540:5540"  # You access the GUI via localhost:5540
-    networks:
-      - redisnet
+  # RedisInsight for inspecting Redis data (for development purposes)
+#  redisinsight:
+#    image: redis/redisinsight:latest
+#    container_name: redisinsight
+#    ports:
+#      - "5540:5540"
+#    networks:
+#      - backend
+#    depends_on:
+#      - redis
 
 networks:
-  redisnet:
+  frontend:
+  backend:
+    internal: true
+
+volumes:
+  db-data:

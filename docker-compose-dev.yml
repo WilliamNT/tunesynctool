@@ -1,0 +1,23 @@
+# Docker Compose configuration for development environment
+
+services:
+  redis:
+    image: redis:latest
+    container_name: tunesynctool-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redisinsight
+    ports:
+      - "5540:5540"
+    networks:
+      - backend
+    depends_on:
+      - redis
+
+networks:
+  backend:
