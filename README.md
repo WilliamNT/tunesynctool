@@ -1,8 +1,8 @@
 # tunesynctool
 
-A Python package, CLI* and self-hostable service* to transfer and sync music between your local/commercial streaming services.
+A self-hostable service to transfer (and sync*) music between your local/commercial streaming services.
 
-*Under development
+*work in progress, not yet available
 
 Tunesynctool supports the following services:
 - Spotify
@@ -12,10 +12,13 @@ Tunesynctool supports the following services:
 
 Support for other services is planned, however the current focus is on getting the self-hostable service to a stable state.
 
+## Stability
+
+The project is under heavy development and contains bugs. Use at your own discretion.
+
 ## Usage
 
-Currently, the recommended way is to either use the Python package for custom scripts or use the included CLI commands.
-Install the latest release vie PyPI (`pip install tunesynctool`).
+Currently you have to install the Python dependencies within requirements.txt and you'll be able to run the backend.
 
 ## Configuration
 
@@ -36,3 +39,6 @@ Learn more about matching [here](https://github.com/WilliamNT/tunesynctool/wiki/
 ## When will the self-hostable app be released?
 I can't tell you that unfortunately. I am working on this project in my free time and due to studies and personal matters I have to pause development often.
 Thank you for your patience and understanding.
+
+## Do you have a Discord?
+[Yes.](https://discord.com/invite/sjCecFxBCR)
