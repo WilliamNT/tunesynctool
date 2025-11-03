@@ -1,17 +1,23 @@
-from typing import List
+from typing import List, Optional
+from sqlmodel import select
 from tunesynctool.drivers import AsyncWrappedServiceDriver
 from tunesynctool.models.playlist import Playlist
+from tunesynctool.models.track import Track
 from redis.asyncio import Redis
 import json
 import re
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.core.config import config
-from tunesynctool.models.track import Track
+from api.core.database import get_session_instance
+from api.models.track import CachedTrackProviderMapping, CachedTrack
 
 class AsyncCachedDriver(AsyncWrappedServiceDriver):
     """
-    Extends the original to stay compatible, however adds caching via Redis to help avoid rate limits and api calls.
+    Extends the original to stay compatible, however adds caching via Redis and DB to help avoid rate limits and api calls.
     """
+
+    _db: Optional[AsyncSession] = None
 
     def __init__(self, base: AsyncWrappedServiceDriver):
         super().__init__(base.sync_driver)
@@ -22,6 +28,12 @@ class AsyncCachedDriver(AsyncWrappedServiceDriver):
             port=config.REDIS_PORT,
             decode_responses=True
         )
+
+    async def get_db(self) -> AsyncSession:
+        if not self._db:
+            self._db = await get_session_instance()
+
+        return self._db
 
     def _deserialize_track(self, cached_data: str) -> Track:
         raw = json.loads(cached_data)
@@ -81,17 +93,63 @@ class AsyncCachedDriver(AsyncWrappedServiceDriver):
         await self.redis.set(key, self._serialize_playlist(result), ex=300)
         return result
     
-    async def get_track(self, track_id: str) -> Playlist:
-        key = f"provider_cache:{self.base.service_name}:tracks:track_id#{(track_id)}"
-        cached = await self.redis.get(key)
+    async def get_track(self, track_id: str) -> Track:
+        db = await self.get_db()
+        query = await db.execute(
+            select(CachedTrack)
+            .join(CachedTrackProviderMapping)
+            .where(
+                CachedTrackProviderMapping.track_id == track_id,
+                CachedTrackProviderMapping.provider == self.base.service_name,
+            )
+        )
+
+        cached = query.scalar_one_or_none()
+
         if cached:
-            return self._deserialize_track(cached)
+            return Track(
+                title=cached.title,
+                album_name=cached.album_name,
+                primary_artist=cached.author,
+                additional_artists=cached.collaborators,
+                duration_seconds=cached.duration,
+                track_number=cached.track_number,
+                release_year=cached.release_year,
+                isrc=cached.isrc,
+                musicbrainz_id=cached.musicbrainz,
+                service_id=track_id,
+                service_name=self.base.service_name
+            )
         
         result = await self.base.get_track(
             track_id=track_id,
         )
-        
-        await self.redis.set(key, self._serialize_track(result))
+
+        if result:
+            # Cache in DB
+            new_cached = CachedTrack(
+                title=result.title,
+                album_name=result.album_name,
+                author=result.primary_artist,
+                collaborators=result.additional_artists,
+                duration=result.duration_seconds,
+                track_number=result.track_number,
+                release_year=result.release_year,
+                isrc=result.isrc,
+                musicbrainz=result.musicbrainz_id
+            )
+            db.add(new_cached)
+            await db.commit()
+            await db.refresh(new_cached)
+
+            mapping = CachedTrackProviderMapping(
+                track_id=new_cached.id,
+                provider=self.base.service_name,
+                provider_track_id=track_id
+            )
+            db.add(mapping)
+            await db.commit()
+
         return result
     
     async def search_tracks(self, query: str, limit: int = 10) -> List[Track]:

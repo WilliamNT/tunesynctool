@@ -1,6 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator
-from sqlmodel import SQLModel, Field as DBField, JSON, Column
+from sqlmodel import Index, SQLModel, Field as DBField, JSON, Column
 import json
 
 from .entity import EntityMetaRead, EntityMultiAuthorRead, EntityIdentifiersBase, EntityAssetsBase
@@ -76,6 +76,9 @@ class CachedTrack(SQLModel, table=True):
     release_year: Optional[int] = DBField(default=None)
     author: Optional[str] = DBField(default=None)
 
+    isrc: Optional[str] = DBField(default=None)
+    musicbrainz: Optional[str] = DBField(default=None)
+
     collaborators_json: Optional[dict] = DBField(sa_column=Column(JSON))
     """
     Should be treated as a JSON list. Do not use directly. Use `collaborators` instead.
@@ -117,4 +120,16 @@ class CachedTrack(SQLModel, table=True):
         else:
             raise ValueError("collaborators can only be a list or None")
 
+class CachedTrackProviderMapping(SQLModel, table=True):
+    """
+    A single provider mapping for a cached track.
+    """
 
+    __tablename__ = "provider_mappings"
+    __table_args__ = (
+        Index("idx_provider_provider_id", "provider", "provider_track_id"),
+    )
+
+    track_id: int = DBField(foreign_key="tracks.id", primary_key=True)
+    provider: str = DBField(max_length=50, primary_key=True)
+    provider_track_id: str = DBField(max_length=255, primary_key=True)

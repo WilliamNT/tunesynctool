@@ -1,10 +1,10 @@
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 from sqlmodel import SQLModel, select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from redis.asyncio import Redis
 
 from api.core.config import config
 from api.models.user import User
-from api.models.service import ServiceCredentials
 from api.core.security import hash_password
 
 engine = create_async_engine(
@@ -29,6 +29,13 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
     async with AsyncSession(engine) as session:
         yield session
+
+async def get_session_instance() -> AsyncSession:
+    """
+    Get a direct AsyncSession instance for internal use (not FastAPI dependency).
+    """
+
+    return AsyncSession(engine)
 
 async def create_default_user(session: AsyncSession) -> None:
     """
