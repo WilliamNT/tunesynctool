@@ -59,9 +59,17 @@ async def handle_playlist_transfer(task: PlaylistTaskStatus, task_id: str, user:
 
         try:
             source_provider = ProviderFactory.create(task.arguments.from_provider, credentials_service)
-            target_provider = ProviderFactory.create(task.arguments.to_provider, credentials_service)
             source_driver = await source_provider._get_driver(user)
-            target_driver = await target_provider._get_driver(user)
+
+            target_provider = None
+            target_driver = None
+
+            if task.arguments.from_provider == task.arguments.to_provider:
+                target_provider = source_provider
+                target_driver = source_driver
+            else:
+                target_provider = ProviderFactory.create(task.arguments.to_provider, credentials_service)
+                target_driver = await target_provider._get_driver(user)
         except Exception as e:
             logger.error(F"Task {task_id} can't be started. Reason: {e}")
             await report_task_failure(
