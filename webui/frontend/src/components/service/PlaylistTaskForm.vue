@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { CatalogApi, TaskKind, TasksApi, type PlaylistRead, type ProviderRead } from '@/api';
+import { LibraryApi, TaskKind, TasksApi, type PlaylistRead, type ProviderRead } from '@/api';
 import AppButton from '../button/AppButton.vue';
 import AppFormSpacer from '../form/AppFormSpacer.vue';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { Icon } from '@iconify/vue';
 import ProviderSelector from '@/components/service/ProviderSelector.vue'
 import { get_access_token, get_api_configuration } from '@/services/api';
 import PlaylistSelector from './PlaylistSelector.vue';
 import { useRouteQuery } from '@vueuse/router';
+import { isAxiosError } from 'axios';
 
 const props = defineProps<{
   providers: ProviderRead[];
@@ -15,9 +16,10 @@ const props = defineProps<{
 
 const providers = computed(() => props.providers.filter((provider) => provider.is_configured && provider.linking.linked));
 const config = get_api_configuration(get_access_token());
-const catalogApi = new CatalogApi(config);
+const libraryApi = new LibraryApi(config);
 const tasksApi = new TasksApi(config);
 const isLoading = ref(false);
+const playlists = ref<PlaylistRead[]>([]);
 
 const disallowSubmit = computed(() => {
   return !sourceProviderChoice.value || !targetProviderChoice.value || !selectedPlaylist.value;
@@ -33,18 +35,29 @@ const targetProviderChoice = computed(() => {
   return providers.value.find((provider) => provider.provider_name === targetProviderName.value);
 });
 
+const fetchLibraryPlaylists = async () => {
+  try {
+    const response = await libraryApi.getLibraryPlaylists();
+
+    if (response.data.items) {
+      playlists.value = response.data.items;
+    }
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error(`Failed to fetch available playlists. Error: "${error.response?.data ?? error.message}""`)
+    }
+  }
+}
+
 const transferablePlaylists = ref<PlaylistRead[]>([]);
-const fetchPlaylistsFromSourceProvider = async () => {
+const filterOnlyPlaylistsFromSourceProvider = async () => {
   const provider_name = sourceProviderChoice.value?.provider_name;
 
   if (!provider_name) {
     return;
   }
 
-  const response = await catalogApi.getSavedPlaylists(provider_name);
-  if (response.data.items) {
-    transferablePlaylists.value = response.data.items;
-  }
+  transferablePlaylists.value = playlists.value.filter((p) => p.meta.provider_name === provider_name);
 };
 
 const selectedPlaylistId = useRouteQuery<string | undefined>('from_playlist');
@@ -64,7 +77,7 @@ watch(providers, (newProviders) => {
   immediate: true
 });
 
-watch(sourceProviderChoice, fetchPlaylistsFromSourceProvider, {
+watch([sourceProviderChoice, playlists], filterOnlyPlaylistsFromSourceProvider, {
   immediate: true
 });
 
@@ -73,6 +86,8 @@ watch(sourceProviderChoice, (newValue, oldValue) => {
     selectedPlaylistId.value = undefined;
   }
 })
+
+onMounted(fetchLibraryPlaylists);
 
 const onSubmit = async () => {
   if (!sourceProviderChoice.value || !targetProviderChoice.value || !selectedPlaylist.value) {
