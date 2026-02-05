@@ -173,3 +173,5 @@ demo.py
 navify_ytmusic_session.json
 tunesynctool_ytmusic_session.json
 .reviews/
+
+docker-compose.dev.yml

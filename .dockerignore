@@ -8,3 +8,5 @@ tests/
 examples/
 .vscode
 .github
+.DS_Store
+docker-compose.dev.yml
