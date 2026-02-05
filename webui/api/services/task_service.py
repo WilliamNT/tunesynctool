@@ -49,7 +49,6 @@ class TaskService:
 
     async def get_playlist_transfer_status(self, task_id: str, user: User) -> PlaylistTaskProgress:
         task = await self.redis.get(f"playlist_transfer:{user.id}:{task_id}")
-        await self.redis.aclose()
 
         return PlaylistTaskProgress.model_validate_json(task)
     
