@@ -1,0 +1,10 @@
+.env
+.env.*
+.venv
+.venv/*
+__pycache__
+demo.py
+tests/
+examples/
+.vscode
+.github
