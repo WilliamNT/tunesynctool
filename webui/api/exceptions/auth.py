@@ -1,5 +1,3 @@
-from typing import Optional
-
 
 class OAuthTokenRefreshError(Exception):
     """Exception raised when OAuth token refresh fails."""
