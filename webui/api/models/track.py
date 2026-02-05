@@ -13,14 +13,7 @@ class TrackIdentifiersThirdPartyBase(BaseModel):
     isrc: Optional[str] = Field(default=None, description="International Standard Recording Code (if available).")
     musicbrainz: Optional[str] = Field(default=None, description="MusicBrainz ID (if available).")
 
-    @field_validator("isrc")
-    @classmethod
-    def empty_string_to_none(cls, v):
-        if isinstance(v, str) and v.strip() == "":
-            return None
-        return v
-    
-    @field_validator("musicbrainz")
+    @field_validator("isrc", "musicbrainz")
     @classmethod
     def empty_string_to_none(cls, v):
         if isinstance(v, str) and v.strip() == "":
