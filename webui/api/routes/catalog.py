@@ -238,17 +238,14 @@ async def create_playlist(
 @router.post(
     path="/playlists/{provider_id}/tracks",
     responses={
-        status.HTTP_400_BAD_REQUEST: {
-            "description": "Something went wrong with the provider. See message for details."
-        },
         status.HTTP_200_OK: {
             "description": "Track added successfully."
         },
+        status.HTTP_400_BAD_REQUEST: {
+            "description": "Something went wrong with the provider, or one or more of the supplied track IDs are invalid. See message for details.",
+        },
         status.HTTP_404_NOT_FOUND: {
             "description": "The provider didn't return a match for the given playlist ID.",
-        },
-        status.HTTP_400_BAD_REQUEST: {
-            "description": "One or more of the supplied track IDs are invalid."
         }
     },
     summary="Add tracks to a playlist",
