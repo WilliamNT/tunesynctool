@@ -58,7 +58,10 @@ class TaskResponseBase(BaseModel):
     status: TaskStatus = Field(description="Current status of the task as a whole.")
     status_reason: Optional[str] = Field(description="Optional reason for the status to be shown to end users or used in logs.", default=None)
     queued_at: int = Field(description="Unix timestamp in UTC to help tell when the task was put in the queue.")
+    started_at: Optional[int] = Field(description="Unix timestamp in UTC when the task started running.", default=None)
     done_at: Optional[int] = Field(description="Unix timestamp in UTC to help tell when the task was considered done.", default=None)
+    worker_id: Optional[str] = Field(description="ID of the worker currently processing this task.", default=None)
+    last_heartbeat: Optional[int] = Field(description="Unix timestamp of last worker heartbeat for stale detection.", default=None)
 
 class PlaylistTaskProgress(BaseModel):
     """

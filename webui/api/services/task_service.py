@@ -4,11 +4,12 @@ from fastapi import HTTPException, status
 import redis.asyncio as redis
 import time
 
-from api.models.task import PlaylistTaskProgress, PlaylistTaskStatus, PlaylistTaskCreate, TaskStatus
+from api.models.task import PlaylistTaskProgress, PlaylistTaskStatus, PlaylistTaskCreate, TaskStatus, TaskKind
 from api.models.user import User
 from api.core.config import config
 from api.models.collection import Collection
 from api.core.logging import logger
+from api.workers.keys import make_task_key, make_user_tasks_pattern, make_task_queue_name, TTL_QUEUED, TTL_FINISHED
 
 class TaskService:
     def __init__(self):
@@ -27,7 +28,7 @@ class TaskService:
         """
 
         task_id = str(uuid.uuid4())
-        redis_key = f"user_tasks:{details.kind}:{user.id}:{task_id}"
+        redis_key = make_task_key(details.kind, user.id, task_id)
         timestamp = int(time.time())
 
         job = PlaylistTaskStatus(
@@ -40,22 +41,38 @@ class TaskService:
 
         await self.redis.set(
             name=redis_key,
-            value=job.model_dump_json()
+            value=job.model_dump_json(),
+            ex=TTL_QUEUED
         )
 
-        await self.redis.rpush("user_tasks_queue", redis_key)
+        await self.redis.rpush(make_task_queue_name(), redis_key)
+        
+        logger.info(f"[task:{task_id}] Created new playlist transfer task for user {user.id}")
 
         return job
 
-    async def get_playlist_transfer_status(self, task_id: str, user: User) -> PlaylistTaskProgress:
-        task = await self.redis.get(f"playlist_transfer:{user.id}:{task_id}")
+    async def get_playlist_transfer_status(self, task_id: str, user: User) -> Optional[PlaylistTaskStatus]:
+        """
+        Get the status of a playlist transfer task.
+        
+        :param task_id: UUID of the task
+        :param user: User who owns the task
+            
+        :return: PlaylistTaskStatus or None if not found
+        """
+        redis_key = make_task_key(TaskKind.USER_INITIATED_PLAYLIST_TRANSFER, user.id, task_id)
+        task = await self.redis.get(redis_key)
+        
+        if task is None:
+            return None
 
-        return PlaylistTaskProgress.model_validate_json(task)
+        return PlaylistTaskStatus.model_validate_json(task)
     
-    async def handle_compiling_tasks_for_user(self, user: User) -> Collection[PlaylistTaskProgress]:
+    async def handle_compiling_tasks_for_user(self, user: User) -> Collection[PlaylistTaskStatus]:
         tasks = []
+        pattern = make_user_tasks_pattern(user.id)
 
-        async for key in self.redis.scan_iter(f"user_tasks:*:{user.id}:*"):
+        async for key in self.redis.scan_iter(pattern):
             raw = await self.redis.get(key)
 
             if raw:
@@ -68,10 +85,13 @@ class TaskService:
 
     async def dispatch_task_cancellation(self, task_id: uuid.UUID, user: User) -> None:
         """
-        Deletes the task from Redis to signal to the worker that took it to free it self up.
+        Marks a task as cancelled. The worker will detect this and stop processing.
+        
+        :param task_id: UUID of the task
+        :param user: User who owns the task
         """
 
-        pattern = f"user_tasks:*:{user.id}:{task_id}"
+        pattern = make_user_tasks_pattern(user.id).replace("*:*", f"*:{task_id}")
         keys = []
         async for key in self.redis.scan_iter(match=pattern):
             keys.append(key)
@@ -80,15 +100,24 @@ class TaskService:
                 break
 
         if len(keys) == 0:
-            self._raise_404_task_not_found(f"User {user.id} attempted to delete a non-existent task with ID {task_id}.")
+            self._raise_404_task_not_found(f"User {user.id} attempted to cancel a non-existent task with ID {task_id}.")
 
         if len(keys) > 1:
-            logger.warning(f"Multiple Redis keys matched for pattern \"{pattern}\" but only one should exist. This is likely a bug, someone tampered with the Redis DB or a UUID collision happened (unlikely). Only the first match will be deleted! Keys found: {', '.join(keys)}")
+            logger.warning(f"[task:{task_id}] Multiple Redis keys matched for pattern '{pattern}'. Only first will be cancelled.")
 
         try:
-            await self.redis.delete(keys[0])
+            raw = await self.redis.get(keys[0])
+
+            if raw:
+                task = PlaylistTaskStatus.model_validate_json(raw)
+                task.status = TaskStatus.CANCELED
+                task.status_reason = "Cancelled by user."
+                task.done_at = int(time.time())
+                
+                await self.redis.set(keys[0], task.model_dump_json(), ex=TTL_FINISHED)
+                logger.info(f"[task:{task_id}] Task cancelled by user {user.id}")
         except Exception as e:
-            logger.error(f"An error occurred while deleting task with key {task_id}. Error: {e}", exc_info=True)
+            logger.error(f"[task:{task_id}] Error cancelling task: {e}", exc_info=True)
             
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
