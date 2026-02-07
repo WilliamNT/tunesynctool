@@ -81,7 +81,7 @@ class Config(BaseSettings):
     @computed_field
     @property
     def SPOTIFY_REDIRECT_URI(self) -> str:
-        return f"{self.APP_HOST}{self.API_BASE_URL}/providers/spotify/callback"
+        return f"http://{self.APP_HOST}{self.API_BASE_URL}/providers/spotify/callback"
 
     @computed_field
     @property
