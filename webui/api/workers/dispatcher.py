@@ -1,4 +1,5 @@
 from redis.asyncio import Redis
+from redis.exceptions import TimeoutError as RedisTimeoutError
 import asyncio
 import time
 from typing import Optional, Tuple
@@ -74,7 +75,15 @@ async def fetch_next_task(ctx: WorkerContext) -> Optional[Tuple[str, str, int, s
     :return: Tuple of (redis_key, task_kind, user_id, task_uuid) or None if no task available
     """
 
-    next_in_queue = await ctx.redis.blpop(make_task_queue_name(), timeout=5)
+    try:
+        next_in_queue = await ctx.redis.blpop(
+            make_task_queue_name(),
+            timeout=5
+        )
+    except RedisTimeoutError:
+        logger.error(f"[{ctx.worker_name}] Redis queue poll timed out. Make sure Redis is running and reachable by the tunesynctool API. Without it, core features won't work.")
+        return None
+
     if not next_in_queue:
         return None
 
