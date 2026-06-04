@@ -41,11 +41,13 @@ const fetchPlaylist = async () => {
     return;
   }
 
-  const { provider, provider_id } = playlistIdAndProvider.value;
+  const idData = playlistIdAndProvider.value;
 
-  if (!provider || !provider_id) {
+  if (!idData?.provider || !idData.provider_id) {
     return;
   }
+
+  const { provider, provider_id } = idData;
 
   try {
     const response = await catalogApi.getPlaylist(provider_id, provider);
@@ -71,11 +73,13 @@ const fetchPlaylistTracks = async () => {
     return;
   }
 
-  const { provider, provider_id } = playlistIdAndProvider.value;
+  const idData = playlistIdAndProvider.value;
 
-  if (!provider || !provider_id) {
+  if (!idData?.provider || !idData.provider_id) {
     return;
   }
+
+  const { provider, provider_id } = idData;
 
   try {
     const response = await catalogApi.getPlaylistTracks(provider_id, provider);
