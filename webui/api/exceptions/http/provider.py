@@ -7,5 +7,5 @@ def raise_unsupported_provider_exception(provider_name: str) -> None:
 
     raise HTTPException(
         status_code=400,
-        detail=f"Provider unavailable.",
+        detail=f"Provider not supported.",
     )
