@@ -21,14 +21,20 @@ const source_provider = computed(() => props.providers.find((p) => p.provider_na
 const target_provider = computed(() => props.providers.find((p) => p.provider_name === props.task.arguments.to_provider));
 const playlist = ref<PlaylistRead>();
 const isCancellationLoading = ref(false);
+const hasLoadingErrored = ref(false);
 
 const taskDuration = computed(() => {
+  if (!props.task.queued_at) {
+    return 'n/a'
+  }
+
   const start = new Date(props.task.queued_at * 1000);
   const end = new Date(props.task.done_at ? (props.task.done_at * 1000) : Date.now());
   const duration = intervalToDuration({ start, end });
   const formattedDifference = formatDuration(duration, {
     delimiter: ', '
   });
+
   return formattedDifference;
 });
 
@@ -44,6 +50,7 @@ onMounted(async () => {
     const playlistResponse = await catalogApi.getPlaylist(props.task.arguments.from_playlist, props.task.arguments.from_provider);
     playlist.value = playlistResponse.data;
   } catch (error) {
+    hasLoadingErrored.value = true;
     if (isAxiosError(error)) {
       console.error(`Failed to fetch playlist details (playlist: ${props.task.arguments.from_playlist}, provider: ${props.task.arguments.from_provider}):`, error.response?.data ?? error.message);
     } else {
@@ -53,7 +60,6 @@ onMounted(async () => {
 });
 
 const cancelTask = async () => {
-
   try {
     isCancellationLoading.value = true;
     await tasksApi.cancelTask(props.task.task_id);
@@ -79,7 +85,7 @@ const cancelTask = async () => {
     </RouterLink>
     <TaskCover :provider="source_provider" :track="task.progress.track" :playlist class="my-auto" v-else />
     <div class="flex flex-col gap-0.5">
-      <h3 class="truncate font-black text-white text-lg m-0 p-0">{{ playlist?.title ?? 'Loading...' }}</h3>
+      <h3 class="truncate font-black text-white text-lg m-0 p-0">{{ playlist?.title ?? hasLoadingErrored ? 'Unknown playlist' : 'Loading...' }}</h3>
       <div class="text-xs mb-1 text-zinc-400" v-if="task.progress.track">
         <span class="me-2">{{ task.status === TaskStatus.Running ? 'Current' : 'Last' }}:</span>
         <a :href="task.progress.track.meta.share_url" v-if="task.progress.track.meta.share_url">{{ task.progress.track.title }} - {{ task.progress.track.author.primary }}</a>
@@ -94,23 +100,23 @@ const cancelTask = async () => {
           </template>
           <template v-if="task.status === TaskStatus.Finished">
             <Icon icon="material-symbols-light:check-circle-outline" class="inline-block me-1 text-lg text-green-300" />
-            <span class="text-green-300">Finished</span>
+            <span class="text-green-300" title="This task was completed successfully.">Finished</span>
           </template>
           <template v-if="task.status === TaskStatus.Queued">
             <Icon icon="material-symbols-light:progress-activity" class="animate-spin inline-block me-1 text-lg text-yellow-200" />
-            <span class="text-yellow-200">Queued</span>
+            <span class="text-yellow-200" title="This task hasn't started yet because but it will start shortly.">Queued</span>
           </template>
           <template v-if="task.status === TaskStatus.Running">
             <Icon icon="material-symbols-light:directory-sync-rounded" class="animate-spin inline-block me-1 text-lg text-blue-300" />
-            <span class="text-blue-300">Running</span>
+            <span class="text-blue-300" title="This task is currently running.">Running</span>
           </template>
           <template v-if="task.status === TaskStatus.Canceled">
             <Icon icon="material-symbols-light:cancel-outline-rounded" class="inline-block me-1 text-lg text-orange-300" />
-            <span class="text-orange-300">Canceled<template v-if="task.status_reason"> - {{ task.status_reason }}</template></span>
+            <span class="text-orange-300" title="This task was canceled either by the system or a user. Refer to the reason (if) given for more details.">Canceled<template v-if="task.status_reason"> - {{ task.status_reason }}</template></span>
           </template>
           <template v-if="task.status === TaskStatus.OnHold">
             <Icon icon="material-symbols-light:directory-sync-rounded" class="animate-spin inline-block me-1 text-lg text-blue-300" />
-            <span class="text-blue-300">On hold<template v-if="task.status_reason"> - {{ task.status_reason }}</template></span>
+            <span class="text-blue-300" title="This task is temporarily paused. Refer to the reason (if) given for more details.">On hold<template v-if="task.status_reason"> - {{ task.status_reason }}</template></span>
           </template>
         </li>
         <li class="relative pl-3.5 first:pl-0 before:content-['•'] before:absolute before:left-0 first:before:content-[''] before:text-zinc-500 truncate">
@@ -128,7 +134,7 @@ const cancelTask = async () => {
           Duration: {{ taskDuration }}
         </li>
         <li class="relative pl-3.5 first:pl-0 before:content-['•'] before:absolute before:left-0 first:before:content-[''] before:text-zinc-500 truncate">
-          Playlist ID: {{ task.arguments.from_playlist }}
+          PID: {{ task.arguments.from_playlist }}
         </li>
       </ul>
     </div>
