@@ -21,23 +21,25 @@ const isLoading = ref(true);
 
 const providers = ref<ProviderRead[]>([]);
 const tasks = ref<PlaylistTaskStatus[]>([]);
-let intervalId: number | undefined = undefined;
+let intervalId: ReturnType<typeof setTimeout> | undefined = undefined;
 
-function isProviderAvailable(providerName: string): boolean {
-  return providers.value.some(p => p.provider_name === providerName && p.is_configured);
+function shouldEntryBeHiddenForProviderUnavailability(task: PlaylistTaskStatus): boolean {
+  const fromProvider = providers.value.find(p => p.provider_name === task.arguments.from_provider);
+  const toProvider = providers.value.find(p => p.provider_name === task.arguments.to_provider);
+
+  if (!fromProvider || !toProvider) {
+    return true;
+  }
+
+  return !(fromProvider.is_configured && fromProvider.linking.linked) || !(toProvider.is_configured && toProvider.linking.linked);
 }
 
 const historyTasks = computed(() => {
   return tasks.value.filter(task => task.status !== TaskStatus.Running && task.status !== TaskStatus.OnHold && task.status !== TaskStatus.Queued);
 });
 
-const hiddenHistoryTasks = computed(() => {
-  return historyTasks.value.filter(task => providers.value.some(p => p.provider_name === task.arguments.from_provider));
-});
-
 const hiddenHistoryTasksCount = computed(() => {
-  return hiddenHistoryTasks.value.length;
-
+  return historyTasks.value.filter(task => shouldEntryBeHiddenForProviderUnavailability(task)).length;
 });
 
 const runningTasks = computed(() => {
@@ -45,7 +47,7 @@ const runningTasks = computed(() => {
 });
 
 const hiddenRunningTasksCount = computed(() => {
-  return runningTasks.value.filter(task => providers.value.some(p => p.provider_name === task.arguments.from_provider)).length;
+  return runningTasks.value.filter(task => shouldEntryBeHiddenForProviderUnavailability(task)).length;
 });
 
 const queuedTasks = computed(() => {
@@ -53,7 +55,7 @@ const queuedTasks = computed(() => {
 });
 
 const hiddenQueuedTasksCount = computed(() => {
-  return queuedTasks.value.filter(task => providers.value.some(p => p.provider_name === task.arguments.from_provider)).length;
+  return queuedTasks.value.filter(task => shouldEntryBeHiddenForProviderUnavailability(task)).length;
 });
 
 const fetchTasks = async () => {
@@ -110,8 +112,10 @@ onUnmounted(() => {
           <p class="text-sm text-zinc-400 font-normal" v-if="hiddenRunningTasksCount > 0">({{ hiddenRunningTasksCount }} hidden)</p>
           <hr class="flex-1 border-zinc-700 border-0.5 ms-5" />
         </div>
-        <template v-for="task in runningTasks" :key="task.task_id" v-if="runningTasks.length > 0" >
-          <Task :providers :task @cancel="fetchTasks" v-if="isProviderAvailable(task.arguments.from_provider)" />
+        <template v-if="runningTasks.length > 0">
+          <template v-for="task in runningTasks" :key="task.task_id" >
+            <Task :providers :task @cancel="fetchTasks" v-if="shouldEntryBeHiddenForProviderUnavailability(task)" />
+          </template>
         </template>
         <p class="text-sm text-zinc-400 font-normal" v-else>You have no running tasks.</p>
       </div>
@@ -121,8 +125,10 @@ onUnmounted(() => {
           <div class="text-sm text-zinc-400 font-normal" v-if="hiddenQueuedTasksCount > 0">({{ hiddenQueuedTasksCount }} hidden)</div>
           <hr class="flex-1 border-zinc-700 border-0.5 ms-5" />
         </div>
-        <template v-for="task in queuedTasks" :key="task.task_id" v-if="queuedTasks.length > 0">
-          <Task :providers :task v-if="isProviderAvailable(task.arguments.from_provider)" />
+        <template v-if="queuedTasks.length > 0">
+          <template v-for="task in queuedTasks" :key="task.task_id">
+            <Task :providers :task v-if="shouldEntryBeHiddenForProviderUnavailability(task)" />
+          </template>
         </template>
         <p class="text-sm text-zinc-400 font-normal" v-else>You have no tasks waiting in queue.</p>
       </div>
@@ -132,8 +138,10 @@ onUnmounted(() => {
           <div class="text-xs text-zinc-400 font-normal" v-if="hiddenHistoryTasksCount > 0">({{ hiddenHistoryTasksCount }} hidden)</div>
           <hr class="flex-1 border-zinc-700 border-0.5 ms-5" />
         </div>
-        <template v-for="task in historyTasks" :key="task.task_id" v-if="historyTasks.length > 0">
-          <Task :providers :task v-if="isProviderAvailable(task.arguments.from_provider)" />
+        <template v-if="historyTasks.length > 0">
+          <template v-for="task in historyTasks" :key="task.task_id">
+            <Task :providers :task v-if="shouldEntryBeHiddenForProviderUnavailability(task)" />
+          </template>
         </template>
         <p class="text-sm text-zinc-400 font-normal" v-else>You don't have any finished tasks yet.</p>
       </div>
