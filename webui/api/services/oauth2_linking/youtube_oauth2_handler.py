@@ -1,4 +1,7 @@
 import json
+import base64
+import hashlib
+import hmac
 from typing import Annotated
 from google_auth_oauthlib.flow import Flow
 from oauthlib.oauth2.rfc6749.errors import OAuth2Error
@@ -37,11 +40,22 @@ class YouTubeOAuth2Handler(BaseOAuth2Handler):
                     "token_uri": "https://oauth2.googleapis.com/token"
                 }
             },
-            scopes=config.GOOGLE_SCOPES
+            scopes=config.GOOGLE_SCOPES,
+            autogenerate_code_verifier=False,
+            code_verifier=self._get_pkce_code_verifier(state)
         )
 
         flow.redirect_uri = config.GOOGLE_REDIRECT_URI
         return flow
+    
+    def _get_pkce_code_verifier(self, state: str) -> str:
+        digest = hmac.new(
+            key=config.APP_SECRET.encode("utf-8"),
+            msg=state.encode("utf-8"),
+            digestmod=hashlib.sha256
+        ).digest()
+
+        return base64.urlsafe_b64encode(digest).decode("utf-8").rstrip("=")
 
     async def prepare_authorization_url(self, state: str) -> str:
         flow = self._get_flow(state)
@@ -62,19 +76,19 @@ class YouTubeOAuth2Handler(BaseOAuth2Handler):
 
             if not flow.credentials or not flow.credentials.scopes:
                 logger.error(f"{self.provider.provider_name} authorization flow failed. No credentials returned or the returned scopes are invalid.")
-                self.raise_flow_exception("No credentials returned")
+                self._raise_flow_exception("No credentials returned")
 
             return json.loads(flow.credentials.to_json())
         except Warning as e:
             if "scope has changed" in str(e).lower():
                 logger.warning(f"Rejecting user authorization. User {user.id} granted a different set of scopes than the ones required for all features to properly work.")
-                self.raise_flow_exception("Scope mismatch")
+                self._raise_flow_exception("Scope mismatch")
             else:
                 logger.error(f"Unknown value error in {self.provider.provider_name} code exchange: {e}")
                 raise
         except OAuth2Error as e:
             logger.error(f"{self.provider.provider_name} authorization flow failed: {self.provider.provider_name} said: \"{e.description}\".")
-            self.raise_flow_exception(e.description)         
+            self._raise_flow_exception(e.description)         
 
 def get_youtube_oauth2_handler(
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
