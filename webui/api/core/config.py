@@ -91,7 +91,7 @@ class Config(BaseSettings):
     @computed_field
     @property
     def GOOGLE_REDIRECT_URI(self) -> str:
-        return f"{self.APP_HOST}{self.API_BASE_URL}/providers/youtube/callback"
+        return f"http://{self.APP_HOST}{self.API_BASE_URL}/providers/youtube/callback"
     
     @computed_field
     @property
