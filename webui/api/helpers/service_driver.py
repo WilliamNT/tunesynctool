@@ -2,15 +2,14 @@ from tunesynctool.drivers import (
     AsyncWrappedServiceDriver,
     AsyncDeezerDriver,
     AsyncSpotifyDriver,
-    AsyncSubsonicDriver,
-    AsyncYouTubeDriver
+    AsyncSubsonicDriver
 )
 
 from api.drivers.youtube import AsyncYouTubeOAuth2Driver
 
 DRIVERS = {
     "spotify": AsyncSpotifyDriver,
-    "youtube": AsyncYouTubeDriver,
+    "youtube": AsyncYouTubeOAuth2Driver,
     "subsonic": AsyncSubsonicDriver,
     "deezer": AsyncDeezerDriver,
 }

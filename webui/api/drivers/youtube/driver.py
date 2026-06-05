@@ -195,19 +195,33 @@ class YouTubeOAuth2Driver(ServiceDriver):
                 safeSearch="none"
             ).execute()
             
-            result_ids = [result.get("id", {}).get("videoId") for result in search_results.get("items", [])]
+            result_ids = [
+                result.get("id", {}).get("videoId")
+                for result in search_results.get("items", [])
+                if result.get("id", {}).get("videoId")
+            ]
+
+            if len(result_ids) == 0:
+                return []
 
             video_results = self.client.videos().list(
-                part="contentDetails",
+                part="id,snippet,contentDetails",
                 id=",".join(result_ids)
             ).execute()
+            videos_by_id = {
+                video.get("id"): video
+                for video in video_results.get("items", [])
+                if video.get("id")
+            }
 
             mapped_videos = []
 
             for result in search_results.get("items", []):
                 video_id = result.get("id", {}).get("videoId")
-                video = filter(lambda x: x.get("id") == video_id, video_results.get("items", []))
-                video = list(video)[0]
+                video = videos_by_id.get(video_id)
+
+                if not video:
+                    continue
 
                 mapped_video = self._mapper.map_track_from_search(result, video)
                 mapped_videos.append(mapped_video)
@@ -218,3 +232,9 @@ class YouTubeOAuth2Driver(ServiceDriver):
 
     def get_track_by_isrc(self, isrc: str) -> Track:
         raise UnsupportedFeatureException("This feature is not implemented because there is no reliable way to query by ISRC with the YouTube API.")
+    
+    def get_saved_tracks(self, limit: int = 10) -> List[Track]:
+        return self.get_playlist_tracks(
+            playlist_id="LM",
+            limit=limit,
+        )

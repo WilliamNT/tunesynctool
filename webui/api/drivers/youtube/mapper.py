@@ -96,7 +96,7 @@ class YouTubeAPIV3Mapper(ServiceMapper):
             service_id=service_id,
             service_name="youtube",
             service_data={
-                "track": data,
+                "track": additional_data,
                 "search": data,
             },
         )

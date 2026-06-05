@@ -10,10 +10,8 @@ from api.models.service import ServiceCredentials
 from api.core.config import config
 from api.helpers.service_driver import get_driver_by_name
 from api.core.logging import logger
-from api.core.config import config
 from api.services.credentials_service import get_credentials_service, CredentialsService
 from api.models.user import User
-from api.helpers.ytmusicapi import CustomYTMusicAPIOAuthCredentials
 from api.exceptions.auth import OAuthTokenRefreshError
 
 class ServiceDriverHelperService:
@@ -36,7 +34,7 @@ class ServiceDriverHelperService:
         """
 
         try:
-            config: Union[Configuration | GoogleCredentials | SpotifyOAuth | CustomYTMusicAPIOAuthCredentials] = await self._get_config(
+            config: Union[Configuration | GoogleCredentials | SpotifyOAuth] = await self._get_config(
                 credentials=credentials,
                 provider_name=provider_name,
                 user=user
@@ -50,9 +48,7 @@ class ServiceDriverHelperService:
         match provider_name.lower().strip():
             case "youtube":
                 return driver(
-                    config=Configuration(),
-                    oauth_credentials=config,
-                    auth_dict=config.custom_get_auth_dict()
+                    google_credentials=config
                 )
             case "spotify":
                 return driver(
@@ -94,7 +90,7 @@ class ServiceDriverHelperService:
             subsonic_legacy_auth=config.SUBSONIC_LEGACY_AUTH
         )
     
-    async def _get_youtube_config(self, user: User, credentials: ServiceCredentials) -> CustomYTMusicAPIOAuthCredentials:
+    async def _get_youtube_config(self, user: User, credentials: ServiceCredentials) -> GoogleCredentials:
         try:
             fresh_credentials = await self.credentials_service.refresh_google_credentials(
                 user=user,
@@ -118,13 +114,7 @@ class ServiceDriverHelperService:
             scopes=config.GOOGLE_SCOPES
         )
 
-        ytmusicapi_credentials = CustomYTMusicAPIOAuthCredentials(
-            client_id=config.GOOGLE_CLIENT_ID,
-            client_secret=config.GOOGLE_CLIENT_SECRET,
-            google_credentials=google_credentials
-        )
-
-        return ytmusicapi_credentials
+        return google_credentials
     
     def _get_spotify_config(self, credentials: ServiceCredentials) -> SpotifyOAuth:
         cache_handler = MemoryCacheHandler(

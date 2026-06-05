@@ -10,13 +10,10 @@ from api.models.service import ServiceCredentials
 from api.core.config import config
 from api.helpers.service_driver import get_driver_by_name
 from api.core.logging import logger
-from api.core.config import config
 from api.services.credentials_service import CredentialsService
 from api.models.user import User
-from api.helpers.ytmusicapi import CustomYTMusicAPIOAuthCredentials
 from api.exceptions.auth import OAuthTokenRefreshError
 from api.drivers.cached.async_cached_driver import AsyncCachedDriver
-from api.core.config import config
 
 class ServiceDriverFactory:
     """
@@ -57,7 +54,7 @@ class ServiceDriverFactory:
             raise ValueError(f"CredentialsService.get_service_credentials() returned None (user does not have credentials for this provider)")
 
         try:
-            config: Union[Configuration | GoogleCredentials | SpotifyOAuth | CustomYTMusicAPIOAuthCredentials] = await self._get_config(
+            config: Union[Configuration | GoogleCredentials | SpotifyOAuth] = await self._get_config(
                 credentials=credentials,
                 user=user
             )
@@ -70,9 +67,7 @@ class ServiceDriverFactory:
         match self.provider_name:
             case "youtube":
                 return AsyncCachedDriver(driver(
-                    config=Configuration(),
-                    oauth_credentials=config,
-                    auth_dict=config.custom_get_auth_dict()
+                    google_credentials=config
                 ))
             case "spotify":
                 return AsyncCachedDriver(driver(
@@ -114,7 +109,7 @@ class ServiceDriverFactory:
             subsonic_legacy_auth=config.SUBSONIC_LEGACY_AUTH
         )
     
-    async def _get_youtube_config(self, user: User, credentials: ServiceCredentials) -> CustomYTMusicAPIOAuthCredentials:
+    async def _get_youtube_config(self, user: User, credentials: ServiceCredentials) -> GoogleCredentials:
         try:
             fresh_credentials = await self.credentials_service.refresh_google_credentials(
                 user=user,
@@ -133,18 +128,10 @@ class ServiceDriverFactory:
                 detail=private_reason + " Relinking will likely fix this issue."
             )
 
-        google_credentials = GoogleCredentials.from_authorized_user_info(
+        return GoogleCredentials.from_authorized_user_info(
             info=fresh_credentials.credentials,
             scopes=config.GOOGLE_SCOPES
         )
-
-        ytmusicapi_credentials = CustomYTMusicAPIOAuthCredentials(
-            client_id=config.GOOGLE_CLIENT_ID,
-            client_secret=config.GOOGLE_CLIENT_SECRET,
-            google_credentials=google_credentials
-        )
-
-        return ytmusicapi_credentials
     
     def _get_spotify_config(self, credentials: ServiceCredentials) -> SpotifyOAuth:
         cache_handler = MemoryCacheHandler(
