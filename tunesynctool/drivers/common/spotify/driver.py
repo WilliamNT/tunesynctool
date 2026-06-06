@@ -109,10 +109,14 @@ class SpotifyDriver(ServiceDriver):
                 limit=limit
             )
 
-            mapped_tracks = [self._mapper.map_track(track['track']) for track in fetched_tracks]
+            mapped_tracks = []
+            for track in fetched_tracks:
+                raw_entry = track["track"]
+                if raw_entry:
+                    mapped_entry = self._mapper.map_track(raw_entry)
+                    mapped_entry.service_name = self.service_name
 
-            for track in mapped_tracks:
-                track.service_name = self.service_name
+                    mapped_tracks.append(mapped_entry)
 
             return mapped_tracks
         except SpotifyException as e:
