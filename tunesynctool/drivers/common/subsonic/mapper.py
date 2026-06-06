@@ -36,6 +36,7 @@ class SubsonicMapper(ServiceMapper):
         track_number = int(data.get('track')) if data.get('track') else None
         release_year = int(data.get('year')) if data.get('year') else None
         musicbrainz_id = data.get('musicBrainzId')
+        isrc = data.get('isrc')[0] if data.get('isrc') else None
         
         return Track(
             title=title,
@@ -45,6 +46,7 @@ class SubsonicMapper(ServiceMapper):
             track_number=track_number,
             release_year=release_year,
             musicbrainz_id=musicbrainz_id,
+            isrc=isrc,
             service_id=service_id,
             service_name='subsonic',
             service_data=data
