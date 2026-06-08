@@ -9,6 +9,7 @@ import { get_access_token, get_api_configuration } from '@/services/api';
 import PlaylistSelector from './PlaylistSelector.vue';
 import { useRouteQuery } from '@vueuse/router';
 import { isAxiosError } from 'axios';
+import AppCheckbox from '../form/AppCheckbox.vue';
 
 const props = defineProps<{
   providers: ProviderRead[];
@@ -19,6 +20,7 @@ const config = get_api_configuration(get_access_token());
 const libraryApi = new LibraryApi(config);
 const tasksApi = new TasksApi(config);
 const isLoading = ref(false);
+const isDryRun = ref(false);
 const playlists = ref<PlaylistRead[]>([]);
 
 const disallowSubmit = computed(() => {
@@ -101,6 +103,7 @@ const onSubmit = async () => {
     to_provider: targetProviderChoice.value.provider_name,
     from_playlist: selectedPlaylist.value?.identifiers.provider_id,
     kind: TaskKind.PlaylistTransfer, // hardcoded for now, but will need to be dynamic later
+    is_dry_run: isDryRun.value,
   })
 
   selectedPlaylistId.value = undefined;
@@ -118,6 +121,13 @@ const onSubmit = async () => {
         <Icon icon="material-symbols-light:arrow-right-alt-rounded" class="block text-3xl h-full my-auto text-zinc-400" />
         <ProviderSelector :providers v-model="targetProviderName" />
       </div>
+      <AppCheckbox
+        id="playlist-task-dry-run"
+        v-model="isDryRun"
+        class="shrink-0"
+        label="Dry run"
+        :disabled="isLoading"
+      />
       <AppButton type="submit" :disabled="disallowSubmit || isLoading" class="min-w-30">
         <Icon icon="svg-spinners:3-dots-bounce" class="inline-block text-2xl" v-if="isLoading"/>
         <template v-else>
