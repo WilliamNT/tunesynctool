@@ -41,5 +41,17 @@ export interface ValidationError {
      * @memberof ValidationError
      */
     'type': string;
+    /**
+     * 
+     * @type {any}
+     * @memberof ValidationError
+     */
+    'input'?: any;
+    /**
+     * 
+     * @type {object}
+     * @memberof ValidationError
+     */
+    'ctx'?: object;
 }
 

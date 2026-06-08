@@ -186,42 +186,50 @@ async def handle_playlist_transfer(task: PlaylistTaskStatus, user: User, redis: 
 
             return
 
-        try:
-            target_playlist = await target_driver.create_playlist(source_playlist.name)
-        except Exception as e:
-            logger.error(f"Failure while creating new playlist. Reason: {e}")
-            await report_task_failure(
-                redis=redis,
-                task=task,
-                redis_key=redis_key,
-                reason="Couldn't create playlist."
-            )
-
-            return
-
-        try:
-            await insert_tracks_into_playlist(
-                playlist_id=target_playlist.service_id,
-                tracks=matches,
-                driver=target_driver,
-                task=task,
-                redis=redis,
-                redis_key=redis_key
-            )
-
-            logger.info(f"Successfuly finished transfer of playlist from {source_provider.provider_name} to {target_provider.provider_name}.")
+        if task.arguments.is_dry_run:
+            logger.info("Skipping playlist creation and track insertion because task the current is a dry run. Task will be marked as successful.")
             await report_task_finished(
                 redis=redis,
                 task=task,
                 redis_key=redis_key
             )
-        except Exception as e:
-            logger.error(f"Failure while inserting tracks into playlist. Reason: {e}")
-            await report_task_failure(
-                redis=redis,
-                task=task,
-                redis_key=redis_key
-            )
+        else:
+            try:
+                target_playlist = await target_driver.create_playlist(source_playlist.name)
+            except Exception as e:
+                logger.error(f"Failure while creating new playlist. Reason: {e}")
+                await report_task_failure(
+                    redis=redis,
+                    task=task,
+                    redis_key=redis_key,
+                    reason="Couldn't create playlist."
+                )
+
+                return
+
+            try:
+                await insert_tracks_into_playlist(
+                    playlist_id=target_playlist.service_id,
+                    tracks=matches,
+                    driver=target_driver,
+                    task=task,
+                    redis=redis,
+                    redis_key=redis_key
+                )
+
+                logger.info(f"Successfuly finished transfer of playlist from {source_provider.provider_name} to {target_provider.provider_name}.")
+                await report_task_finished(
+                    redis=redis,
+                    task=task,
+                    redis_key=redis_key
+                )
+            except Exception as e:
+                logger.error(f"Failure while inserting tracks into playlist. Reason: {e}")
+                await report_task_failure(
+                    redis=redis,
+                    task=task,
+                    redis_key=redis_key
+                )
     finally:
         await session.close()
 

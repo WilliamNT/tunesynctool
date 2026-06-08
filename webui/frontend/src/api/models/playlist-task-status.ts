@@ -58,7 +58,25 @@ export interface PlaylistTaskStatus {
      * @type {number}
      * @memberof PlaylistTaskStatus
      */
+    'started_at'?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof PlaylistTaskStatus
+     */
     'done_at'?: number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof PlaylistTaskStatus
+     */
+    'worker_id'?: string | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof PlaylistTaskStatus
+     */
+    'last_heartbeat'?: number | null;
     /**
      * Original request parameters.
      * @type {PlaylistTaskCreate}

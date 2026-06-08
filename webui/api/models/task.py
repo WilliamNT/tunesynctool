@@ -33,6 +33,7 @@ class GenericTaskCreateBase(BaseModel):
     from_provider: str = Field(description="Origin provider for the playlist.")
     to_provider: str = Field(description="Target provider to replicate the playlist on.")
     kind: TaskKind = Field(description="The type of the task.")
+    is_dry_run: bool = Field(description="If True, write operations will be avoided where possible.")
 
     @field_validator("from_provider")
     def validate_from_provider(cls, v: str) -> str:
@@ -54,7 +55,7 @@ class TaskResponseBase(BaseModel):
     Base class for task responses.
     """
 
-    task_id: UUID = Field(description="Unique identifier for the task.")
+    task_id: UUID = Field(description="Unique identifier for the task.") 
     status: TaskStatus = Field(description="Current status of the task as a whole.")
     status_reason: Optional[str] = Field(description="Optional reason for the status to be shown to end users or used in logs.", default=None)
     queued_at: int = Field(description="Unix timestamp in UTC to help tell when the task was put in the queue.")

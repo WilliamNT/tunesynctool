@@ -42,6 +42,12 @@ export interface PlaylistTaskCreate {
      */
     'kind': TaskKind;
     /**
+     * If True, write operations will be avoided where possible.
+     * @type {boolean}
+     * @memberof PlaylistTaskCreate
+     */
+    'is_dry_run': boolean;
+    /**
      * Source playlist you wish to replicate.
      * @type {string}
      * @memberof PlaylistTaskCreate
