@@ -4,7 +4,7 @@ import re
 
 from api.models.track import TrackRead, TrackIdentifiersRead
 from api.models.entity import EntityIdentifiersBase, EntityMetaRead, EntityMultiAuthorRead, EntityAssetsBase, EntitySingleAuthorRead
-from api.helpers.extraction import extract_best_thumbnail, extract_share_url_from_track_sync
+from api.helpers.extraction import extract_best_youtube_thumbnail, extract_share_url_from_track_sync
 from api.core.logging import logger
 from api.models.playlist import PlaylistRead
 
@@ -88,9 +88,9 @@ def map_playlist_assets_between_domain_model_to_response_model(playlist: Playlis
         case "spotify":
             link = extra_data.get("images", [])[0].get("url") if extra_data.get("images") and len(extra_data.get("images")) > 0 else None
         case "youtube":
-            link = extract_best_thumbnail(extra_data.get("snippet", {}).get("thumbnails"))
+            link = extract_best_youtube_thumbnail(extra_data.get("snippet", {}).get("thumbnails"))
             if not link:
-                link = extract_best_thumbnail(extra_data.get("thumbnails"))
+                link = extract_best_youtube_thumbnail(extra_data.get("thumbnails"))
 
             pattern = re.compile(r'^(?:https?://)?(?:www\.)?gstatic\.com/youtube/media/ytm/images/pbg/playlist-empty-state-@\d+\.[a-z]+$', re.IGNORECASE)
             if link and bool(pattern.match(link)):
