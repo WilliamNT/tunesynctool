@@ -38,6 +38,10 @@ const taskDuration = computed(() => {
   return formattedDifference;
 });
 
+const playlistTitle = computed(() => {
+  return playlist.value?.title ?? (hasLoadingErrored.value ? 'Unknown playlist' : 'Loading...');
+});
+
 const config = get_api_configuration(
   get_access_token()
 );
@@ -85,7 +89,7 @@ const cancelTask = async () => {
     </RouterLink>
     <TaskCover :provider="source_provider" :track="task.progress.track" :playlist class="my-auto" v-else />
     <div class="flex flex-col gap-0.5">
-      <h3 class="truncate font-black text-white text-lg m-0 p-0">{{ playlist?.title ?? hasLoadingErrored ? 'Unknown playlist' : 'Loading...' }}</h3>
+      <h3 class="truncate font-black text-white text-lg m-0 p-0">{{ playlistTitle }}</h3>
       <div class="text-xs mb-1 text-zinc-400" v-if="task.progress.track">
         <span class="me-2">{{ task.status === TaskStatus.Running ? 'Current' : 'Last' }}:</span>
         <a :href="task.progress.track.meta.share_url" v-if="task.progress.track.meta.share_url">{{ task.progress.track.title }} - {{ task.progress.track.author.primary }}</a>
