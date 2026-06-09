@@ -12,7 +12,7 @@ from api.models.user import User
 from api.workers.handlers.playlist_transfer_handler import handle_playlist_transfer
 from api.workers.handlers.helpers import report_task_on_hold, report_task_failure
 from api.services.user_service import UserService
-from api.core.database import get_session
+from api.core.database import get_session_instance
 from api.workers.keys import (
     parse_task_key, 
     make_task_queue_name, 
@@ -139,8 +139,7 @@ async def get_task_user(ctx: WorkerContext, user_id: int, task_uuid: str) -> Opt
     Fetch the user who owns the task.
     """
 
-    session = await anext(get_session())
-    try:
+    async with await get_session_instance() as session:
         user_service = UserService(session)
         user = await user_service.get_by_id(user_id)
 
@@ -148,8 +147,6 @@ async def get_task_user(ctx: WorkerContext, user_id: int, task_uuid: str) -> Opt
             logger.error(f"[{ctx.worker_name}][task:{task_uuid}] User {user_id} not found")
         
         return user
-    finally:
-        await session.close()
 
 async def dispatch_task(ctx: WorkerContext, task_kind: str, task: PlaylistTaskStatus, user: User, redis_key: str) -> None:
     """

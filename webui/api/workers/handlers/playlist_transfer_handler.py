@@ -13,7 +13,7 @@ from api.helpers.mapping import map_track_between_domain_model_and_response_mode
 from api.services.providers.provider_factory import ProviderFactory
 from api.services.credentials_service import get_credentials_service
 from api.models.user import User
-from api.core.database import get_session
+from api.core.database import get_session_instance
 from api.models.entity import EntityAssetsBase
 from api.services.providers.base_provider import BaseProvider
 from api.workers.handlers.helpers import (
@@ -61,8 +61,7 @@ async def get_track_assets(source_provider: BaseProvider, track: Track, user: Us
 async def handle_playlist_transfer(task: PlaylistTaskStatus, user: User, redis: Redis, redis_key: str) -> None:
     logger.info(f"Transfering playlist {task.arguments.from_playlist} from {task.arguments.from_provider} to {task.arguments.to_provider}.")
 
-    session = await anext(get_session())
-    try:
+    async with await get_session_instance() as session:
         credentials_service = get_credentials_service(session)
 
         try:
@@ -230,9 +229,6 @@ async def handle_playlist_transfer(task: PlaylistTaskStatus, user: User, redis: 
                     task=task,
                     redis_key=redis_key
                 )
-    finally:
-        await session.close()
-
 
 async def insert_tracks_into_playlist(playlist_id: str, tracks: list[Track], driver: AsyncWrappedServiceDriver, task: PlaylistTaskStatus, redis: Redis, redis_key: str) -> None:
     for chunked_ids in batch([track.service_id for track in tracks], 25):
