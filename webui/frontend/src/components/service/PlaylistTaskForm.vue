@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LibraryApi, TaskKind, TasksApi, type PlaylistRead, type ProviderRead } from '@/api';
+import { LibraryApi, TaskKind, TasksApi, type PlaylistRead, type PlaylistTaskStatus, type ProviderRead } from '@/api';
 import AppButton from '../button/AppButton.vue';
 import AppFormSpacer from '../form/AppFormSpacer.vue';
 import { computed, onMounted, ref, watch } from 'vue';
@@ -13,6 +13,10 @@ import AppCheckbox from '../form/AppCheckbox.vue';
 
 const props = defineProps<{
   providers: ProviderRead[];
+}>();
+
+const emit = defineEmits<{
+  submitted: [task: PlaylistTaskStatus];
 }>();
 
 const providers = computed(() => props.providers.filter((provider) => provider.is_configured && provider.linking.linked));
@@ -98,17 +102,20 @@ const onSubmit = async () => {
 
   isLoading.value = true;
 
-  await tasksApi.transferPlaylist({
-    from_provider: sourceProviderChoice.value.provider_name,
-    to_provider: targetProviderChoice.value.provider_name,
-    from_playlist: selectedPlaylist.value?.identifiers.provider_id,
-    kind: TaskKind.PlaylistTransfer, // hardcoded for now, but will need to be dynamic later
-    is_dry_run: isDryRun.value,
-  })
+  try {
+    const response = await tasksApi.transferPlaylist({
+      from_provider: sourceProviderChoice.value.provider_name,
+      to_provider: targetProviderChoice.value.provider_name,
+      from_playlist: selectedPlaylist.value?.identifiers.provider_id,
+      kind: TaskKind.PlaylistTransfer, // hardcoded for now, but will need to be dynamic later
+      is_dry_run: isDryRun.value,
+    });
 
-  selectedPlaylistId.value = undefined;
-
-  isLoading.value = false;
+    emit('submitted', response.data);
+    selectedPlaylistId.value = undefined;
+  } finally {
+    isLoading.value = false;
+  }
 }
 </script>
 
