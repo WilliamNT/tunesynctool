@@ -91,7 +91,7 @@ class TaskService:
         :param user: User who owns the task
         """
 
-        pattern = make_user_tasks_pattern(user.id).replace("*:*", f"*:{task_id}")
+        pattern = f"user_tasks:*:{user.id}:{task_id}"
         keys = []
         async for key in self.redis.scan_iter(match=pattern):
             keys.append(key)
@@ -110,6 +110,13 @@ class TaskService:
 
             if raw:
                 task = PlaylistTaskStatus.model_validate_json(raw)
+
+                # Task is already terminal; treat DELETE as clearing it from the user's task list.
+                if task.status not in [TaskStatus.RUNNING, TaskStatus.QUEUED, TaskStatus.ON_HOLD]:
+                    await self.redis.delete(keys[0])
+                    logger.info(f"[task:{task_id}] Deleted terminal task for user {user.id}")
+                    return
+
                 task.status = TaskStatus.CANCELED
                 task.status_reason = "Cancelled by user."
                 task.done_at = int(time.time())

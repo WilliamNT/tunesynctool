@@ -123,8 +123,9 @@ async def cancel_task(
 ) -> None:
     """
     Cancels the specified task. Users can only cancel their own tasks.
-
     It may take a few seconds for the background workers to honor this request.
+
+    If the task is already not running for some reason (i.e. canceled, failed) then it will be permanently deleted.
     """
 
     return await service.dispatch_task_cancellation(
