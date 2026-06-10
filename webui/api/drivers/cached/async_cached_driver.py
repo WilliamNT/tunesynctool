@@ -3,13 +3,12 @@ from sqlmodel import select
 from tunesynctool.drivers import AsyncWrappedServiceDriver
 from tunesynctool.models.playlist import Playlist
 from tunesynctool.models.track import Track
-from redis.asyncio import Redis
 import json
 import re
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.core.config import config
 from api.core.database import get_session_instance
+from api.core.redis import get_redis_instance
 from api.models.track import CachedTrackProviderMapping, CachedTrack
 from api.core.logging import logger
 
@@ -24,11 +23,7 @@ class AsyncCachedDriver(AsyncWrappedServiceDriver):
         super().__init__(base.sync_driver)
 
         self.base = base
-        self.redis = Redis(
-            host=config.REDIS_HOST,
-            port=config.REDIS_PORT,
-            decode_responses=True
-        )
+        self.redis = get_redis_instance()
 
     async def __aenter__(self) -> "AsyncCachedDriver":
         return self

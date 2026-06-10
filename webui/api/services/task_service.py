@@ -1,23 +1,19 @@
-from typing import Optional
+from typing import AsyncGenerator, Optional
 import uuid
 from fastapi import HTTPException, status
-import redis.asyncio as redis
+from redis.asyncio import Redis
 import time
 
 from api.models.task import PlaylistTaskProgress, PlaylistTaskStatus, PlaylistTaskCreate, TaskStatus, TaskKind
 from api.models.user import User
-from api.core.config import config
+from api.core.redis import get_redis_instance
 from api.models.collection import Collection
 from api.core.logging import logger
 from api.workers.keys import make_task_key, make_user_tasks_pattern, make_task_queue_name, TTL_QUEUED, TTL_FINISHED
 
 class TaskService:
-    def __init__(self):
-        self.redis = redis.Redis(
-            host=config.REDIS_HOST,
-            port=config.REDIS_PORT,
-            decode_responses=True
-        )
+    def __init__(self, redis: Redis):
+        self.redis = redis
         
     async def dispatch_playlist_transfer(self, details: PlaylistTaskCreate, user: User) -> PlaylistTaskStatus:
         """
@@ -140,5 +136,9 @@ class TaskService:
             detail="Task not found."
         )
 
-def get_task_service() -> TaskService:
-    return TaskService()
+async def get_task_service() -> AsyncGenerator[TaskService, None]:
+    redis = get_redis_instance()
+    try:
+        yield TaskService(redis)
+    finally:
+        await redis.aclose()

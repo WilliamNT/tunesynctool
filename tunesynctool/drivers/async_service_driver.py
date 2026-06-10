@@ -34,6 +34,15 @@ class AsyncWrappedServiceDriver:
     async def _wrap_sync(self, fn, *args, **kwargs):
         return await anyio.to_thread.run_sync(lambda: fn(*args, **kwargs))
 
+    async def close(self) -> None:
+        pass
+
+    async def __aenter__(self) -> "AsyncWrappedServiceDriver":
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        await self.close()
+
     async def get_user_playlists(self, limit: int = 25) -> List[Playlist]:
         return await self._wrap_sync(
             self.sync_driver.get_user_playlists,

@@ -77,8 +77,8 @@ class BaseProvider:
         Search the provider's catalog for tracks.
         """
 
-        driver = await self._get_driver(user)
-        results = await self._exec_service_driver_method(lambda: driver.search_tracks(query=search_parameters.query, limit=search_parameters.limit))
+        async with await self._get_driver(user) as driver:
+            results = await self._exec_service_driver_method(lambda: driver.search_tracks(query=search_parameters.query, limit=search_parameters.limit))
 
         if len(results) > search_parameters.limit:
             results = results[:search_parameters.limit]
@@ -118,21 +118,21 @@ class BaseProvider:
         Attempts to resolve the track that is identified by the given ISRC.
         """
 
-        driver = await self._get_driver(user)
-        if not driver.supports_direct_isrc_querying:
-            raise_unsupported_driver_feature_exception(
-                provider_name=self.provider_name
-            )
-
         try:
-            result = await self._exec_service_driver_method(lambda: driver.get_track_by_isrc(isrc=search_parameters.isrc))
-            assets = await self.get_track_assets(result, user)
+            async with await self._get_driver(user) as driver:
+                if not driver.supports_direct_isrc_querying:
+                    raise_unsupported_driver_feature_exception(
+                        provider_name=self.provider_name
+                    )
 
-            return map_track_between_domain_model_and_response_model(
-                track=result,
-                provider_name=self.provider_name,
-                assets=assets
-            )
+                result = await self._exec_service_driver_method(lambda: driver.get_track_by_isrc(isrc=search_parameters.isrc))
+                assets = await self.get_track_assets(result, user)
+
+                return map_track_between_domain_model_and_response_model(
+                    track=result,
+                    provider_name=self.provider_name,
+                    assets=assets
+                )
         except TrackNotFoundException as e:
             raise HTTPException(
                 detail="Track not found.",
@@ -145,15 +145,15 @@ class BaseProvider:
         """
 
         try:
-            driver = await self._get_driver(user)
-            result = await self._exec_service_driver_method(lambda: driver.get_track(track_id=search_paremeters.provider_id))
-            assets = await self.get_track_assets(result, user)
+            async with await self._get_driver(user) as driver:
+                result = await self._exec_service_driver_method(lambda: driver.get_track(track_id=search_paremeters.provider_id))
+                assets = await self.get_track_assets(result, user)
 
-            return map_track_between_domain_model_and_response_model(
-                track=result,
-                provider_name=self.provider_name,
-                assets=assets
-            )
+                return map_track_between_domain_model_and_response_model(
+                    track=result,
+                    provider_name=self.provider_name,
+                    assets=assets
+                )
         except TrackNotFoundException as e:
             raise HTTPException(
                 detail="Track not found.",
@@ -166,13 +166,13 @@ class BaseProvider:
         """
         
         try:
-            driver = await self._get_driver(user)
-            result = await self._exec_service_driver_method(lambda: driver.get_playlist(playlist_id=search_parameters.provider_id))
+            async with await self._get_driver(user) as driver:
+                result = await self._exec_service_driver_method(lambda: driver.get_playlist(playlist_id=search_parameters.provider_id))
 
-            return map_playlist_between_domain_model_to_response_model(
-                playlist=result,
-                provider_name=self.provider_name
-            )
+                return map_playlist_between_domain_model_to_response_model(
+                    playlist=result,
+                    provider_name=self.provider_name
+                )
         except PlaylistNotFoundException as e:
             raise HTTPException(
                 detail="Playlist not found.",
@@ -185,8 +185,8 @@ class BaseProvider:
         """
 
         try:
-            driver = await self._get_driver(user)
-            results = await self._exec_service_driver_method(lambda: driver.get_playlist_tracks(playlist_id=search_parameters.provider_id, limit=0))
+            async with await self._get_driver(user) as driver:
+                results = await self._exec_service_driver_method(lambda: driver.get_playlist_tracks(playlist_id=search_parameters.provider_id, limit=0))
 
             assets_list = await asyncio.gather(*[self.get_track_assets(result, user) for result in results])
             mapped_results = [
@@ -211,8 +211,8 @@ class BaseProvider:
         Retrieves all user playlists up to the limit.
         """
         
-        driver = await self._get_driver(user)
-        results = await self._exec_service_driver_method(lambda: driver.get_user_playlists(limit=search_parameters.limit))
+        async with await self._get_driver(user) as driver:
+            results = await self._exec_service_driver_method(lambda: driver.get_user_playlists(limit=search_parameters.limit))
 
         if len(results) > search_parameters.limit:
             results = results[:search_parameters.limit]
@@ -233,8 +233,8 @@ class BaseProvider:
         Creates a new playlist at the specified provider with the given paremeters.
         """
 
-        driver = await self._get_driver(user)
-        result = await self._exec_service_driver_method(lambda: driver.create_playlist(name=playlist_details.title))
+        async with await self._get_driver(user) as driver:
+            result = await self._exec_service_driver_method(lambda: driver.create_playlist(name=playlist_details.title))
 
         return map_playlist_between_domain_model_to_response_model(
             playlist=result,
@@ -247,8 +247,8 @@ class BaseProvider:
         """
 
         try:
-            driver = await self._get_driver(user)
-            await self._exec_service_driver_method(lambda: driver.add_tracks_to_playlist(playlist_id=search_parameters.provider_id, track_ids=track_details.provider_ids))
+            async with await self._get_driver(user) as driver:
+                await self._exec_service_driver_method(lambda: driver.add_tracks_to_playlist(playlist_id=search_parameters.provider_id, track_ids=track_details.provider_ids))
 
             return await self.handle_playlist_tracks_lookup(
                 search_parameters=search_parameters,
@@ -291,8 +291,8 @@ class BaseProvider:
         Lists the tracks in the user's "liked music" playlist, if the provider supports it.
         """
 
-        driver = await self._get_driver(user)
-        results = await self._exec_service_driver_method(lambda: driver.get_saved_tracks(limit=search_parameters.limit))
+        async with await self._get_driver(user) as driver:
+            results = await self._exec_service_driver_method(lambda: driver.get_saved_tracks(limit=search_parameters.limit))
 
         if len(results) > search_parameters.limit:
             results = results[:search_parameters.limit]

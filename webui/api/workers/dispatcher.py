@@ -6,7 +6,7 @@ from typing import Optional, Tuple
 from dataclasses import dataclass
 
 from api.core.logging import logger
-from api.core.config import config
+from api.core.redis import get_redis_instance
 from api.models.task import PlaylistTaskStatus, TaskStatus, TaskKind
 from api.models.user import User
 from api.workers.handlers.playlist_transfer_handler import handle_playlist_transfer
@@ -251,11 +251,7 @@ async def worker_dispatcher(worker_id: int) -> None:
     ctx = WorkerContext(
         worker_id=worker_id,
         worker_name=f"worker-{worker_id}",
-        redis=Redis(
-            host=config.REDIS_HOST,
-            port=config.REDIS_PORT,
-            decode_responses=True
-        )
+        redis=get_redis_instance()
     )
 
     logger.info(f"[{ctx.worker_name}] Starting up...")

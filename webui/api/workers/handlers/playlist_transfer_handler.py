@@ -6,6 +6,7 @@ from tunesynctool.models.track import Track
 from tunesynctool.utilities.collections import batch
 from tunesynctool.drivers.async_service_driver import AsyncWrappedServiceDriver
 import asyncio
+from contextlib import AsyncExitStack
 
 from api.models.task import PlaylistTaskStatus
 from api.core.logging import logger
@@ -61,12 +62,12 @@ async def get_track_assets(source_provider: BaseProvider, track: Track, user: Us
 async def handle_playlist_transfer(task: PlaylistTaskStatus, user: User, redis: Redis, redis_key: str) -> None:
     logger.info(f"Transfering playlist {task.arguments.from_playlist} from {task.arguments.from_provider} to {task.arguments.to_provider}.")
 
-    async with await get_session_instance() as session:
+    async with await get_session_instance() as session, AsyncExitStack() as driver_stack:
         credentials_service = get_credentials_service(session)
 
         try:
             source_provider = ProviderFactory.create(task.arguments.from_provider, credentials_service)
-            source_driver = await source_provider._get_driver(user)
+            source_driver = await driver_stack.enter_async_context(await source_provider._get_driver(user))
 
             target_provider = None
             target_driver = None
@@ -76,7 +77,7 @@ async def handle_playlist_transfer(task: PlaylistTaskStatus, user: User, redis: 
                 target_driver = source_driver
             else:
                 target_provider = ProviderFactory.create(task.arguments.to_provider, credentials_service)
-                target_driver = await target_provider._get_driver(user)
+                target_driver = await driver_stack.enter_async_context(await target_provider._get_driver(user))
         except Exception as e:
             logger.error(f"Task {task.task_id} can't be started. Reason: {e}")
             await report_task_failure(

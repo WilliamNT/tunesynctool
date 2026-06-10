@@ -1,7 +1,6 @@
-from redis.asyncio import Redis
 import time
 
-from api.core.config import config
+from api.core.redis import get_redis_instance
 from api.core.logging import logger
 from api.models.task import PlaylistTaskStatus, TaskStatus
 from api.workers.keys import make_running_tasks_pattern, HEARTBEAT_STALE_THRESHOLD, TTL_FINISHED
@@ -14,11 +13,7 @@ async def recover_stale_tasks() -> int:
     :return: Number of stale tasks recovered
     """
     
-    redis = Redis(
-        host=config.REDIS_HOST,
-        port=config.REDIS_PORT,
-        decode_responses=True
-    )
+    redis = get_redis_instance()
     
     recovered_count = 0
     current_time = int(time.time())

@@ -1,7 +1,6 @@
 from typing import AsyncGenerator, Optional
 from sqlmodel import SQLModel, select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from redis.asyncio import Redis
 
 from api.core.config import config
 from api.models.user import User
