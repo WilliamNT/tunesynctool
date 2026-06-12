@@ -7,6 +7,7 @@ from typing import List, Optional
 from googleapiclient.errors import HttpError
 
 from .mapper import YouTubeAPIV3Mapper
+from .exception import PrivateResourceException
 
 class YouTubeOAuth2Driver(ServiceDriver):
     """
@@ -88,7 +89,7 @@ class YouTubeOAuth2Driver(ServiceDriver):
             if e.status_code == 404:
                 raise PlaylistNotFoundException()
             elif e.status_code == 403:
-                raise ServiceDriverException("You do not have permission to access this playlist.")
+                raise PrivateResourceException("You do not have permission to access this playlist.")
         except Exception as e:
             raise ServiceDriverException(e)
 
@@ -106,7 +107,7 @@ class YouTubeOAuth2Driver(ServiceDriver):
             return self._mapper.map_playlist(result)
         except HttpError as e:
             if e.status_code == 403:
-                raise ServiceDriverException("Permission error. This is most likely happening because not all required scopes were granted during authorization. Relinking the account should fix this.")
+                raise PrivateResourceException("Permission error. This is most likely happening because not all required scopes were granted during authorization. Relinking the account should fix this.")
             elif e.status_code == 400:
                 raise ServiceDriverException(e)
         except Exception as e:
@@ -136,7 +137,7 @@ class YouTubeOAuth2Driver(ServiceDriver):
                     elif error.get("reason") == "videoNotFound":
                         raise TrackNotFoundException()
             elif e.status_code == 403:
-                raise ServiceDriverException("Permission error. This is either happening because the playlist doesn't belong to the linked account or not all required scopes were granted during authorization. Relinking the account should fix this.")
+                raise PrivateResourceException("Permission error. This is either happening because the playlist doesn't belong to the linked account or not all required scopes were granted during authorization. Relinking the account should fix this.")
             else:
                 raise ServiceDriverException(e) from e
         except Exception as e:
@@ -160,6 +161,9 @@ class YouTubeOAuth2Driver(ServiceDriver):
             return self._mapper.map_playlist(playlist)
         except PlaylistNotFoundException:
             raise
+        except HttpError as e:
+            if e.status_code == 403:
+                raise PrivateResourceException("Permission error. This is either happening because the playlist doesn't belong to the linked account or not all required scopes were granted during authorization. Relinking the account should fix this.")
         except Exception as e:
             raise ServiceDriverException(e)
 
@@ -178,6 +182,9 @@ class YouTubeOAuth2Driver(ServiceDriver):
             return self._mapper.map_track(video)
         except TrackNotFoundException:
             raise
+        except HttpError as e:
+            if e.status_code == 403:
+                raise PrivateResourceException("Permission error. This is either happening because the track doesn't belong to the linked account, the user does not have permission to access it, or not all required scopes were granted during authorization. Relinking the account may fix this.")
         except Exception as e:
             raise ServiceDriverException(e)
 
