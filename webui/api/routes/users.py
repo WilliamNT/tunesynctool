@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, status
 from api.models.user import UserRead, UserCreate
 from api.services.user_service import UserService, get_user_service
 from api.core.context import RequestContext, get_request_context
+from api.models.collection import Collection
 
 router = APIRouter(
     prefix="/users",
@@ -56,3 +57,28 @@ async def get_authenticated_user(
     """
 
     return request_context.user
+
+@router.get(
+    path="",
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": "You do not have the required rights to list users."
+        },
+    },
+    summary="List all users on the instance",
+    operation_id="getAllUsers",
+    name="users:get_all_users",
+)
+async def get_all_users(
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    user_service: Annotated[UserService, Depends(get_user_service)]
+) -> Collection[UserRead]:
+    """
+    Returns information for all user accounts on the current instance.
+
+    Only users with admin rights should call this endpoint, otherwise the request will be rejected.
+    """
+
+    return await user_service.compile_all_users_for_admin_use(
+        caller_user=request_context.user
+    )

@@ -3,12 +3,13 @@ from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from api.models.user import UserCreate, User
+from api.models.user import UserCreate, User, UserRead
 from api.core.security import hash_password
 from api.helpers.database import create
 from api.core.database import get_session
 from api.core.logging import logger
 from api.core.config import config
+from api.models.collection import Collection
 
 class UserService:
     def __init__(self, db: AsyncSession):
@@ -89,13 +90,28 @@ class UserService:
 
         return result.scalar_one_or_none()
 
-    async def are_signups_allowed(self) -> bool:
+    async def compile_all_users_for_admin_use(self, caller_user: User) -> Collection[UserRead]:
         """
-        Checks if sign ups are allowed on this instance.
+        Fetches all users in the database. Only includes information relevant to admins.
         """
 
-        result = await self.db.execute(
-            select()
+        if not caller_user.is_admin:
+            raise HTTPException(
+                status_code=403,
+                detail="You lack the required permissions to list other users"
+            )
+
+        query = await self.db.execute(select(User))
+        users = query.scalars().all()
+
+        return Collection(
+            items=[
+                UserRead(
+                    id=user.id,
+                    username=user.username,
+                    is_admin=user.is_admin,
+                ) for user in users
+            ]
         )
     
 def get_user_service(db: Annotated[AsyncSession, Depends(get_session)]) -> UserService:
