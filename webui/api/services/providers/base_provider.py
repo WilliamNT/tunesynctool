@@ -214,7 +214,7 @@ class BaseProvider:
         async with await self._get_driver(user) as driver:
             results = await self._exec_service_driver_method(lambda: driver.get_user_playlists(limit=search_parameters.limit))
 
-        if len(results) > search_parameters.limit:
+        if search_parameters.limit > 0 and len(results) > search_parameters.limit:
             results = results[:search_parameters.limit]
 
         mapped_results = [
@@ -294,7 +294,7 @@ class BaseProvider:
         async with await self._get_driver(user) as driver:
             results = await self._exec_service_driver_method(lambda: driver.get_saved_tracks(limit=search_parameters.limit))
 
-        if len(results) > search_parameters.limit:
+        if search_parameters.limit > 0 and len(results) > search_parameters.limit:
             results = results[:search_parameters.limit]
 
         assets_list = await asyncio.gather(*[self.get_track_assets(result, user) for result in results])

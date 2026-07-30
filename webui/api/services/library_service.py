@@ -63,7 +63,7 @@ class LibraryService:
             provider_playlists = await self.catalog_service.compile_user_playlists(
                 search_parameters=LookupLibraryPlaylistsParams(
                     provider=service,
-                    limit=25
+                    limit=0
                 ),
                 service_driver=driver,
             )

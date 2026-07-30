@@ -48,4 +48,4 @@ class LookupLibraryPlaylistsParams(SearchParamsBase):
     Lookup playlists saved or owned by a user.
     """
 
-    limit: int = Field(default=10, ge=1, le=25, description="Max numbers of results to return.")
+    limit: int = Field(default=0, ge=0, description="Max number of results to return. 0 returns all.")

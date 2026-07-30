@@ -54,7 +54,10 @@ class SubsonicDriver(ServiceDriver):
             if isinstance(fetched_playlists, dict):
                 fetched_playlists = [fetched_playlists]
 
-            mapped_playlists = [self._mapper.map_playlist(playlist) for playlist in fetched_playlists[:limit]]
+            if limit > 0:
+                fetched_playlists = fetched_playlists[:limit]
+
+            mapped_playlists = [self._mapper.map_playlist(playlist) for playlist in fetched_playlists]
 
             for playlist in mapped_playlists:
                 playlist.service_name = self.service_name

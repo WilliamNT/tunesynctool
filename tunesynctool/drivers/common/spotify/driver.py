@@ -61,8 +61,30 @@ class SpotifyDriver(ServiceDriver):
 
     def get_user_playlists(self, limit: int = 25) -> List[Playlist]:
         try:
-            response = self.__spotify.current_user_playlists(limit=limit)
-            fetched_playlists = response['items']
+            SPOTIFY_API_MAX_PLAYLIST_LIMIT = 50
+
+            fetched_playlists = []
+            offset = 0
+            total = None
+
+            while (total == None) or (len(fetched_playlists) < (limit if limit > 0 else total)):
+                _max = SPOTIFY_API_MAX_PLAYLIST_LIMIT if limit <= 0 else min(SPOTIFY_API_MAX_PLAYLIST_LIMIT, limit - len(fetched_playlists))
+
+                response: dict = self.__spotify.current_user_playlists(
+                    offset=offset,
+                    limit=_max,
+                )
+
+                items = response.get('items', [])
+                total = response.get('total', 0) if total == None else total
+
+                fetched_playlists.extend(items)
+
+                if len(items) == 0 or (limit > 0 and len(fetched_playlists) >= min(limit, total)):
+                    break
+
+                offset += len(items)
+
             mapped_playlists = [self._mapper.map_playlist(playlist) for playlist in fetched_playlists]
 
             for playlist in mapped_playlists:
@@ -189,8 +211,8 @@ class SpotifyDriver(ServiceDriver):
         except SpotifyException as e:
             raise PlaylistNotFoundException(e)
         except Exception as e:
-            raise ServiceDriver(e)
-        
+            raise ServiceDriverException(e)
+
     def get_track_by_isrc(self, isrc: str) -> Track:
         results = self.search_tracks(
             query=f'isrc:{isrc.strip().upper()}',
@@ -204,12 +226,32 @@ class SpotifyDriver(ServiceDriver):
     
     def get_saved_tracks(self, limit: int = 10) -> List[Track]:
         try:
-            response = self.__spotify.current_user_saved_tracks(
-                limit=limit
-            )
+            SPOTIFY_API_MAX_SAVED_TRACKS_LIMIT = 50
 
-            fetched_tracks = [item["track"] for item in response['items']]
-            mapped_tracks = [self._mapper.map_track(track) for track in fetched_tracks]
+            fetched_tracks = []
+            offset = 0
+            total = None
+
+            while (total == None) or (len(fetched_tracks) < (limit if limit > 0 else total)):
+                _max = SPOTIFY_API_MAX_SAVED_TRACKS_LIMIT if limit <= 0 else min(SPOTIFY_API_MAX_SAVED_TRACKS_LIMIT, limit - len(fetched_tracks))
+
+                response: dict = self.__spotify.current_user_saved_tracks(
+                    offset=offset,
+                    limit=_max,
+                )
+
+                items = response.get('items', [])
+                total = response.get('total', 0) if total == None else total
+
+                fetched_tracks.extend(items)
+
+                if len(items) == 0 or (limit > 0 and len(fetched_tracks) >= min(limit, total)):
+                    break
+
+                offset += len(items)
+
+            tracks = [item["track"] for item in fetched_tracks]
+            mapped_tracks = [self._mapper.map_track(track) for track in tracks]
 
             for track in mapped_tracks:
                 track.service_name = self.service_name
@@ -218,4 +260,4 @@ class SpotifyDriver(ServiceDriver):
         except SpotifyException as e:
             raise PlaylistNotFoundException(e)
         except Exception as e:
-            raise ServiceDriver(e)
+            raise ServiceDriverException(e)
