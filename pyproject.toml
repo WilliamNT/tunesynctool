@@ -22,7 +22,7 @@ dependencies = [
     "py-sonic",
     "musicbrainzngs",
     "thefuzz",
-    "streamrip",
+    "streamrip==2.1.0",
     "ytmusicapi",
     "click",
     "tqdm",
