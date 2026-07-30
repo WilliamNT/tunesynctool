@@ -7,7 +7,7 @@ thefuzz
 pytest
 build
 twine
-streamrip
+streamrip==2.1.0
 ytmusicapi
 click
 
