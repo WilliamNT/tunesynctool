@@ -36,6 +36,9 @@ services:
       ENCRYPTION_KEY: your_encryption_key
       ENCRYPTION_SALT: your_encryiption_salt
 
+      # Misc. instance settings
+      SIGNUPS_ALLOWED: true
+      
       # Warning! You have to configure at least one music service for the app to run!
 
       # Spotify OAuth - uncomment and set these if you plan to use the Spotify integration

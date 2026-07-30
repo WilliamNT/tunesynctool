@@ -34,7 +34,7 @@ import type { UserRead } from '../models';
 export const UsersApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Create a new user.  Anyone may create a new account for themselves, assuming their chosen username is not already taken.
+         * Create a new user.  Anyone may create a new account for themselves, assuming their chosen username is not already taken.  The instance owner may disable account creation. In that case, an error will be returned.
          * @summary Create a new user
          * @param {UserCreate} userCreate 
          * @param {*} [options] Override http request option.
@@ -114,7 +114,7 @@ export const UsersApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = UsersApiAxiosParamCreator(configuration)
     return {
         /**
-         * Create a new user.  Anyone may create a new account for themselves, assuming their chosen username is not already taken.
+         * Create a new user.  Anyone may create a new account for themselves, assuming their chosen username is not already taken.  The instance owner may disable account creation. In that case, an error will be returned.
          * @summary Create a new user
          * @param {UserCreate} userCreate 
          * @param {*} [options] Override http request option.
@@ -149,7 +149,7 @@ export const UsersApiFactory = function (configuration?: Configuration, basePath
     const localVarFp = UsersApiFp(configuration)
     return {
         /**
-         * Create a new user.  Anyone may create a new account for themselves, assuming their chosen username is not already taken.
+         * Create a new user.  Anyone may create a new account for themselves, assuming their chosen username is not already taken.  The instance owner may disable account creation. In that case, an error will be returned.
          * @summary Create a new user
          * @param {UserCreate} userCreate 
          * @param {*} [options] Override http request option.
@@ -177,7 +177,7 @@ export const UsersApiFactory = function (configuration?: Configuration, basePath
  */
 export interface UsersApiInterface {
     /**
-     * Create a new user.  Anyone may create a new account for themselves, assuming their chosen username is not already taken.
+     * Create a new user.  Anyone may create a new account for themselves, assuming their chosen username is not already taken.  The instance owner may disable account creation. In that case, an error will be returned.
      * @summary Create a new user
      * @param {UserCreate} userCreate 
      * @param {*} [options] Override http request option.
@@ -205,7 +205,7 @@ export interface UsersApiInterface {
  */
 export class UsersApi extends BaseAPI implements UsersApiInterface {
     /**
-     * Create a new user.  Anyone may create a new account for themselves, assuming their chosen username is not already taken.
+     * Create a new user.  Anyone may create a new account for themselves, assuming their chosen username is not already taken.  The instance owner may disable account creation. In that case, an error will be returned.
      * @summary Create a new user
      * @param {UserCreate} userCreate 
      * @param {*} [options] Override http request option.

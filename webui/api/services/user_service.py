@@ -8,6 +8,7 @@ from api.core.security import hash_password
 from api.helpers.database import create
 from api.core.database import get_session
 from api.core.logging import logger
+from api.core.config import config
 
 class UserService:
     def __init__(self, db: AsyncSession):
@@ -20,6 +21,12 @@ class UserService:
         :param user: The user to create.
         :return: The created user.
         """
+
+        if not config.SIGNUPS_ALLOWED:
+            raise HTTPException(
+                status_code=403,
+                detail="Signups are not currently allowed"
+            )
 
         if await self.is_username_taken(user.username):
             raise HTTPException(
@@ -81,6 +88,15 @@ class UserService:
         )
 
         return result.scalar_one_or_none()
+
+    async def are_signups_allowed(self) -> bool:
+        """
+        Checks if sign ups are allowed on this instance.
+        """
+
+        result = await self.db.execute(
+            select()
+        )
     
 def get_user_service(db: Annotated[AsyncSession, Depends(get_session)]) -> UserService:
     return UserService(db)

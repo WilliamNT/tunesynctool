@@ -8,54 +8,52 @@ import {
   ToastTitle,
   ToastViewport,
 } from 'reka-ui';
+import { useAppNotification, type AppNotificationItem } from '@/composables/useAppNotification';
 
 defineOptions({
   inheritAttrs: false,
 });
 
-type SwipeDirection = 'right' | 'left' | 'up' | 'down';
+// Must match the duration of the `notification-fade-out` animation below.
+// We defer removal until after the exit animation so the toast fades out
+// instead of popping out of the DOM the moment reka-ui closes it.
+const NOTIFICATION_FADE_OUT_MS = 180;
 
-const props = withDefaults(defineProps<{
-  title: string;
-  icon?: string;
-  duration?: number;
-  swipeDirection?: SwipeDirection;
-}>(), {
-  icon: 'material-symbols:notifications-rounded',
-  duration: 5000,
-  swipeDirection: 'right',
-});
+const { toasts, dismiss } = useAppNotification();
 
-const open = defineModel<boolean>('open', {
-  default: true,
-});
+function onOpenChange(toast: AppNotificationItem, open: boolean) {
+  if (!open) {
+    setTimeout(() => dismiss(toast.id), NOTIFICATION_FADE_OUT_MS);
+  }
+}
 </script>
 
 <template>
   <ToastProvider
     label="Notification"
-    :duration="props.duration"
+    :duration="5000"
     :disable-swipe="false"
-    :swipe-direction="props.swipeDirection"
+    :swipe-direction="'right'"
     :swipe-threshold="60"
   >
     <ToastRoot
-      v-model:open="open"
-      v-bind="$attrs"
+      v-for="toast in toasts"
+      :key="toast.id"
+      :duration="toast.duration ?? 5000"
+      :default-open="true"
+      @update:open="onOpenChange(toast, $event)"
       class="notification-root grid w-[calc(100vw-2rem)] max-w-md grid-cols-[auto_1fr_auto] items-start gap-3 rounded-2xl ring-1 ring-zinc-700 bg-zinc-800 p-3 text-white shadow-lg shadow-black/40 backdrop-blur-xl outline-none transition-transform data-[swipe=move]:translate-x-[var(--reka-toast-swipe-move-x)] data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--reka-toast-swipe-end-x)] data-[swipe=move]:transition-none data-[swipe=cancel]:transition-transform data-[swipe=end]:transition-transform"
     >
       <div class="flex items-center justify-center w-10 h-10 p-2 rounded-lg bg-zinc-600/40 ring-1 ring-zinc-700">
-        <slot name="icon">
-          <Icon :icon="props.icon" class="h-5 w-5" />
-        </slot>
+        <Icon :icon="toast.icon ?? 'material-symbols:notifications-rounded'" class="h-5 w-5" />
       </div>
 
       <div class="min-w-0">
         <ToastTitle class="text-sm font-bold leading-5 text-zinc-50">
-          {{ props.title }}
+          {{ toast.title }}
         </ToastTitle>
-        <ToastDescription as="div" class="mt-1 text-sm font-medium leading-5 text-zinc-400">
-          <slot />
+        <ToastDescription v-if="toast.description" as="div" class="mt-1 text-sm font-medium leading-5 text-zinc-400">
+          {{ toast.description }}
         </ToastDescription>
       </div>
 

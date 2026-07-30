@@ -20,6 +20,9 @@ router = APIRouter(
         status.HTTP_400_BAD_REQUEST: {
             "description": "A field is invalid.",
         },
+        status.HTTP_403_FORBIDDEN: {
+            "description": "Registration is not possible at this time."
+        },
     },
     summary="Create a new user",
     operation_id="createUser",
@@ -33,6 +36,8 @@ async def create_user(
     Create a new user.
 
     Anyone may create a new account for themselves, assuming their chosen username is not already taken.
+
+    The instance owner may disable account creation. In that case, an error will be returned.
     """
 
     return await user_service.create_user(user)

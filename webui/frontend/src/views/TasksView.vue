@@ -9,7 +9,7 @@ import AppPageHeader from '@/components/generic/AppPageHeader.vue';
 import Task from '@/components/library/Task.vue';
 import PlaylistTaskForm from '@/components/service/PlaylistTaskForm.vue';
 import AppCard from '@/components/card/AppCard.vue';
-import AppNotification from '@/components/generic/AppNotification.vue';
+import { useAppNotification } from '@/composables/useAppNotification';
 
 const config = get_api_configuration(
   get_access_token()
@@ -18,13 +18,12 @@ const config = get_api_configuration(
 const tasksApi = new TasksApi(config);
 const providersApi = new ProvidersApi(config);
 
+const { notify } = useAppNotification();
+
 const isLoading = ref(true);
 
 const providers = ref<ProviderRead[]>([]);
 const tasks = ref<PlaylistTaskStatus[]>([]);
-const notificationOpen = ref(false);
-const notificationKey = ref(0);
-const submittedTask = ref<PlaylistTaskStatus>();
 let intervalId: ReturnType<typeof setTimeout> | undefined = undefined;
 
 const providerDisplayNameByName = computed(() => {
@@ -97,9 +96,15 @@ const startPolling = () => {
 }
 
 const handleTaskSubmitted = async (task: PlaylistTaskStatus) => {
-  submittedTask.value = task;
-  notificationKey.value += 1;
-  notificationOpen.value = true;
+  const fromName = providerDisplayNameByName.value.get(task.arguments.from_provider) ?? task.arguments.from_provider;
+  const toName = providerDisplayNameByName.value.get(task.arguments.to_provider) ?? task.arguments.to_provider;
+
+  notify({
+    title: 'Transfer queued',
+    description: `Transfering playlist from ${fromName} to ${toName}.`,
+    icon: 'material-symbols:checklist-rtl-rounded',
+  });
+
   await fetchTasks();
 }
 
@@ -170,20 +175,5 @@ onUnmounted(() => {
         <p class="text-sm text-zinc-400 font-normal" v-else>You don't have any finished tasks yet.</p>
       </div>
     </template>
-    <AppNotification
-      v-if="submittedTask"
-      :key="notificationKey"
-      v-model:open="notificationOpen"
-      title="Transfer queued"
-      icon="material-symbols:checklist-rtl-rounded"
-      :duration="3500"
-    >
-      <span>
-        Transfering playlist from
-        <strong>{{ providerDisplayNameByName.get(submittedTask.arguments.from_provider) ?? submittedTask.arguments.from_provider }}</strong>
-        to
-        <strong>{{ providerDisplayNameByName.get(submittedTask.arguments.to_provider) ?? submittedTask.arguments.to_provider }}</strong>.
-      </span>
-    </AppNotification>
   </AppContainer>
 </template>

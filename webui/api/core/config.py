@@ -20,6 +20,8 @@ class Config(BaseSettings):
     ENCRYPTION_KEY: str
     ENCRYPTION_SALT: str
 
+    SIGNUPS_ALLOWED: bool = True
+
     SPOTIFY_CLIENT_ID: Optional[str] = None
     SPOTIFY_CLIENT_SECRET: Optional[str] = None
 

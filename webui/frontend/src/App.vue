@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
 import AppNav from './components/AppNav.vue';
+import AppNotification from './components/generic/AppNotification.vue';
 import { isAuthenticated } from './services/api';
 </script>
 
@@ -9,4 +10,5 @@ import { isAuthenticated } from './services/api';
     <AppNav v-if="isAuthenticated" />
     <RouterView />
   </div>
+  <AppNotification />
 </template>

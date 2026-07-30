@@ -3,17 +3,18 @@ import AppButton from '@/components/button/AppButton.vue';
 import AppCard from '@/components/card/AppCard.vue';
 import AppField from '@/components/form/AppField.vue';
 import AppFormSpacer from '@/components/form/AppFormSpacer.vue';
-import AppH1 from '@/components/text/AppH1.vue';
-import { AuthenticationApi, UsersApi } from '@/api';
-import { set_access_token, get_api_configuration } from '@/services/api';
-import { useForm, useIsFormValid } from 'vee-validate';
+import { UsersApi } from '@/api';
+import { get_api_configuration } from '@/services/api';
+import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import * as zod from 'zod';
 import { isAxiosError } from 'axios';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import AppContainer from '@/components/generic/AppContainer.vue';
-import AppPageHeader from '@/components/generic/AppPageHeader.vue';
+import { useAppNotification } from '@/composables/useAppNotification';
+
+const { notify } = useAppNotification();
 
 const schema = zod.object({
   username: zod.string({
@@ -61,9 +62,20 @@ const onSubmit = handleSubmit(async (values) => {
           console.error('Invalid request payload (got a 422)', e.response.data);
           setErrorForAllFields('Invalid request payload');
           break;
+        case 403:
+          notify({
+            title: 'An error occured',
+            description: e.response.data?.detail,
+            icon: 'material-symbols:error-outline-rounded',
+          });
       }
     } else {
       console.error('An unknown error occurred:', e);
+      notify({
+        title: 'Something went wrong',
+        description: String(e),
+        icon: 'material-symbols:error-outline-rounded',
+      });
     }
   }
 });

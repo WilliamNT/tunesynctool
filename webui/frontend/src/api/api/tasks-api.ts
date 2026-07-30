@@ -40,7 +40,7 @@ import type { TrackRead } from '../models';
 export const TasksApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Cancels the specified task. Users can only cancel their own tasks.  It may take a few seconds for the background workers to honor this request.
+         * Cancels the specified task. Users can only cancel their own tasks. It may take a few seconds for the background workers to honor this request.  If the task is already not running for some reason (i.e. canceled, failed) then it will be permanently deleted.
          * @summary Manually cancel a task
          * @param {string} taskId 
          * @param {*} [options] Override http request option.
@@ -209,7 +209,7 @@ export const TasksApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = TasksApiAxiosParamCreator(configuration)
     return {
         /**
-         * Cancels the specified task. Users can only cancel their own tasks.  It may take a few seconds for the background workers to honor this request.
+         * Cancels the specified task. Users can only cancel their own tasks. It may take a few seconds for the background workers to honor this request.  If the task is already not running for some reason (i.e. canceled, failed) then it will be permanently deleted.
          * @summary Manually cancel a task
          * @param {string} taskId 
          * @param {*} [options] Override http request option.
@@ -271,7 +271,7 @@ export const TasksApiFactory = function (configuration?: Configuration, basePath
     const localVarFp = TasksApiFp(configuration)
     return {
         /**
-         * Cancels the specified task. Users can only cancel their own tasks.  It may take a few seconds for the background workers to honor this request.
+         * Cancels the specified task. Users can only cancel their own tasks. It may take a few seconds for the background workers to honor this request.  If the task is already not running for some reason (i.e. canceled, failed) then it will be permanently deleted.
          * @summary Manually cancel a task
          * @param {string} taskId 
          * @param {*} [options] Override http request option.
@@ -320,7 +320,7 @@ export const TasksApiFactory = function (configuration?: Configuration, basePath
  */
 export interface TasksApiInterface {
     /**
-     * Cancels the specified task. Users can only cancel their own tasks.  It may take a few seconds for the background workers to honor this request.
+     * Cancels the specified task. Users can only cancel their own tasks. It may take a few seconds for the background workers to honor this request.  If the task is already not running for some reason (i.e. canceled, failed) then it will be permanently deleted.
      * @summary Manually cancel a task
      * @param {string} taskId 
      * @param {*} [options] Override http request option.
@@ -369,7 +369,7 @@ export interface TasksApiInterface {
  */
 export class TasksApi extends BaseAPI implements TasksApiInterface {
     /**
-     * Cancels the specified task. Users can only cancel their own tasks.  It may take a few seconds for the background workers to honor this request.
+     * Cancels the specified task. Users can only cancel their own tasks. It may take a few seconds for the background workers to honor this request.  If the task is already not running for some reason (i.e. canceled, failed) then it will be permanently deleted.
      * @summary Manually cancel a task
      * @param {string} taskId 
      * @param {*} [options] Override http request option.
