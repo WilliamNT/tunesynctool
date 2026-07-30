@@ -47,6 +47,11 @@ const router = createRouter({
           path: '/playlists/:id',
           name: 'playlist',
           component: () => import('../views/PlaylistView.vue'),
+        },
+        {
+          path: '/admin',
+          name: 'admin',
+          component: () => import('../views/AdminView.vue'),
         }
     ],
 });

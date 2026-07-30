@@ -4,6 +4,7 @@ export * from './collection-playlist-read';
 export * from './collection-playlist-task-status';
 export * from './collection-provider-read';
 export * from './collection-track-read';
+export * from './collection-user-read';
 export * from './entity-assets-base';
 export * from './entity-identifiers-base';
 export * from './entity-meta-read';

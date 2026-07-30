@@ -22,6 +22,8 @@ import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObj
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
 // @ts-ignore
+import type { CollectionUserRead } from '../models';
+// @ts-ignore
 import type { HTTPValidationError } from '../models';
 // @ts-ignore
 import type { UserCreate } from '../models';
@@ -63,6 +65,40 @@ export const UsersApiAxiosParamCreator = function (configuration?: Configuration
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
             localVarRequestOptions.data = serializeDataIfNeeded(userCreate, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Returns information for all user accounts on the current instance.  Only users with admin rights should call this endpoint, otherwise the request will be rejected.
+         * @summary List all users on the instance
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAllUsers: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/users`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication OAuth2PasswordBearer required
+            // oauth required
+            await setOAuthToObject(localVarHeaderParameter, "OAuth2PasswordBearer", [], configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -127,6 +163,18 @@ export const UsersApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * Returns information for all user accounts on the current instance.  Only users with admin rights should call this endpoint, otherwise the request will be rejected.
+         * @summary List all users on the instance
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getAllUsers(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CollectionUserRead>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllUsers(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['UsersApi.getAllUsers']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Get the authenticated user.
          * @summary Get information about the authenticated user
          * @param {*} [options] Override http request option.
@@ -159,6 +207,15 @@ export const UsersApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.createUser(userCreate, options).then((request) => request(axios, basePath));
         },
         /**
+         * Returns information for all user accounts on the current instance.  Only users with admin rights should call this endpoint, otherwise the request will be rejected.
+         * @summary List all users on the instance
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAllUsers(options?: RawAxiosRequestConfig): AxiosPromise<CollectionUserRead> {
+            return localVarFp.getAllUsers(options).then((request) => request(axios, basePath));
+        },
+        /**
          * Get the authenticated user.
          * @summary Get information about the authenticated user
          * @param {*} [options] Override http request option.
@@ -185,6 +242,15 @@ export interface UsersApiInterface {
      * @memberof UsersApiInterface
      */
     createUser(userCreate: UserCreate, options?: RawAxiosRequestConfig): AxiosPromise<UserRead>;
+
+    /**
+     * Returns information for all user accounts on the current instance.  Only users with admin rights should call this endpoint, otherwise the request will be rejected.
+     * @summary List all users on the instance
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UsersApiInterface
+     */
+    getAllUsers(options?: RawAxiosRequestConfig): AxiosPromise<CollectionUserRead>;
 
     /**
      * Get the authenticated user.
@@ -214,6 +280,17 @@ export class UsersApi extends BaseAPI implements UsersApiInterface {
      */
     public createUser(userCreate: UserCreate, options?: RawAxiosRequestConfig) {
         return UsersApiFp(this.configuration).createUser(userCreate, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Returns information for all user accounts on the current instance.  Only users with admin rights should call this endpoint, otherwise the request will be rejected.
+     * @summary List all users on the instance
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UsersApi
+     */
+    public getAllUsers(options?: RawAxiosRequestConfig) {
+        return UsersApiFp(this.configuration).getAllUsers(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
