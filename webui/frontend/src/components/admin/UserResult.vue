@@ -1,26 +1,73 @@
 <script setup lang="ts">
 import AppCard from '../card/AppCard.vue';
+import AppConfirmDialog from '../generic/AppConfirmDialog.vue';
 import { Icon } from '@iconify/vue/dist/iconify.js';
 import UserAvatar from '../image/UserAvatar.vue';
-import { type UserRead } from '@/api/index.ts';
+import { UsersApi, type UserRead } from '@/api/index.ts';
+import { ref } from 'vue';
+import AppButton from '../button/AppButton.vue';
+import { get_access_token, get_api_configuration } from '@/services/api.ts';
+import { isAxiosError } from 'axios';
+import { useAppNotification } from '@/composables/useAppNotification.ts';
 
-defineProps<{
+const props = defineProps<{
   user: UserRead;
 }>();
+
+const emit = defineEmits(['deleted']);
+
+const isDeletionLoading = ref(false);
+const isConfirmDeleteOpen = ref(false);
+
+const { notify } = useAppNotification();
+
+const config = get_api_configuration(
+    get_access_token()
+);
+
+const usersApi = new UsersApi(config);
+
+const confirmDeleteUser = async () => {
+  isDeletionLoading.value = true;
+
+  try {
+      await usersApi.deleteUser(props.user.id);
+
+      emit('deleted');
+      
+      notify({
+          title: 'Success',
+          description: 'User deleted successfully',
+          icon: 'material-symbols:check-circle-outline-rounded',
+      });
+
+  } catch (e) {
+      if (isAxiosError(e) && !!e.response?.data) {
+          notify({
+              title: 'Oops!',
+              description: e.response.data?.detail,
+              icon: 'material-symbols:error-outline-rounded',
+          });
+      } else {
+          console.error('An unknown error occurred:', e);
+          notify({
+              title: 'Something went wrong',
+              description: String(e),
+              icon: 'material-symbols:error-outline-rounded',
+          });
+      }
+  }
+
+  isDeletionLoading.value = false;
+}
 </script>
 
 <template>
-  <AppCard class="rounded-2xl flex gap-4 relative overflow-hidden">
-    <!-- <button @click="cancelTask" :disabled="isCancellationLoading" class="absolute top-2 right-2 text-zinc-400 w-6 h-6 flex items-center justify-center hover:text-red-200 transition-all z-10 cursor-pointer bg-zinc-400/10 hover:bg-red-100/10 rounded-full" title="Cancel or delete task">
-      <Icon icon="svg-spinners:90-ring" v-if="isCancellationLoading" />
-      <Icon icon="material-symbols-light:close-small-outline-rounded" class="text-2xl" v-else />
-    </button> -->
+  <AppCard class="flex gap-4">
     <UserAvatar />
-    <div class="flex flex-col gap-0.5">
-      <h3 class="truncate font-black text-white text-lg m-0 p-0 flex items-center">
-        {{ user.username }}
-      </h3>
-      <ul class="flex gap-2 list-none p-0 m-0 text-sm font-medium text-zinc-400 items-center justify-center">
+    <div class="flex flex-col gap-0.5 flex-1">
+      <h3 class="text-xl">{{ user.username }}</h3>
+      <ul class="flex gap-2 list-none p-0 m-0 text-zinc-400 font-normal items-center">
         <li class="relative pl-3.5 first:pl-0 before:content-['•'] before:absolute before:left-0 first:before:content-[''] before:text-zinc-500 truncate">
           <template v-if="user.is_admin">
             <Icon icon="material-symbols:settings-outline-rounded" class="inline-block me-1 text-lg text-green-200" />
@@ -33,8 +80,21 @@ defineProps<{
         </li>
         <li class="relative pl-3.5 first:pl-0 before:content-['•'] before:absolute before:left-0 first:before:content-[''] before:text-zinc-500 truncate">
           User ID: {{ user.id }}
-        </li>   
+        </li>
       </ul>
     </div>
+    <div class="flex gap-3 ms-auto items-center">
+      <AppButton type="button" :disabled="isDeletionLoading" tone="negative"  @click="isConfirmDeleteOpen = true">
+        <Icon icon="material-symbols:delete-outline-rounded" class="inline-block text-2xl me-3" />REMOVE USER
+      </AppButton>
+    </div>
+    <AppConfirmDialog
+      v-model:open="isConfirmDeleteOpen"
+      title="Delete user?"
+      :message="`Delete ${props.user.username}? This action cannot be undone.`"
+      confirm-text="Delete"
+      confirm-tone="negative"
+      @confirm="confirmDeleteUser"
+    />
   </AppCard>
 </template>

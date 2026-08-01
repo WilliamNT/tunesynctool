@@ -42,37 +42,42 @@ const fetchUsers = async () => {
     }
 }
 
-onMounted(async () => {
+const loadPageData = async () => {
     isLoading.value = true;
 
     await fetchUsers();
 
     isLoading.value = false;
-});
+}
+
+onMounted(loadPageData);
 </script>
 
 <template>
     <AppContainer is="main">
-        <AppPageHeader>
-            <template #title>
-                Manage Instance
-            </template>
-            <template #description>
-                Manage this instance of tunesynctool.
-            </template>
-        </AppPageHeader>
-        <div class="flex flex-col gap-3">
-            <div class="flex items-center gap-3 w-full mb-3 mt-8">
-                <h2 class="text-2xl">Users</h2>
-                <hr class="flex-1 border-zinc-700 border-0.5 ms-5" />
+        <AppLoaderScreen v-if="isLoading" />
+        <template v-else>
+            <AppPageHeader>
+                <template #title>
+                    Manage Instance
+                </template>
+                <template #description>
+                    Manage this instance of tunesynctool.
+                </template>
+            </AppPageHeader>
+            <div class="flex flex-col gap-3">
+                <div class="flex items-center gap-3 w-full mb-3 mt-8">
+                    <h2 class="text-2xl">Users</h2>
+                    <hr class="flex-1 border-zinc-700 border-0.5 ms-5" />
+                </div>
+                <template v-if="users.length > 0">
+                    <UserResult :user v-for="user in users" :key="user.id" @deleted="loadPageData" />
+                </template>
+                <p class="text-sm text-zinc-400 font-normal" v-else>Unable to list users. Try reloading the page.</p>
             </div>
-            <template v-if="users.length > 0">
-                <UserResult :user v-for="user in users" :key="user.id" />
-            </template>
-            <p class="text-sm text-zinc-400 font-normal" v-else>Unable to list users. Try reloading the page.</p>
-        </div>
-        <div class="text-sm text-zinc-700 py-5 flex flex-col gap-2 font-medium">
-            <p>Certain configuration options cannot be changed during runtime. Refer to your compose file for further configuration options.</p>
-        </div>
+            <div class="text-sm text-zinc-700 py-5 flex flex-col gap-2 font-medium">
+                <p>Most settings cannot be changed during runtime. Refer to your compose file for further configuration options.</p>
+            </div>
+        </template>
     </AppContainer>
 </template>

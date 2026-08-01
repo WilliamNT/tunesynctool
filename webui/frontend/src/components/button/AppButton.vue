@@ -17,6 +17,7 @@ withDefaults(defineProps<{
 
 <template>
   <AppButtonBase v-bind="attrs" :type="type" :disabled :class="{
+    'cursor-pointer': !disabled,
     'opacity-45 cursor-not-allowed': disabled,
     'bg-lime-400 hover:bg-lime-500': tone === 'primary',
     'bg-red-500 hover:bg-red-500/80': tone === 'negative',
