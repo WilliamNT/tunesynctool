@@ -17,7 +17,7 @@ from api.models.user import User
 from api.core.database import get_session_instance
 from api.models.entity import EntityAssetsBase
 from api.services.providers.base_provider import BaseProvider
-from api.workers.handlers.helpers import (
+from api.workers.utils.task_status import (
     report_task_failure,
     report_task_cancellation,
     report_task_on_hold,
@@ -25,7 +25,7 @@ from api.workers.handlers.helpers import (
     report_task_as_running,
     check_if_task_cancelled
 )
-from api.workers.keys import TTL_RUNNING
+from api.workers.utils.constants import TTL_RUNNING
 
 async def do_current_iteration(
     redis_key: str,

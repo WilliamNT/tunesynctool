@@ -9,7 +9,8 @@ from api.models.user import User
 from api.core.redis import get_redis_instance
 from api.models.collection import Collection
 from api.core.logging import logger
-from api.workers.keys import make_task_key, make_user_tasks_pattern, make_task_queue_name, TTL_QUEUED, TTL_FINISHED, make_kind_agnostic_user_task_pattern
+from api.workers.utils.keys import make_task_key, make_user_tasks_pattern, make_task_queue_name, make_kind_agnostic_user_task_pattern
+from api.workers.utils.constants import TTL_QUEUED, TTL_FINISHED
 from api.models.system import Initiator
 
 class TaskService:    

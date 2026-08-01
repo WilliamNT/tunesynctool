@@ -3,7 +3,7 @@ from redis.asyncio import Redis
 import time
 
 from api.models.task import TaskResponseBase, TaskStatus, PlaylistTaskStatus
-from api.workers.keys import TTL_FINISHED, TTL_RUNNING
+from api.workers.utils.constants import TTL_FINISHED, TTL_RUNNING
 from api.core.logging import logger
 
 async def _end_task(

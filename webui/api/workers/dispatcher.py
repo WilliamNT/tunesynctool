@@ -1,72 +1,24 @@
-from redis.asyncio import Redis
 from redis.exceptions import TimeoutError as RedisTimeoutError
 import asyncio
 import time
 from typing import Optional, Tuple
-from dataclasses import dataclass
 
 from api.core.logging import logger
 from api.core.redis import get_redis_instance
 from api.models.task import PlaylistTaskStatus, TaskStatus, TaskKind
 from api.models.user import User
 from api.workers.handlers.playlist_transfer_handler import handle_playlist_transfer
-from api.workers.handlers.helpers import report_task_on_hold, report_task_failure
+from api.workers.utils.task_status import report_task_on_hold, report_task_failure
 from api.services.user_service import UserService
+from api.services.task_service import get_task_service
 from api.core.database import get_session_instance
-from api.workers.keys import (
+from api.workers.utils.keys import (
     parse_task_key, 
-    make_task_queue_name, 
-    TTL_RUNNING, 
-    HEARTBEAT_INTERVAL
+    make_task_queue_name
 )
-
-@dataclass
-class WorkerContext:
-    """
-    Holds the current state of a worker.
-    """
-
-    worker_id: int
-    worker_name: str
-    redis: Redis
-    current_task: Optional[PlaylistTaskStatus] = None
-    current_redis_key: Optional[str] = None
-    heartbeat_task: Optional[asyncio.Task] = None
-
-async def update_heartbeat(ctx: WorkerContext) -> None:
-    """
-    Update task heartbeat timestamp.
-    """
-
-    if not ctx.current_task or not ctx.current_redis_key:
-        return
-    
-    ctx.current_task.last_heartbeat = int(time.time())
-    ctx.current_task.worker_id = ctx.worker_name
-    await ctx.redis.set(ctx.current_redis_key, ctx.current_task.model_dump_json(), ex=TTL_RUNNING)
-
-async def start_heartbeat_loop(ctx: WorkerContext) -> None:
-    """
-    Background task to update heartbeat while processing.
-    """
-    
-    while True:
-        await asyncio.sleep(HEARTBEAT_INTERVAL)
-        await update_heartbeat(ctx)
-        logger.debug(f"[{ctx.worker_name}] Heartbeat updated for task {ctx.current_task.task_id}")
-
-async def stop_heartbeat(ctx: WorkerContext) -> None:
-    """
-    Stop the heartbeat background task if running.
-    """
-
-    if ctx.heartbeat_task:
-        ctx.heartbeat_task.cancel()
-        try:
-            await ctx.heartbeat_task
-        except asyncio.CancelledError:
-            pass
-        ctx.heartbeat_task = None
+from api.workers.utils.context import WorkerContext
+from api.workers.utils.heartbeat import start_heartbeat_loop, stop_heartbeat
+from api.workers.utils.constants import TTL_RUNNING
 
 async def fetch_next_task(ctx: WorkerContext) -> Optional[Tuple[str, str, int, str]]:
     """
@@ -139,8 +91,12 @@ async def get_task_user(ctx: WorkerContext, user_id: int, task_uuid: str) -> Opt
     Fetch the user who owns the task.
     """
 
-    async with await get_session_instance() as session:
-        user_service = UserService(session)
+    async with await get_session_instance() as db_session:
+        user_service = UserService(
+            db=db_session,
+            task_service=get_task_service()
+        )
+        
         user = await user_service.get_by_id(user_id)
 
         if not user:

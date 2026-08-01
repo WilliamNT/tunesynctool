@@ -3,7 +3,8 @@ import time
 from api.core.redis import get_redis_instance
 from api.core.logging import logger
 from api.models.task import PlaylistTaskStatus, TaskStatus
-from api.workers.keys import make_running_tasks_pattern, HEARTBEAT_STALE_THRESHOLD, TTL_FINISHED
+from api.workers.utils.keys import make_running_tasks_pattern
+from api.workers.utils.constants import HEARTBEAT_STALE_THRESHOLD, TTL_FINISHED
 
 async def recover_stale_tasks() -> int:
     """
