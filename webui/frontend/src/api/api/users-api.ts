@@ -72,6 +72,44 @@ export const UsersApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
+         * 
+         * @summary Delete a user
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteUser: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('deleteUser', 'id', id)
+            const localVarPath = `/api/users/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication OAuth2PasswordBearer required
+            // oauth required
+            await setOAuthToObject(localVarHeaderParameter, "OAuth2PasswordBearer", [], configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Returns information for all user accounts on the current instance.  Only users with admin rights should call this endpoint, otherwise the request will be rejected.
          * @summary List all users on the instance
          * @param {*} [options] Override http request option.
@@ -163,6 +201,19 @@ export const UsersApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * 
+         * @summary Delete a user
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deleteUser(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteUser(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['UsersApi.deleteUser']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Returns information for all user accounts on the current instance.  Only users with admin rights should call this endpoint, otherwise the request will be rejected.
          * @summary List all users on the instance
          * @param {*} [options] Override http request option.
@@ -207,6 +258,16 @@ export const UsersApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.createUser(userCreate, options).then((request) => request(axios, basePath));
         },
         /**
+         * 
+         * @summary Delete a user
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteUser(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.deleteUser(id, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Returns information for all user accounts on the current instance.  Only users with admin rights should call this endpoint, otherwise the request will be rejected.
          * @summary List all users on the instance
          * @param {*} [options] Override http request option.
@@ -242,6 +303,16 @@ export interface UsersApiInterface {
      * @memberof UsersApiInterface
      */
     createUser(userCreate: UserCreate, options?: RawAxiosRequestConfig): AxiosPromise<UserRead>;
+
+    /**
+     * 
+     * @summary Delete a user
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UsersApiInterface
+     */
+    deleteUser(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void>;
 
     /**
      * Returns information for all user accounts on the current instance.  Only users with admin rights should call this endpoint, otherwise the request will be rejected.
@@ -280,6 +351,18 @@ export class UsersApi extends BaseAPI implements UsersApiInterface {
      */
     public createUser(userCreate: UserCreate, options?: RawAxiosRequestConfig) {
         return UsersApiFp(this.configuration).createUser(userCreate, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Delete a user
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof UsersApi
+     */
+    public deleteUser(id: number, options?: RawAxiosRequestConfig) {
+        return UsersApiFp(this.configuration).deleteUser(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

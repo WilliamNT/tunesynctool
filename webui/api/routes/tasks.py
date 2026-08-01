@@ -106,7 +106,10 @@ async def all_tasks(
     responses={
         status.HTTP_404_NOT_FOUND: {
             "description": "The task does not exist."
-        }
+        },
+        status.HTTP_204_NO_CONTENT: {
+            "description": "The user has been successfully deleted."
+        },
     },
     summary="Manually cancel a task",
     operation_id="cancelTask",
@@ -137,7 +140,10 @@ async def cancel_task(
     responses={
         status.HTTP_404_NOT_FOUND: {
             "description": "The task does not exist."
-        }
+        },
+        status.HTTP_204_NO_CONTENT: {
+            "description": "The user has been successfully deleted."
+        },
     },
     summary="Manually delete a task",
     operation_id="deleteTask",
@@ -157,7 +163,7 @@ async def delete_task(
     The difference between this endpoint and the cancellation endpoint is that this removes the task from the task history.
     """
 
-    return await service.dispatch_task_deletion(
+    return await service.dispatch_task_deletion_for_user(
         task_id=task_id,
         user=request_context.user
     )

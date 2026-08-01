@@ -26,7 +26,8 @@ export const TaskStatus = {
     Failed: 'failed',
     Queued: 'queued',
     Canceled: 'canceled',
-    OnHold: 'on_hold'
+    OnHold: 'on_hold',
+    MarkedForDeletion: 'marked_for_deletion'
 } as const;
 
 export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];

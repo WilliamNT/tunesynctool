@@ -21,7 +21,7 @@
  */
 export interface UserCreate {
     /**
-     * Username must be unique and at least 3 characters long.
+     * Username must be unique and be at least 3 characters long.
      * @type {string}
      * @memberof UserCreate
      */

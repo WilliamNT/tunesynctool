@@ -40,7 +40,7 @@ import type { TrackRead } from '../models';
 export const TasksApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Cancels the specified task. Users can only cancel their own tasks. It may take a few seconds for the background workers to honor this request.  If the task is already not running for some reason (i.e. canceled, failed) then it will be permanently deleted.
+         * Cancels the specified task. Users can only cancel their own tasks. It may take a few seconds for the background workers to honor this request.  Only tasks that are still active (queued, running, or on hold) are cancelled. Tasks that have already reached a terminal state (finished, failed, or cancelled) are left untouched and remain in the user\'s history.
          * @summary Manually cancel a task
          * @param {string} taskId 
          * @param {*} [options] Override http request option.
@@ -49,6 +49,44 @@ export const TasksApiAxiosParamCreator = function (configuration?: Configuration
         cancelTask: async (taskId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'taskId' is not null or undefined
             assertParamExists('cancelTask', 'taskId', taskId)
+            const localVarPath = `/api/tasks/{task_id}/cancel`
+                .replace(`{${"task_id"}}`, encodeURIComponent(String(taskId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication OAuth2PasswordBearer required
+            // oauth required
+            await setOAuthToObject(localVarHeaderParameter, "OAuth2PasswordBearer", [], configuration)
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Deletes the specified task. Users can only delete their own tasks. It may take a few seconds for the background workers to honor this request.  Both active and inactive tasks can be deleted. The difference between this endpoint and the cancellation endpoint is that this removes the task from the task history.
+         * @summary Manually delete a task
+         * @param {string} taskId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteTask: async (taskId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'taskId' is not null or undefined
+            assertParamExists('deleteTask', 'taskId', taskId)
             const localVarPath = `/api/tasks/{task_id}`
                 .replace(`{${"task_id"}}`, encodeURIComponent(String(taskId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -209,7 +247,7 @@ export const TasksApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = TasksApiAxiosParamCreator(configuration)
     return {
         /**
-         * Cancels the specified task. Users can only cancel their own tasks. It may take a few seconds for the background workers to honor this request.  If the task is already not running for some reason (i.e. canceled, failed) then it will be permanently deleted.
+         * Cancels the specified task. Users can only cancel their own tasks. It may take a few seconds for the background workers to honor this request.  Only tasks that are still active (queued, running, or on hold) are cancelled. Tasks that have already reached a terminal state (finished, failed, or cancelled) are left untouched and remain in the user\'s history.
          * @summary Manually cancel a task
          * @param {string} taskId 
          * @param {*} [options] Override http request option.
@@ -219,6 +257,19 @@ export const TasksApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.cancelTask(taskId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['TasksApi.cancelTask']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Deletes the specified task. Users can only delete their own tasks. It may take a few seconds for the background workers to honor this request.  Both active and inactive tasks can be deleted. The difference between this endpoint and the cancellation endpoint is that this removes the task from the task history.
+         * @summary Manually delete a task
+         * @param {string} taskId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deleteTask(taskId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteTask(taskId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['TasksApi.deleteTask']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -271,7 +322,7 @@ export const TasksApiFactory = function (configuration?: Configuration, basePath
     const localVarFp = TasksApiFp(configuration)
     return {
         /**
-         * Cancels the specified task. Users can only cancel their own tasks. It may take a few seconds for the background workers to honor this request.  If the task is already not running for some reason (i.e. canceled, failed) then it will be permanently deleted.
+         * Cancels the specified task. Users can only cancel their own tasks. It may take a few seconds for the background workers to honor this request.  Only tasks that are still active (queued, running, or on hold) are cancelled. Tasks that have already reached a terminal state (finished, failed, or cancelled) are left untouched and remain in the user\'s history.
          * @summary Manually cancel a task
          * @param {string} taskId 
          * @param {*} [options] Override http request option.
@@ -279,6 +330,16 @@ export const TasksApiFactory = function (configuration?: Configuration, basePath
          */
         cancelTask(taskId: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.cancelTask(taskId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Deletes the specified task. Users can only delete their own tasks. It may take a few seconds for the background workers to honor this request.  Both active and inactive tasks can be deleted. The difference between this endpoint and the cancellation endpoint is that this removes the task from the task history.
+         * @summary Manually delete a task
+         * @param {string} taskId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteTask(taskId: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.deleteTask(taskId, options).then((request) => request(axios, basePath));
         },
         /**
          * Returns all tasks belonging to the authenticated user, regardless of if they are running, in queue, or finished. The only exception is deleted tasks, for obvious reasons.
@@ -320,7 +381,7 @@ export const TasksApiFactory = function (configuration?: Configuration, basePath
  */
 export interface TasksApiInterface {
     /**
-     * Cancels the specified task. Users can only cancel their own tasks. It may take a few seconds for the background workers to honor this request.  If the task is already not running for some reason (i.e. canceled, failed) then it will be permanently deleted.
+     * Cancels the specified task. Users can only cancel their own tasks. It may take a few seconds for the background workers to honor this request.  Only tasks that are still active (queued, running, or on hold) are cancelled. Tasks that have already reached a terminal state (finished, failed, or cancelled) are left untouched and remain in the user\'s history.
      * @summary Manually cancel a task
      * @param {string} taskId 
      * @param {*} [options] Override http request option.
@@ -328,6 +389,16 @@ export interface TasksApiInterface {
      * @memberof TasksApiInterface
      */
     cancelTask(taskId: string, options?: RawAxiosRequestConfig): AxiosPromise<void>;
+
+    /**
+     * Deletes the specified task. Users can only delete their own tasks. It may take a few seconds for the background workers to honor this request.  Both active and inactive tasks can be deleted. The difference between this endpoint and the cancellation endpoint is that this removes the task from the task history.
+     * @summary Manually delete a task
+     * @param {string} taskId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TasksApiInterface
+     */
+    deleteTask(taskId: string, options?: RawAxiosRequestConfig): AxiosPromise<void>;
 
     /**
      * Returns all tasks belonging to the authenticated user, regardless of if they are running, in queue, or finished. The only exception is deleted tasks, for obvious reasons.
@@ -369,7 +440,7 @@ export interface TasksApiInterface {
  */
 export class TasksApi extends BaseAPI implements TasksApiInterface {
     /**
-     * Cancels the specified task. Users can only cancel their own tasks. It may take a few seconds for the background workers to honor this request.  If the task is already not running for some reason (i.e. canceled, failed) then it will be permanently deleted.
+     * Cancels the specified task. Users can only cancel their own tasks. It may take a few seconds for the background workers to honor this request.  Only tasks that are still active (queued, running, or on hold) are cancelled. Tasks that have already reached a terminal state (finished, failed, or cancelled) are left untouched and remain in the user\'s history.
      * @summary Manually cancel a task
      * @param {string} taskId 
      * @param {*} [options] Override http request option.
@@ -378,6 +449,18 @@ export class TasksApi extends BaseAPI implements TasksApiInterface {
      */
     public cancelTask(taskId: string, options?: RawAxiosRequestConfig) {
         return TasksApiFp(this.configuration).cancelTask(taskId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Deletes the specified task. Users can only delete their own tasks. It may take a few seconds for the background workers to honor this request.  Both active and inactive tasks can be deleted. The difference between this endpoint and the cancellation endpoint is that this removes the task from the task history.
+     * @summary Manually delete a task
+     * @param {string} taskId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TasksApi
+     */
+    public deleteTask(taskId: string, options?: RawAxiosRequestConfig) {
+        return TasksApiFp(this.configuration).deleteTask(taskId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

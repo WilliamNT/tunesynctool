@@ -181,6 +181,8 @@ async def check_if_task_is_dormant(redis: Redis, redis_key: str) -> bool:
     """
     Check if a task is dormant for whatever reason.
 
+    A task marked for deletion is removed here. Other dormant tasks are left in history.
+
     :param redis: Redis client
     :param redis_key: Full Redis key
     :return: True if task is dormant or no longer exists
@@ -193,6 +195,11 @@ async def check_if_task_is_dormant(redis: Redis, redis_key: str) -> bool:
         return True
 
     task = PlaylistTaskStatus.model_validate_json(raw)
+
+    if task.status == TaskStatus.MARKED_FOR_DELETION:
+        await redis.delete(redis_key)
+        return True
+
     return task.status in _DORMANT_TASK_STATUSES
 
 async def sleep_unless_dormant(redis: Redis, redis_key: str, seconds: int) -> bool:
