@@ -64,3 +64,10 @@ def make_running_tasks_pattern() -> str:
     """
 
     return "user_tasks:*:*:*"
+
+def make_kind_agnostic_user_task_pattern(user_id: int, task_id: str) -> str:
+    return make_task_key(
+        kind="*",
+        user_id=user_id,
+        task_id=task_id
+    )

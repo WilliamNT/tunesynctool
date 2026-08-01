@@ -17,6 +17,7 @@ class TaskStatus(StrEnum):
     QUEUED = "queued"
     CANCELED = "canceled"
     ON_HOLD = "on_hold"
+    MARKED_FOR_DELETION = "marked_for_deletion"
 
 class TaskKind(StrEnum):
     """
