@@ -130,6 +130,34 @@ class CredentialsService:
             session=self.db,
             obj=credentials,
         )
+
+    async def delete_all_credentials_for_user(self, user: User, log_reason: Optional[str] = None) -> None:
+        """
+        Permanently deletes every set of service credentials belonging to the user.
+
+        Used when a user account is being removed so that linked accounts (and
+        other stored credentials such as the Deezer ARL) are purged with it.
+
+        :param user: The user whose credentials should be deleted.
+        :param log_reason: Optional reason to include in the log message.
+        """
+
+        result = await self.db.execute(
+            select(ServiceCredentials).where(ServiceCredentials.user_id == user.id)
+        )
+
+        credentials = result.scalars().all()
+
+        for credential in credentials:
+            await delete(
+                session=self.db,
+                obj=credential,
+            )
+
+        logger.info(
+            f"Deleted {len(credentials)} credential(s) for user {user.id}."
+            + (f" Reason: {log_reason}" if log_reason else "")
+        )
     
     async def refresh_google_credentials(self, user: User, credentials: ServiceCredentials) -> ServiceCredentials:
         """

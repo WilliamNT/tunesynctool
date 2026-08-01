@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, status
 
-from api.models.user import UserRead, UserCreate
+from api.models.user import UserRead, UserCreate, UserLookupByIdParams
 from api.services.user_service import UserService, get_user_service
 from api.core.context import RequestContext, get_request_context
 from api.models.collection import Collection
@@ -81,4 +81,35 @@ async def get_all_users(
 
     return await user_service.compile_all_users_for_admin_use(
         caller_user=request_context.user
+    )
+
+@router.delete(
+    path="/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        status.HTTP_204_NO_CONTENT: {
+            "description": "The user has been successfully deleted."
+        },
+        status.HTTP_403_FORBIDDEN: {
+            "description": "The authenticated user is not allowed to delete the specified user."
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "description": "No user exists with the supplied ID."
+        },
+        status.HTTP_409_CONFLICT: {
+            "description": "The specified user is the last remaining admin and cannot be deleted."
+        }
+    },
+    summary="Delete a user",
+    operation_id="deleteUser",
+    name="users:delete_user",
+)
+async def delete_user(
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    user_service: Annotated[UserService, Depends(get_user_service)],
+    filter_query: Annotated[UserLookupByIdParams, Depends()]
+) -> None:
+    return await user_service.delete_user(
+        caller_user=request_context.user,
+        user_id=filter_query.id
     )

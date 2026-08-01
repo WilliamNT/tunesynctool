@@ -163,7 +163,7 @@ async def delete_task(
     The difference between this endpoint and the cancellation endpoint is that this removes the task from the task history.
     """
 
-    return await service.dispatch_task_deletion_for_user(
+    return await service.dispatch_task_deletion(
         task_id=task_id,
         user=request_context.user
     )
