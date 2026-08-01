@@ -13,6 +13,8 @@ from api.workers.utils.keys import make_task_key, make_user_tasks_pattern, make_
 from api.workers.utils.constants import TTL_QUEUED, TTL_FINISHED
 from api.models.system import Initiator
 
+_ACTIVE_STATUSES = [TaskStatus.RUNNING, TaskStatus.QUEUED, TaskStatus.ON_HOLD]
+
 class TaskService:    
     def __init__(self, redis: Redis):
         self.redis = redis
@@ -95,101 +97,69 @@ class TaskService:
     async def dispatch_task_cancellation(self, task_id: uuid.UUID, user: User) -> None:
         """
         Marks a task as cancelled. The worker will detect this and stop processing.
-        
+
+        Only active tasks are affected; terminal tasks are left untouched so they
+        remain in the user's history. A non-existent task raises 404.
+
         :param task_id: UUID of the task
         :param user: User who owns the task
         """
 
-        await self._cancel_tasks(
-            task_ids=[task_id],
+        await self.cancel_task(
+            task_id=task_id,
             user=user,
             initiator=Initiator.USER,
             reason="Cancelled by user."
         )
 
-    async def _cancel_tasks(self, task_ids: List[uuid.UUID], user: User, initiator: Initiator, reason: Optional[str] = None) -> None:
+    async def cancel_task(self, task_id: uuid.UUID, user: User, initiator: Initiator, reason: Optional[str] = None) -> None:
         """
-        Marks all specified tasks as cancelled.
-
-        If the task IDs do not belong to the user, this will fail.
-
-        :param task_ids: An array of task IDs to delete
-        :param user: The user the tasks supposedly belong to
-        :param initiator: Used for logging. Sets whether this action was initiated by the system or the user
+        Cancels a task if it is still active. Terminal tasks are kept in history.
         """
 
-        if len(task_ids) == 0:
-            logger.info(f"The {initiator.value} dispatched the cancellation of all tasks belonging to the user with ID {user.id} cancellation but there are none to cancel. Aborting.")
-            return
+        keys = await self._resolve_task_keys(user.id, task_id, verb="cancel")
 
-        logger.info(f"The {initiator.value} marked {len(task_ids)} tasks belonging to user with ID {user.id} for cancellation. Workers may not react to this instantly, please be patient. Reason: {reason}")
+        for key in keys:
+            task = await self._get_task(key)
+            if task is None or task.status not in _ACTIVE_STATUSES:
+                continue
 
-        successfully_deleted = 0
-
-        try:
-            for task_id in task_ids:
-                await self._cancel_task(
-                    user_id=user.id,
-                    task_id=task_id,
-                    initiator=initiator,
-                    reason=reason
-                )
-                successfully_deleted += 1
-        except HTTPException:
-            raise
-        except Exception:
-            logger.exception(f"Failed to delete {len(task_ids) - successfully_deleted} tasks for user with ID {user.id}.")
-
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Something went wrong."
+            await self.update_task_status(
+                key=key,
+                new_status=TaskStatus.CANCELED,
+                initiator=initiator,
+                reason=reason
             )
 
-    async def _cancel_task(self, user_id: int, task_id: uuid.UUID, initiator: Initiator, reason: Optional[str] = None) -> None:
+    async def delete_task(self, task_id: uuid.UUID, user: User, initiator: Initiator, reason: Optional[str] = None) -> None:
         """
-        Cancels the specified task.
-        """
+        Removes a task from the user's history.
 
-        pattern = make_kind_agnostic_user_task_pattern(user_id, str(task_id))
-        _keys = await self._get_all_keys_for_pattern(pattern)
-
-        if len(_keys) == 0:
-            self._raise_404_task_not_found(f"Attempted to cancel a non-existent task with ID {task_id}." )
-
-        if len(_keys) > 1:
-            logger.warning(f"[task:{task_id}] Multiple Redis keys matched for pattern '{pattern}'. Only the first will be cancelled.")
-
-        key = _keys[0]
-        task = await self._get_task(key)
-
-        # Task is already terminal; treat DELETE as clearing it from the user's task list.
-        is_deleted = await self._purge_task_if_terminal(key, task)
-        if is_deleted:
-            logger.info(f"Deleted terminal task ({task_id}) for user {user_id}. This was a {initiator.value} initiated action. Reasoning: {reason or "(unspecified)"}")
-            return
-
-        await self.update_task_status(
-            key=key,
-            new_status=TaskStatus.CANCELED,
-            initiator=initiator,
-            reason=reason
-        )
-
-    async def _purge_task_if_terminal(self, key: str, task: PlaylistTaskStatus) -> bool:
-        """
-        Deletes the task from Redis if already finished. Otherwise nothing happens.
-        
-        Returns true if the task was deleted and false if not.
+        Terminal tasks are deleted from Redis immediately. Active tasks are marked
+        MARKED_FOR_DELETION and are removed by the worker once it acknowledges the
+        request. A non-existent task raises 404.
         """
 
-        is_terminal = task.status not in [TaskStatus.RUNNING, TaskStatus.QUEUED, TaskStatus.ON_HOLD]
+        keys = await self._resolve_task_keys(user.id, task_id, verb="delete")
 
-        if is_terminal:
-            await self.redis.delete(key)
+        if len(keys) > 1:
+            logger.warning(f"[task:{task_id}] Multiple Redis keys matched for this task. All will be deleted.")
 
-        is_deleted = await self._get_task(key) is None
+        for key in keys:
+            task = await self._get_task(key)
+            if task is None:
+                continue
 
-        return is_deleted
+            if task.status in _ACTIVE_STATUSES:
+                await self.update_task_status(
+                    key=key,
+                    new_status=TaskStatus.MARKED_FOR_DELETION,
+                    initiator=initiator,
+                    reason=reason,
+                )
+            else:
+                await self.redis.delete(key)
+                logger.info(f"Deleted terminal task ({task_id}) for user {user.id}. {initiator.value} initiated. Reason: {reason or '(unspecified)'}")
 
     async def _get_all_keys_for_pattern(self, pattern: str) -> List[str]:
         """
@@ -214,6 +184,25 @@ class TaskService:
             return PlaylistTaskStatus.model_validate_json(raw)
 
         return None
+
+    async def _resolve_task_keys(self, user_id: int, task_id: uuid.UUID, verb: str) -> List[str]:
+        """
+        Resolves the Redis key(s) backing a user's task.
+
+        A task_id should map to exactly one key; if more than one matches, all are
+        returned and the caller decides how to handle it. Raises 404 if no key
+        matches, so callers can treat a missing task uniformly.
+
+        :param verb: Infinitive used in the 404 log (e.g. "cancel", "delete").
+        """
+
+        pattern = make_kind_agnostic_user_task_pattern(user_id, str(task_id))
+        keys = await self._get_all_keys_for_pattern(pattern)
+
+        if len(keys) == 0:
+            self._raise_404_task_not_found(f"Attempted to {verb} a non-existent task with ID {task_id}.")
+
+        return keys
 
     async def update_task_status(self, key: str, new_status: TaskStatus, initiator: Initiator, reason: Optional[str] = None) -> PlaylistTaskStatus:
         """
@@ -257,17 +246,21 @@ class TaskService:
 
     async def delete_tasks_for_user(self, user: User, initiator: Initiator, reason: Optional[str] = None) -> None:
         """
-        Permanently deletes all tasks belonging to the specified user and notifies workers about it.
+        Permanently deletes all tasks belonging to the specified user.
+
+        Terminal tasks are removed immediately; active tasks are marked
+        MARKED_FOR_DELETION for the worker to clean up.
         """
 
         tasks = await self.get_all_tasks_for_user(user)
 
-        await self._cancel_tasks(
-            task_ids=[task.task_id for task in tasks],
-            user=user,
-            initiator=initiator,
-            reason=reason
-        )
+        for task in tasks:
+            await self.delete_task(
+                task_id=task.task_id,
+                user=user,
+                initiator=initiator,
+                reason=reason,
+            )
 
 async def get_task_service() -> AsyncGenerator[TaskService, None]:
     redis = get_redis_instance()
