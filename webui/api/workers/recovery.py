@@ -67,3 +67,35 @@ async def recover_stale_tasks() -> int:
         await redis.aclose()
     
     return recovered_count
+
+async def recover_marked_for_deletion_tasks() -> int:
+    """
+    Delete tasks that were marked for deletion but never removed (e.g. their worker died).
+
+    :return: Number of tasks deleted
+    """
+
+    redis = get_redis_instance()
+
+    deleted_count = 0
+
+    try:
+        async for key in redis.scan_iter(make_running_tasks_pattern()):
+            raw = await redis.get(key)
+            if not raw:
+                continue
+
+            try:
+                task = PlaylistTaskStatus.model_validate_json(raw)
+            except Exception:
+                continue
+
+            if task.status != TaskStatus.MARKED_FOR_DELETION:
+                continue
+
+            await redis.delete(key)
+            deleted_count += 1
+    finally:
+        await redis.aclose()
+
+    return deleted_count

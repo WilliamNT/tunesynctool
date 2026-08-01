@@ -23,9 +23,10 @@ from api.workers.utils.task_status import (
     report_task_on_hold,
     report_task_finished,
     report_task_as_running,
-    check_if_task_cancelled
+    check_if_task_is_dormant,
+    save_task,
+    sleep_unless_dormant
 )
-from api.workers.utils.constants import TTL_RUNNING
 
 async def do_current_iteration(
     redis_key: str,
@@ -140,7 +141,7 @@ async def handle_playlist_transfer(task: PlaylistTaskStatus, user: User, redis: 
         matches = []
 
         for source_track in source_tracks:
-            if await check_if_task_cancelled(redis, redis_key):
+            if await check_if_task_is_dormant(redis, redis_key):
                 logger.info(f"Task {task.task_id} was cancelled by user.")
                 return
 
@@ -152,7 +153,9 @@ async def handle_playlist_transfer(task: PlaylistTaskStatus, user: User, redis: 
                     reason="Pausing to avoid a rate limit."
                 )
 
-                await asyncio.sleep(5)
+                if await sleep_unless_dormant(redis, redis_key, 5):
+                    logger.info(f"Task {task.task_id} was cancelled by user.")
+                    return
             try:
                 result = await asyncio.wait_for(
                     do_current_iteration(
@@ -173,7 +176,7 @@ async def handle_playlist_transfer(task: PlaylistTaskStatus, user: User, redis: 
 
             assets = await get_track_assets(source_provider, source_track, user)
             task.progress.track = map_track_between_domain_model_and_response_model(source_track, source_provider.provider_name, assets)
-            await redis.set(redis_key, task.model_dump_json(), ex=TTL_RUNNING)
+            await save_task(redis, task, redis_key, use_finished_ttl=False)
 
         if len(matches) == 0:
             logger.info("Canceled playlist transfer. Reason: Couldn't find any matches.")
@@ -217,6 +220,9 @@ async def handle_playlist_transfer(task: PlaylistTaskStatus, user: User, redis: 
                     redis_key=redis_key
                 )
 
+                if await check_if_task_is_dormant(redis, redis_key):
+                    return
+
                 logger.info(f"Successfuly finished transfer of playlist from {source_provider.provider_name} to {target_provider.provider_name}.")
                 await report_task_finished(
                     redis=redis,
@@ -233,7 +239,7 @@ async def handle_playlist_transfer(task: PlaylistTaskStatus, user: User, redis: 
 
 async def insert_tracks_into_playlist(playlist_id: str, tracks: list[Track], driver: AsyncWrappedServiceDriver, task: PlaylistTaskStatus, redis: Redis, redis_key: str) -> None:
     for chunked_ids in batch([track.service_id for track in tracks], 25):
-        if await check_if_task_cancelled(redis, redis_key):
+        if await check_if_task_is_dormant(redis, redis_key):
             return
 
         await driver.add_tracks_to_playlist(
@@ -247,4 +253,5 @@ async def insert_tracks_into_playlist(playlist_id: str, tracks: list[Track], dri
             redis_key=redis_key,
             reason="Pausing to avoid a rate limit."
         )
-        await asyncio.sleep(3)
+        if await sleep_unless_dormant(redis, redis_key, 3):
+            return

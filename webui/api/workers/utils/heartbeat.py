@@ -2,7 +2,8 @@ import time
 import asyncio
 
 from api.workers.utils.context import WorkerContext
-from api.workers.utils.constants import TTL_RUNNING, HEARTBEAT_INTERVAL
+from api.workers.utils.constants import HEARTBEAT_INTERVAL
+from api.workers.utils.task_status import save_task
 from api.core.logging import logger
 
 async def update_heartbeat(ctx: WorkerContext) -> None:
@@ -15,7 +16,7 @@ async def update_heartbeat(ctx: WorkerContext) -> None:
     
     ctx.current_task.last_heartbeat = int(time.time())
     ctx.current_task.worker_id = ctx.worker_name
-    await ctx.redis.set(ctx.current_redis_key, ctx.current_task.model_dump_json(), ex=TTL_RUNNING)
+    await save_task(ctx.redis, ctx.current_task, ctx.current_redis_key, use_finished_ttl=False)
 
 async def start_heartbeat_loop(ctx: WorkerContext) -> None:
     """

@@ -8,17 +8,16 @@ from api.core.redis import get_redis_instance
 from api.models.task import PlaylistTaskStatus, TaskStatus, TaskKind
 from api.models.user import User
 from api.workers.handlers.playlist_transfer_handler import handle_playlist_transfer
-from api.workers.utils.task_status import report_task_on_hold, report_task_failure
+from api.workers.utils.task_status import report_task_on_hold, report_task_failure, save_task
 from api.services.user_service import UserService
 from api.services.task_service import get_task_service
 from api.core.database import get_session_instance
 from api.workers.utils.keys import (
-    parse_task_key, 
+    parse_task_key,
     make_task_queue_name
 )
 from api.workers.utils.context import WorkerContext
 from api.workers.utils.heartbeat import start_heartbeat_loop, stop_heartbeat
-from api.workers.utils.constants import TTL_RUNNING
 
 async def fetch_next_task(ctx: WorkerContext) -> Optional[Tuple[str, str, int, str]]:
     """
@@ -66,25 +65,36 @@ async def load_and_validate_task(ctx: WorkerContext, redis_key: str, task_uuid: 
     if task.status == TaskStatus.CANCELED:
         logger.info(f"[{ctx.worker_name}][task:{task_uuid}] Task was cancelled before pickup, skipping")
         return None
-    
+
+    if task.status == TaskStatus.MARKED_FOR_DELETION:
+        logger.info(f"[{ctx.worker_name}][task:{task_uuid}] Task was marked for deletion before pickup, removing")
+        await ctx.redis.delete(redis_key)
+        return None
+
     if task.status != TaskStatus.QUEUED:
         logger.warning(f"[{ctx.worker_name}][task:{task_uuid}] Task status is {task.status}, expected QUEUED. Skipping.")
         return None
 
     return task
 
-async def mark_task_running(ctx: WorkerContext, task: PlaylistTaskStatus, redis_key: str, task_uuid: str) -> None:
+async def mark_task_running(ctx: WorkerContext, task: PlaylistTaskStatus, redis_key: str, task_uuid: str) -> bool:
     """
     Mark a task as running and set initial heartbeat.
+
+    :return: True if the task was marked running, False if it was already cancelled or deleted.
     """
 
     task.status = TaskStatus.RUNNING
     task.started_at = int(time.time())
     task.worker_id = ctx.worker_name
     task.last_heartbeat = int(time.time())
-    await ctx.redis.set(redis_key, task.model_dump_json(), ex=TTL_RUNNING)
-    
-    logger.info(f"[{ctx.worker_name}][task:{task_uuid}] Status: QUEUED -> RUNNING")
+
+    if await save_task(ctx.redis, task, redis_key, status=TaskStatus.RUNNING, use_finished_ttl=False):
+        logger.info(f"[{ctx.worker_name}][task:{task_uuid}] Status: QUEUED -> RUNNING")
+        return True
+
+    logger.info(f"[{ctx.worker_name}][task:{task_uuid}] Task was cancelled/deleted before pickup. Skipping.")
+    return False
 
 async def get_task_user(ctx: WorkerContext, user_id: int, task_uuid: str) -> Optional[User]:
     """
@@ -143,7 +153,10 @@ async def process_single_task(ctx: WorkerContext) -> bool:
         return True
 
     ctx.current_task = task
-    await mark_task_running(ctx, task, redis_key, task_uuid)
+    if not await mark_task_running(ctx, task, redis_key, task_uuid):
+        ctx.current_task = None
+        ctx.current_redis_key = None
+        return True
 
     ctx.heartbeat_task = asyncio.create_task(start_heartbeat_loop(ctx))
 

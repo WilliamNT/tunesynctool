@@ -8,7 +8,7 @@ from api.core.config import config
 from api.core.database import initialize_database
 from api.core.logging import logger
 from api.workers.dispatcher import worker_dispatcher
-from api.workers.recovery import recover_stale_tasks
+from api.workers.recovery import recover_stale_tasks, recover_marked_for_deletion_tasks
 
 app = FastAPI(
     title="tunesynctool web API",
@@ -28,6 +28,10 @@ async def on_startup():
     recovered = await recover_stale_tasks()
     if recovered > 0:
         logger.info(f"Recovered {recovered} stale task(s) from previous run")
+
+    deleted = await recover_marked_for_deletion_tasks()
+    if deleted > 0:
+        logger.info(f"Deleted {deleted} task(s) marked for deletion from previous run")
     
     worker_count = 3
     logger.info(f"Starting {worker_count} background workers...")
