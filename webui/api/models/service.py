@@ -1,6 +1,6 @@
 from typing import Optional
-from sqlmodel import SQLModel, Field, Text
-from pydantic import BaseModel
+from sqlmodel import SQLModel, Field as SQLField, Text
+from pydantic import BaseModel, Field
 from enum import Enum
 
 from api.helpers.encryption import encrypt_dict, decrypt_dict
@@ -12,10 +12,10 @@ class ServiceCredentials(SQLModel, table=True):
 
     __tablename__ = "service_credentials"
 
-    id: int = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="users.id", nullable=False)
-    service_name: str = Field(max_length=255, nullable=False)
-    encrypted_credentials: str = Field(nullable=False, sa_type=Text)
+    id: int = SQLField(default=None, primary_key=True)
+    user_id: int = SQLField(foreign_key="users.id", nullable=False)
+    service_name: str = SQLField(max_length=255, nullable=False)
+    encrypted_credentials: str = SQLField(nullable=False, sa_type=Text)
 
     @property
     def credentials(self) -> dict:
@@ -38,8 +38,8 @@ class ServiceCredentialsCreate(BaseModel):
     Represents the data required to save service credentials.
     """
 
-    service_name: str = Field(max_length=255, nullable=False)
-    credentials: dict = Field(nullable=False)
+    service_name: str = Field(max_length=255)
+    credentials: dict = Field()
 
 class ProviderLinkType(Enum):
     """

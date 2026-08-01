@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from sqlmodel import SQLModel, Field
+from pydantic import BaseModel, Field
+from sqlmodel import SQLModel, Field as SQLField
 
 class User(SQLModel, table=True):
     """
@@ -8,17 +8,17 @@ class User(SQLModel, table=True):
 
     __tablename__ = "users"
 
-    id: int = Field(default=None, primary_key=True)
-    username: str = Field(unique=True, index=True, max_length=255)    
-    password_hash: str = Field(max_length=255)
-    is_admin: bool = Field(default=False)
+    id: int = SQLField(default=None, primary_key=True)
+    username: str = SQLField(unique=True, index=True, max_length=255)
+    password_hash: str = SQLField(max_length=255)
+    is_admin: bool = SQLField(default=False)
 
 class UserCreate(BaseModel):
     """
     Represents a user creation DTO.
     """
 
-    username: str = Field(unique=True, index=True, max_length=255, min_length=3, description="Username must be unique and at least 3 characters long.")    
+    username: str = Field(max_length=255, min_length=3, description="Username must be unique and be at least 3 characters long.")
     password: str = Field(max_length=255, min_length=8, description="Password must be at least 8 characters long.")
 
 class UserRead(BaseModel):
@@ -26,7 +26,7 @@ class UserRead(BaseModel):
     Represents a user response DTO.
     """
 
-    id: int = Field(nullable=False, description="User ID")
+    id: int = Field(description="User ID")
     username: str = Field(max_length=255, description="Username")
     is_admin: bool = Field(default=False, description="Whether the user is an admin")
 
@@ -38,3 +38,6 @@ class UserLogin(UserCreate):
     """
 
     pass
+
+class UserLookupByIdParams(BaseModel):
+    id: int = Field(description="User ID")
