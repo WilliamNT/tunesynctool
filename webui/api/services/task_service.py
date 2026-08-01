@@ -262,6 +262,21 @@ class TaskService:
                 reason=reason,
             )
 
+    async def dispatch_task_deletion(self, task_id: uuid.UUID, user: User) -> None:
+        """
+        Permanently deletes the specified task if it belongs to the user.
+
+        If the task is already inactive, it is removed instantly.
+        If it is running, the worker working on it will delete it soon.
+        """
+
+        await self.delete_task(
+            task_id=task_id,
+            user=user,
+            initiator=Initiator.USER,
+            reason="User requested deletion."
+        )
+
 async def get_task_service() -> AsyncGenerator[TaskService, None]:
     redis = get_redis_instance()
     try:

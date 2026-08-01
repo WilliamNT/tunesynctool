@@ -102,13 +102,10 @@ async def all_tasks(
     )
 
 @router.delete(
-    path="/{task_id}",
+    path="/{task_id}/cancel",
     responses={
         status.HTTP_404_NOT_FOUND: {
             "description": "The task does not exist."
-        },
-        status.HTTP_200_OK: {
-            "description": "Deletion successful."
         }
     },
     summary="Manually cancel a task",
@@ -131,6 +128,36 @@ async def cancel_task(
     """
 
     return await service.dispatch_task_cancellation(
+        task_id=task_id,
+        user=request_context.user
+    )
+
+@router.delete(
+    path="/{task_id}",
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "description": "The task does not exist."
+        }
+    },
+    summary="Manually delete a task",
+    operation_id="deleteTask",
+    name="tasks:delete_task",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+async def delete_task(
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    task_id: Annotated[UUID, Path()],
+    service: Annotated[TaskService, Depends(get_task_service)],
+) -> None:
+    """
+    Deletes the specified task. Users can only delete their own tasks.
+    It may take a few seconds for the background workers to honor this request.
+
+    Both active and inactive tasks can be deleted.
+    The difference between this endpoint and the cancellation endpoint is that this removes the task from the task history.
+    """
+
+    return await service.dispatch_task_deletion(
         task_id=task_id,
         user=request_context.user
     )

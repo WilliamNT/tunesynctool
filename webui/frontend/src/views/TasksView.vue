@@ -159,7 +159,7 @@ onUnmounted(() => {
           <hr class="flex-1 border-zinc-700 border-0.5 ms-5" />
         </div>
         <template v-if="visibleQueuedTasks.length > 0">
-          <Task v-for="task in visibleQueuedTasks" :key="task.task_id" :providers :task />
+          <Task v-for="task in visibleQueuedTasks" :key="task.task_id" :providers :task @cancel="fetchTasks" />
         </template>
         <p class="text-sm text-zinc-400 font-normal" v-else>You have no tasks waiting in queue.</p>
       </div>
@@ -170,7 +170,7 @@ onUnmounted(() => {
           <hr class="flex-1 border-zinc-700 border-0.5 ms-5" />
         </div>
         <template v-if="visibleHistoryTasks.length > 0">
-          <Task v-for="task in visibleHistoryTasks" :key="task.task_id" :providers :task />
+          <Task v-for="task in visibleHistoryTasks" :key="task.task_id" :providers :task @cancel="fetchTasks" />
         </template>
         <p class="text-sm text-zinc-400 font-normal" v-else>You don't have any finished tasks yet.</p>
       </div>

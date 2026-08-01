@@ -63,16 +63,25 @@ onMounted(async () => {
   }
 });
 
-const cancelTask = async () => {
+const cancelOrDeleteTask = async () => {
   try {
     isCancellationLoading.value = true;
-    await tasksApi.cancelTask(props.task.task_id);
+    const isActive =
+      props.task.status === TaskStatus.Running ||
+      props.task.status === TaskStatus.Queued ||
+      props.task.status === TaskStatus.OnHold;
+
+    if (isActive) {
+      await tasksApi.cancelTask(props.task.task_id);
+    } else {
+      await tasksApi.deleteTask(props.task.task_id);
+    }
     emit('cancel');
   } catch (error) {
     if (isAxiosError(error)) {
-      console.error('Failed to cancel task:', error.response?.data ?? error.message);
+      console.error('Failed to cancel or delete task:', error.response?.data ?? error.message);
     } else {
-      console.error('Failed to cancel task:', error);
+      console.error('Failed to cancel or delete task:', error);
     }
   }
 }
@@ -80,7 +89,7 @@ const cancelTask = async () => {
 
 <template>
   <AppCard class="rounded-2xl flex gap-4 relative overflow-hidden">
-    <button @click="cancelTask" :disabled="isCancellationLoading" class="absolute top-2 right-2 text-zinc-400 w-6 h-6 flex items-center justify-center hover:text-red-200 transition-all z-10 cursor-pointer bg-zinc-400/10 hover:bg-red-100/10 rounded-full" title="Cancel or delete task">
+    <button @click="cancelOrDeleteTask" :disabled="isCancellationLoading" class="absolute top-2 right-2 text-zinc-400 w-6 h-6 flex items-center justify-center hover:text-red-200 transition-all z-10 cursor-pointer bg-zinc-400/10 hover:bg-red-100/10 rounded-full" title="Cancel or delete task">
       <Icon icon="svg-spinners:90-ring" v-if="isCancellationLoading" />
       <Icon icon="material-symbols-light:close-small-outline-rounded" class="text-2xl" v-else />
     </button>
