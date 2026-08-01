@@ -1,3 +1,4 @@
+```yaml
 services:
   # Frontend app serving the web UI
   frontend:
@@ -53,6 +54,10 @@ services:
       # Google OAuth - uncomment and set these if you plan to use the YouTube Music integration
       # GOOGLE_CLIENT_ID:
       # GOOGLE_CLIENT_SECRET:
+
+      # Last.fm - uncomment and set these if you plan to use the Last.fm integration
+      # LASTFM_API_KEY:
+      # LASTFM_API_SECRET:
 
       # Redis - do not modify unless you know what you're doing
       REDIS_HOST: redis
@@ -111,10 +116,10 @@ services:
 #    depends_on:
 #      - redis
 
+volumes:
+  db-data:
+
 networks:
   frontend:
   backend:
-    internal: true
-
-volumes:
-  db-data:
+```
