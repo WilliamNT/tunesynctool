@@ -10,7 +10,7 @@ from api.core.redis import get_redis_instance
 from api.models.collection import Collection
 from api.core.logging import logger
 from api.workers.utils.keys import make_task_key, make_user_tasks_pattern, make_task_queue_name, make_kind_agnostic_user_task_pattern
-from api.workers.utils.constants import TTL_QUEUED, TTL_FINISHED
+from api.workers.utils.constants import TTL_QUEUED, TTL_FINISHED, SCAN_COUNT
 from api.models.system import Initiator
 
 _ACTIVE_STATUSES = [TaskStatus.RUNNING, TaskStatus.QUEUED, TaskStatus.ON_HOLD]
@@ -75,8 +75,8 @@ class TaskService:
 
         tasks = []
         pattern = make_user_tasks_pattern(user.id)
-        
-        async for key in self.redis.scan_iter(pattern):
+
+        async for key in self.redis.scan_iter(pattern, count=SCAN_COUNT):
             raw = await self.redis.get(key)
         
             if raw:
@@ -168,7 +168,7 @@ class TaskService:
 
         keys = []
 
-        async for key in self.redis.scan_iter(match=pattern):
+        async for key in self.redis.scan_iter(match=pattern, count=SCAN_COUNT):
             keys.append(key)
 
         return keys

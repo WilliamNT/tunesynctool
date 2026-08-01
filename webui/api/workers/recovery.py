@@ -4,7 +4,7 @@ from api.core.redis import get_redis_instance
 from api.core.logging import logger
 from api.models.task import PlaylistTaskStatus, TaskStatus
 from api.workers.utils.keys import make_running_tasks_pattern
-from api.workers.utils.constants import HEARTBEAT_STALE_THRESHOLD, TTL_FINISHED
+from api.workers.utils.constants import HEARTBEAT_STALE_THRESHOLD, TTL_FINISHED, SCAN_COUNT
 
 async def recover_stale_tasks() -> int:
     """
@@ -20,11 +20,11 @@ async def recover_stale_tasks() -> int:
     current_time = int(time.time())
     
     try:
-        async for key in redis.scan_iter(make_running_tasks_pattern()):
+        async for key in redis.scan_iter(make_running_tasks_pattern(), count=SCAN_COUNT):
             raw = await redis.get(key)
             if not raw:
                 continue
-                
+
             try:
                 task = PlaylistTaskStatus.model_validate_json(raw)
             except Exception:
@@ -80,7 +80,7 @@ async def recover_marked_for_deletion_tasks() -> int:
     deleted_count = 0
 
     try:
-        async for key in redis.scan_iter(make_running_tasks_pattern()):
+        async for key in redis.scan_iter(make_running_tasks_pattern(), count=SCAN_COUNT):
             raw = await redis.get(key)
             if not raw:
                 continue
