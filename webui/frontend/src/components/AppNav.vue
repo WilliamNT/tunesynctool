@@ -58,8 +58,8 @@ const currentRoute = computed(() => router.currentRoute.value.name);
         <RouterLink :to="{ name: 'accounts' }" class="flex items-center px-4 py-3 w-full hover:text-lime-400 rounded-full transition-colors">
           <div class="me-2.5 inline-block text-xl">
             <transition name="bounce" mode="out-in">
-              <Icon icon="material-symbols:link-2-rounded" :class="{ 'new-page': currentRoute === 'accounts' }" v-if="currentRoute === 'accounts'" />
-              <Icon icon="material-symbols:link-2-rounded" v-else />
+              <Icon icon="material-symbols:supervisor-account-rounded" :class="{ 'new-page': currentRoute === 'accounts' }" v-if="currentRoute === 'accounts'" />
+              <Icon icon="material-symbols:supervisor-account-outline-rounded" v-else />
             </transition>
           </div>
           <span>Accounts</span>
