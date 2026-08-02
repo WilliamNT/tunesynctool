@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "webui/api/**"
+      - "scripts/generate_openapi.py"
+      - "requirements.txt"
+      - "wrangler.jsonc"
+      - ".github/workflows/deploy-redocly.yml"
 
 
 permissions:
