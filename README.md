@@ -12,6 +12,14 @@ Tunesynctool supports the following services:
 
 Support for other services is planned, however the current focus is on getting the self-hostable service to a stable state.
 
+# How do I use this?
+
+Depending on what you need, you can use one of the following links to learn more about this project.
+
+- For the Web UI's API (OpenAPI schema can be also downloaded here): https://schema.tunesynctool.com/
+- For the legacy CLI's command builder see: https://cli.tunesynctool.com/
+- For the wiki see: https://github.com/WilliamNT/tunesynctool/wiki
+
 ## Stability
 
 The project is under heavy development and contains bugs. Use at your own discretion.
