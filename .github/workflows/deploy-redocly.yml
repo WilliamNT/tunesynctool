@@ -31,8 +31,22 @@ jobs:
 
       - name: Generate OpenAPI
         env:
-          PYTHONPATH: ${{ github.workspace }}
-        run: python scripts/generate_openapi.py
+          # webui/ on the path so `from webui.api.main import app` resolves,
+          # and repo root alongside it so the app's own `from api.core...` imports resolve.
+          PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/webui
+          # The app's Config() is instantiated at import time and requires these
+          # settings. They're never used to connect during OpenAPI generation
+          # (DB engine + Redis client are lazy), so dummy values are safe here.
+          DB_HOST: localhost
+          DB_USER: root
+          DB_NAME: dummy
+          APP_HOST: localhost
+          APP_SECRET: dummy
+          ENCRYPTION_KEY: dummy
+          ENCRYPTION_SALT: dummy
+        run: |
+          mkdir -p static
+          python scripts/generate_openapi.py
 
       - name: Generate ReDoc
         run: |
