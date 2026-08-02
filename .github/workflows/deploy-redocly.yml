@@ -1,0 +1,48 @@
+name: Update tunesynctool backend API docs
+
+on:
+  push:
+    branches:
+      - main
+
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: "webui api schema doc deploy"
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - run: pip install -r requirements.txt
+
+      - run: npm install -g @redocly/cli
+
+      - name: Generate OpenAPI
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python scripts/generate_openapi.py
+
+      - name: Generate ReDoc
+        run: |
+          mkdir site
+          cp openapi.json site/
+          redocly build-docs openapi.json -o site/index.html
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy site --project-name=tunesynctool-api-docs
