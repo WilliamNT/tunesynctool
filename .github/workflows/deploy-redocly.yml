@@ -54,9 +54,11 @@ jobs:
           cp openapi.json site/
           redocly build-docs openapi.json -o site/index.html
 
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy to Cloudflare Workers (static assets)
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy site --project-name=tunesynctool-api-docs
+          # `wrangler deploy` reads wrangler.jsonc from the repo root, which
+          # points at ./site as a static-assets-only Worker.
+          command: deploy
