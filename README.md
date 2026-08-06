@@ -20,6 +20,12 @@ Depending on what you need, you can use one of the following links to learn more
 - For the legacy CLI's command builder see: https://cli.tunesynctool.com/
 - For the wiki see: https://github.com/WilliamNT/tunesynctool/wiki
 
+## Do you have a Discord?
+[Yes.](https://dc.tunesynctool.com)
+
+## When will the self-hostable app be released?
+Soon! I am working on critical parts of the project at the moment. Once those are ready and everything works together nicely, I'll release a 1.0. Thank you for your patience and understanding.
+
 ## Stability
 
 The project is under heavy development and contains bugs. Use at your own discretion.
@@ -42,11 +48,7 @@ I decided that I'd prefer to develop a self-hostable application instead for var
 
 ## How does matching work?
 
+> [!NOTE]  
+> This is currently being entirely rebuilt from scratch. Stay tuned!
+
 Learn more about matching [here](https://github.com/WilliamNT/tunesynctool/wiki/Track-matching).
-
-## When will the self-hostable app be released?
-I can't tell you that unfortunately. I am working on this project in my free time and due to studies and personal matters I have to pause development often.
-Thank you for your patience and understanding.
-
-## Do you have a Discord?
-[Yes.](https://discord.com/invite/sjCecFxBCR)
