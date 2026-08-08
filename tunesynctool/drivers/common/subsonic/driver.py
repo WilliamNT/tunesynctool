@@ -101,9 +101,12 @@ class SubsonicDriver(ServiceDriver):
         
     def add_tracks_to_playlist(self, playlist_id: str, track_ids: List[str]) -> None:
         try:
+            # Coerce to a list: libsonic's updatePlaylist wraps a tuple in a
+            # one-element list instead of converting it, which would serialize
+            # the ids as a single stringified tuple and silently add nothing.
             self.__subsonic.updatePlaylist(
                 lid=playlist_id,
-                songIdsToAdd=track_ids
+                songIdsToAdd=list(track_ids) if track_ids is not None else []
             )
         except Exception as e:
             raise ServiceDriverException(e)
