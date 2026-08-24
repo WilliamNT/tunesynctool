@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tunesynctool"
-version = "1.2.2"
+version = "1.3.0"
 authors = [
     { name="WilliamNT", email="wntbox@gmail.com" }
 ]
-description = "A package and CLI tool to build scripts that interact with various music streaming services."
+description = "A package to build scripts that interact with various music streaming services."
 readme = "README.md"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -26,6 +26,7 @@ dependencies = [
     "ytmusicapi",
     "click",
     "tqdm",
+    "python-Levenshtein",
     'importlib-metadata; python_version<"3.11"',
 ]
 
@@ -39,3 +40,6 @@ tunesynctool = "tunesynctool.cli.main:cli"
 
 [tool.setuptools.packages.find]
 include = ["tunesynctool*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

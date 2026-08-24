@@ -11,6 +11,7 @@ from api.workers.handlers.playlist_transfer_handler import handle_playlist_trans
 from api.workers.utils.task_status import report_task_on_hold, report_task_failure, save_task
 from api.services.user_service import UserService
 from api.services.task_service import get_task_service
+from api.services.credentials_service import get_credentials_service
 from api.core.database import get_session_instance
 from api.workers.utils.keys import (
     parse_task_key,
@@ -104,7 +105,8 @@ async def get_task_user(ctx: WorkerContext, user_id: int, task_uuid: str) -> Opt
     async with await get_session_instance() as db_session:
         user_service = UserService(
             db=db_session,
-            task_service=get_task_service()
+            task_service=get_task_service(),
+            credentials_service=get_credentials_service(db_session)
         )
         
         user = await user_service.get_by_id(user_id)

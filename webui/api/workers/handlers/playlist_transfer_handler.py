@@ -1,7 +1,7 @@
 from typing import List, Optional
 from redis.asyncio import Redis
 from tunesynctool.exceptions import PlaylistNotFoundException
-from tunesynctool.features import AsyncTrackMatcher
+from tunesynctool.features.v2 import AsyncTrackMatcher
 from tunesynctool.models.track import Track
 from tunesynctool.utilities.collections import batch
 from tunesynctool.drivers.async_service_driver import AsyncWrappedServiceDriver
