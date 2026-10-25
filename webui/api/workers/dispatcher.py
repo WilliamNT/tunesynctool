@@ -7,7 +7,7 @@ from api.core.logging import logger
 from api.core.redis import get_redis_instance
 from api.models.task import PlaylistTaskStatus, TaskStatus, TaskKind
 from api.models.user import User
-from api.workers.handlers.playlist_transfer_handler import handle_playlist_transfer
+from webui.api.workers.handlers.playlist_transfer_handler import handle_playlist_transfer
 from api.workers.utils.task_status import report_task_on_hold, report_task_failure, save_task
 from api.services.user_service import UserService
 from api.services.task_service import get_task_service
@@ -114,7 +114,7 @@ async def get_task_user(ctx: WorkerContext, user_id: int, task_uuid: str) -> Opt
         
         return user
 
-async def dispatch_task(ctx: WorkerContext, task_kind: str, task: PlaylistTaskStatus, user: User, redis_key: str) -> None:
+async def dispatch_task(ctx: WorkerContext, task_kind: str, user: User) -> None:
     """
     Dispatch task to the appropriate handler based on task kind.
     """
@@ -122,14 +122,12 @@ async def dispatch_task(ctx: WorkerContext, task_kind: str, task: PlaylistTaskSt
     match task_kind:
         case TaskKind.USER_INITIATED_PLAYLIST_TRANSFER:
             await handle_playlist_transfer(
-                task=task, 
-                user=user, 
-                redis=ctx.redis,
-                redis_key=redis_key
+                context=ctx,
+                user=user,
             )
         case _:
-            logger.error(f"[{ctx.worker_name}][task:{task.task_id}] Unrecognized task type: {task_kind}")
-            await report_task_failure(ctx.redis, task, redis_key, f"Unknown task type: {task_kind}")
+            logger.error(f"[{ctx.worker_name}][task:{ctx.current_task.task_id}] Unrecognized task type: {task_kind}")
+            await report_task_failure(ctx.redis, ctx.current_task, ctx.current_redis_key, f"Unknown task type: {task_kind}")
 
 async def process_single_task(ctx: WorkerContext) -> bool:
     """ 
@@ -166,7 +164,7 @@ async def process_single_task(ctx: WorkerContext) -> bool:
             await report_task_failure(ctx.redis, task, redis_key, "User not found.")
             return True
 
-        await dispatch_task(ctx, task_kind, task, user, redis_key)
+        await dispatch_task(ctx, task_kind, user)
     finally:
         await stop_heartbeat(ctx)
         ctx.current_task = None

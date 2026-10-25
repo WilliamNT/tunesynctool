@@ -50,6 +50,7 @@ class PlaylistTaskCreate(GenericTaskCreateBase):
     """
 
     from_playlist: str = Field(description="Source playlist you wish to replicate.")
+    to_playlist: Optional[str] = Field(default=None, description="Target playlist ID to sync into. If omitted, a new playlist is created (omit for one-time transfers).")
     
 class TaskResponseBase(BaseModel):
     """
