@@ -7,7 +7,7 @@ def make_task_key(kind: str | TaskKind, user_id: int, task_id: str) -> str:
     
     Format: user_tasks:{kind}:{user_id}:{task_id}
     
-    :param kind: Task type (e.g., TaskKind.USER_INITIATED_PLAYLIST_TRANSFER)
+    :param kind: Task type (e.g., TaskKind.USER_INITIATED_PLAYLIST_SYNC)
     :param user_id: User's database ID
     :param task_id: UUID of the task
     :return: Redis key string

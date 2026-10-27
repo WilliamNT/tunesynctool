@@ -150,7 +150,7 @@ async def match_tracks(
 
     return matches
 
-async def handle_playlist_transfer(context: WorkerContext, user: User) -> None:
+async def handle_playlist_sync(context: WorkerContext, user: User) -> None:
     task = context.current_task
     redis = context.redis
     redis_key = context.current_redis_key

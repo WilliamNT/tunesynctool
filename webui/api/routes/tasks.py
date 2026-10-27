@@ -52,32 +52,32 @@ async def match_track(
     )
 
 @router.post(
-    path="/transfer",
+    path="/sync",
     responses={
         status.HTTP_400_BAD_REQUEST: {
             "description": "The source playlist couldn't be found.",
         },
         status.HTTP_409_CONFLICT: {
-            "description": "The playlist is already being transferred."
+            "description": "The playlist is already being synchronized."
         }
     },
-    summary="Transfer a playlist to another provider",
-    operation_id="transferPlaylist",
-    name="tasks:transfer_playlist",
+    summary="Synchronize a playlist with another.",
+    operation_id="syncPlaylist",
+    name="tasks:sync_playlist",
 )
-async def transfer_playlist(
+async def sync_playlist(
     request_context: Annotated[RequestContext, Depends(get_request_context)],
     body: Annotated[PlaylistTaskCreate, Body()],
     service: Annotated[TaskService, Depends(get_task_service)],
 ) -> PlaylistTaskStatus:
     """
-    Attempts to transfer the specified playlist from the source provider to the target provider.
+    Attempts to synchronize the specified playlist from the source provider to the target provider.
     Replication is not guaranteed to be 100% successful.
 
-    This starts a long running task. Clients can poll for the progress of the transfer.
+    This starts a long running task. Clients can poll for the progress of the task.
     """
 
-    return await service.dispatch_playlist_transfer(
+    return await service.dispatch_playlist_sync(
         details=body,
         user=request_context.user
     )

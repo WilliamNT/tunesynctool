@@ -24,7 +24,7 @@ class TaskKind(StrEnum):
     Describes the type of the task.
     """
 
-    USER_INITIATED_PLAYLIST_TRANSFER = "playlist_transfer"
+    USER_INITIATED_PLAYLIST_SYNC = "playlist_sync"
 
 class GenericTaskCreateBase(BaseModel):
     """
@@ -46,7 +46,7 @@ class GenericTaskCreateBase(BaseModel):
 
 class PlaylistTaskCreate(GenericTaskCreateBase):
     """
-    Playlist transfer parameters.
+    Playlist task parameters.
     """
 
     from_playlist: str = Field(description="Source playlist you wish to replicate.")
@@ -77,7 +77,7 @@ class PlaylistTaskProgress(BaseModel):
 
 class PlaylistTaskStatus(TaskResponseBase):
     """
-    Status of the playlist transfer.
+    Status of the playlist task.
     """
 
     arguments: PlaylistTaskCreate = Field(description="Original request parameters.")

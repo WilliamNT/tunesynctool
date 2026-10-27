@@ -7,7 +7,7 @@ from api.core.logging import logger
 from api.core.redis import get_redis_instance
 from api.models.task import PlaylistTaskStatus, TaskStatus, TaskKind
 from api.models.user import User
-from webui.api.workers.handlers.playlist_transfer_handler import handle_playlist_transfer
+from webui.api.workers.handlers.playlist_sync_handler import handle_playlist_sync
 from api.workers.utils.task_status import report_task_on_hold, report_task_failure, save_task
 from api.services.user_service import UserService
 from api.services.task_service import get_task_service
@@ -120,8 +120,8 @@ async def dispatch_task(ctx: WorkerContext, task_kind: str, user: User) -> None:
     """
 
     match task_kind:
-        case TaskKind.USER_INITIATED_PLAYLIST_TRANSFER:
-            await handle_playlist_transfer(
+        case TaskKind.USER_INITIATED_PLAYLIST_SYNC:
+            await handle_playlist_sync(
                 context=ctx,
                 user=user,
             )

@@ -19,12 +19,12 @@ class TaskService:
     def __init__(self, redis: Redis):
         self.redis = redis
         
-    async def dispatch_playlist_transfer(self, details: PlaylistTaskCreate, user: User) -> PlaylistTaskStatus:
+    async def dispatch_playlist_sync(self, details: PlaylistTaskCreate, user: User) -> PlaylistTaskStatus:
         """
-        Attempts to transfer the specified playlist from the source provider to the target provider.
+        Attempts to synchronize the specified playlist from the source provider to the target provider.
         Replication is not guaranteed to be 100% successful.
         
-        This starts a long running task. Clients can poll for the progress of the transfer.
+        This starts a long running task. Clients can poll for the progress of the task.
         """
 
         task_id = str(uuid.uuid4())
@@ -47,20 +47,20 @@ class TaskService:
 
         await self.redis.rpush(make_task_queue_name(), redis_key)
         
-        logger.info(f"[task:{task_id}] Created new playlist transfer task for user {user.id}")
+        logger.info(f"[task:{task_id}] Created new playlist sync task for user {user.id}")
 
         return job
 
-    async def get_playlist_transfer_status(self, task_id: str, user: User) -> Optional[PlaylistTaskStatus]:
+    async def get_playlist_sync_status(self, task_id: str, user: User) -> Optional[PlaylistTaskStatus]:
         """
-        Get the status of a playlist transfer task.
+        Get the status of a playlist sync task.
         
         :param task_id: UUID of the task
         :param user: User who owns the task
             
         :return: PlaylistTaskStatus or None if not found
         """
-        redis_key = make_task_key(TaskKind.USER_INITIATED_PLAYLIST_TRANSFER, user.id, task_id)
+        redis_key = make_task_key(TaskKind.USER_INITIATED_PLAYLIST_SYNC, user.id, task_id)
         task = await self.redis.get(redis_key)
         
         if task is None:
