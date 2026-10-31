@@ -51,7 +51,7 @@ class TaskService:
 
         return job
 
-    async def get_playlist_sync_status(self, task_id: str, user: User) -> Optional[PlaylistTaskStatus]:
+    async def get_playlist_task_status(self, task_id: str, user: User) -> Optional[PlaylistTaskStatus]:
         """
         Get the status of a playlist sync task.
         
@@ -64,7 +64,7 @@ class TaskService:
         task = await self.redis.get(redis_key)
         
         if task is None:
-            return None
+            self._raise_404_task_not_found()
 
         return PlaylistTaskStatus.model_validate_json(task)
 

@@ -167,3 +167,30 @@ async def delete_task(
         task_id=task_id,
         user=request_context.user
     )
+
+@router.get(
+    path="/{task_id}",
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "description": "The task does not exist."
+        },
+    },
+    summary="Retrieve a task",
+    operation_id="getTask",
+    name="tasks:get_task",
+)
+async def get_task(
+    request_context: Annotated[RequestContext, Depends(get_request_context)],
+    task_id: Annotated[UUID, Path()],
+    service: Annotated[TaskService, Depends(get_task_service)],
+) -> None:
+    """
+    Returns the requested task.
+
+    A user may only request their own task.
+    """
+
+    return await service.get_playlist_task_status(
+        task_id=task_id,
+        user=request_context.user
+    )
