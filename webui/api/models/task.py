@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, TypeVar, Generic
 from uuid import UUID
 from pydantic import BaseModel, Field, field_validator
 from enum import StrEnum
@@ -51,8 +51,10 @@ class PlaylistTaskCreate(GenericTaskCreateBase):
 
     from_playlist: str = Field(description="Source playlist you wish to replicate.")
     to_playlist: Optional[str] = Field(default=None, description="Target playlist ID to sync into. If omitted, a new playlist is created (omit for one-time transfers).")
-    
-class TaskResponseBase(BaseModel):
+
+T = TypeVar("T")
+
+class TaskResponseBase(BaseModel, Generic[T]):
     """
     Base class for task responses.
     """
@@ -65,6 +67,7 @@ class TaskResponseBase(BaseModel):
     done_at: Optional[int] = Field(description="Unix timestamp in UTC to help tell when the task was considered done.", default=None)
     worker_id: Optional[str] = Field(description="ID of the worker currently processing this task.", default=None)
     last_heartbeat: Optional[int] = Field(description="Unix timestamp of last worker heartbeat for stale detection.", default=None)
+    output: Optional[T] = Field(description="Output of the task if the task supports it. If it is not supported or the task is not yet completed, it will be empty.", default=None)
 
 class PlaylistTaskProgress(BaseModel):
     """
