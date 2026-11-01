@@ -108,7 +108,7 @@ async def all_tasks(
             "description": "The task does not exist."
         },
         status.HTTP_204_NO_CONTENT: {
-            "description": "The user has been successfully deleted."
+            "description": "The task has been successfully deleted."
         },
     },
     summary="Manually cancel a task",
@@ -183,7 +183,7 @@ async def get_task(
     request_context: Annotated[RequestContext, Depends(get_request_context)],
     task_id: Annotated[UUID, Path()],
     service: Annotated[TaskService, Depends(get_task_service)],
-) -> None:
+) -> PlaylistTaskStatus:
     """
     Returns the requested task.
 
